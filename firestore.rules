@@ -1,0 +1,47 @@
+rules_version = '2';
+
+// Galleroo Firestore security rules.
+//
+// All gallery / subscription writes happen on the SERVER via the Firebase
+// Admin SDK, which BYPASSES these rules. So the public gallery page, the
+// /api routes and the Stripe webhook keep working regardless of what is
+// denied here. The only thing the BROWSER (client SDK) does directly is the
+// login upsert of the photographer's own users/{uid} profile.
+//
+// Goal: a logged-in user may write their OWN profile fields, but may NEVER
+// grant themselves a subscription, and may not read/write anyone else's data
+// or any gallery (which holds passwords).
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Fields only the server (Admin SDK) is allowed to set.
+    function locked() {
+      return ['subscriptionStatus', 'subscriptionExpiresAt', 'compGranted', 'stripeCustomerId'];
+    }
+
+    match /users/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+
+      // On first login the client creates its profile — but cannot include any
+      // subscription/billing field.
+      allow create: if request.auth != null
+        && request.auth.uid == uid
+        && !request.resource.data.keys().hasAny(locked());
+
+      // On later logins it may update profile fields, but cannot add/change/remove
+      // any subscription/billing field.
+      allow update: if request.auth != null
+        && request.auth.uid == uid
+        && !request.resource.data.diff(resource.data).affectedKeys().hasAny(locked());
+
+      allow delete: if false;
+    }
+
+    // Everything else (galleries with their passwords, favorites, demos, …) is
+    // server-only. Deny all direct client access; the Admin SDK is unaffected.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
