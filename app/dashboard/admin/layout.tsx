@@ -44,13 +44,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <Image
               src="/logo.png"
               alt="PhotoDrive"
-              width={140}
-              height={32}
-              className="h-7 w-auto"
+              width={180}
+              height={42}
+              className="h-9 w-auto"
               priority
             />
             <span className="text-white/20">|</span>
-            <span className="text-xs text-[#33A39A] font-semibold tracking-widest uppercase">Admin</span>
+            <span className="text-xs text-[#2dabe0] font-semibold tracking-widest uppercase">Admin</span>
           </div>
           <a
             href="/dashboard"

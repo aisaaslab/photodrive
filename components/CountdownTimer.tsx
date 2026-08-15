@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 
@@ -38,11 +38,11 @@ export function CountdownTimer({ label }: Props) {
 
   return (
     <div className="flex items-center justify-center gap-2 text-xs text-white/70 mb-3">
-      <svg className="w-3.5 h-3.5 text-[#33A39A] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <svg className="w-3.5 h-3.5 text-[#2dabe0] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6l4 2m6-2a10 10 0 11-20 0 10 10 0 0120 0z" />
       </svg>
       <span>{label}</span>
-      <span className="font-mono font-bold text-[#33A39A] text-sm tabular-nums">
+      <span className="font-mono font-bold text-[#2dabe0] text-sm tabular-nums">
         {pad(timeLeft.h)}:{pad(timeLeft.m)}:{pad(timeLeft.s)}
       </span>
     </div>

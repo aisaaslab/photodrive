@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useRef, useEffect } from "react";
 import { DriveFile } from "@/lib/drive/types";
@@ -49,7 +49,7 @@ export function PhotoTile({
   return (
     <div
       className={`masonry-item relative group cursor-pointer overflow-hidden rounded-xl bg-stone-200 transition-all ${
-        isSelected ? "ring-2 ring-[#2D6A6A] ring-offset-2 ring-offset-stone-950" : ""
+        isSelected ? "ring-2 ring-[#17509e] ring-offset-2 ring-offset-stone-950" : ""
       } ${isVideo ? "aspect-video" : ""}`}
       style={hasRatio ? { aspectRatio: `${photo.width} / ${photo.height}` } : undefined}
       onClick={handleClick}
@@ -99,7 +99,7 @@ export function PhotoTile({
       {selectionMode && (
         <div className={`absolute top-2.5 left-2.5 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
           isSelected
-            ? "bg-[#2D6A6A] border-[#2D6A6A]"
+            ? "bg-[#17509e] border-[#17509e]"
             : "bg-black/40 border-white/60 backdrop-blur-sm"
         }`}>
           {isSelected && (

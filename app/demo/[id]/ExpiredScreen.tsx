@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { useLanguage } from "@/lib/i18n";
@@ -15,8 +15,8 @@ export function ExpiredScreen() {
         </svg>
       </Link>
       <div className="relative z-10 max-w-md">
-        <div className="w-14 h-14 bg-[#2D6A6A]/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
-          <svg className="w-7 h-7 text-[#33A39A]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+        <div className="w-14 h-14 bg-[#17509e]/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
+          <svg className="w-7 h-7 text-[#2dabe0]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
         </div>

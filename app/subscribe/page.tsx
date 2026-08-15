@@ -118,7 +118,7 @@ export default function SubscribePage() {
               </div>
               <p className="text-white text-lg font-medium mt-1">{t.pricing.vatNote}</p>
               <p className="flex items-center justify-center gap-1.5 text-stone-400 text-xs mt-2">
-                <svg className="w-3.5 h-3.5 text-[#33A39A] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
+                <svg className="w-3.5 h-3.5 text-[#2dabe0] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
                 {noAutoRenew}
               </p>
             </div>
@@ -126,7 +126,7 @@ export default function SubscribePage() {
             <ul className="space-y-2.5 mb-6">
               {features.map((f) => (
                 <li key={f} className="flex items-center gap-2.5 text-sm text-stone-300">
-                  <svg className="w-4 h-4 text-[#33A39A] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <svg className="w-4 h-4 text-[#2dabe0] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                   </svg>
                   {f}

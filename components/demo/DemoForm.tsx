@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -40,7 +40,7 @@ export function DemoForm() {
   return (
     <section id="demo" className="py-16 sm:py-24 px-6 border-t border-white/5">
       <div className="max-w-xl mx-auto text-center">
-        <p className="text-sm font-semibold tracking-[0.2em] uppercase text-[#33A39A] mb-4">{d.label}</p>
+        <p className="text-sm font-semibold tracking-[0.2em] uppercase text-[#2dabe0] mb-4">{d.label}</p>
         <h2 className="text-2xl sm:text-3xl font-bold text-white mb-3" style={{ fontFamily: "var(--font-brand), sans-serif" }}>
           {d.title}
         </h2>
@@ -66,7 +66,7 @@ export function DemoForm() {
             </button>
           </div>
           {error && (
-            <p className="text-[#33A39A] text-sm mt-3">{error}</p>
+            <p className="text-[#2dabe0] text-sm mt-3">{error}</p>
           )}
         </form>
       </div>

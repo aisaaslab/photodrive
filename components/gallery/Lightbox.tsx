@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useCallback, useRef, useState } from "react";
 import { DriveFile } from "@/lib/drive/types";
@@ -104,7 +104,7 @@ export function Lightbox({ photos, activeIndex, favorites, allowDownload = true,
             onClick={() => onToggleFavorite(photo.id)}
             className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-all ${
               isFavorited
-                ? "bg-[#2D6A6A] text-white"
+                ? "bg-[#17509e] text-white"
                 : "bg-white/10 text-white/70 hover:bg-white/20"
             }`}
           >
@@ -270,7 +270,7 @@ export function Lightbox({ photos, activeIndex, favorites, allowDownload = true,
                 className="w-full h-full object-cover"
               />
               {favorites.has(p.id) && (
-                <div className="absolute top-0.5 right-0.5 w-3 h-3 bg-[#2D6A6A] rounded-full" />
+                <div className="absolute top-0.5 right-0.5 w-3 h-3 bg-[#17509e] rounded-full" />
               )}
             </button>
           ))}

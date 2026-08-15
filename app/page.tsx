@@ -140,7 +140,7 @@ export default function HomePage() {
               <svg className="w-5 h-5 text-white/40" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
               </svg>
-              <svg className="w-8 h-8 text-[#33A39A] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <svg className="w-8 h-8 text-[#2dabe0] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3 12.75V19.5a.75.75 0 00.75.75h16.5a.75.75 0 00.75-.75V4.5a.75.75 0 00-.75-.75H3.75a.75.75 0 00-.75.75v8.25z" />
               </svg>
             </div>
@@ -196,7 +196,7 @@ export default function HomePage() {
           <div className="animate-fade-up delay-3 flex flex-col sm:flex-row items-center justify-center gap-x-6 gap-y-2 mt-6 text-sm text-white/60">
             {[t.hero.bullet1, t.hero.bullet2, t.hero.bullet3].map((b) => (
               <span key={b} className="flex items-center gap-1.5">
-                <svg className="w-3.5 h-3.5 text-[#33A39A] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <svg className="w-3.5 h-3.5 text-[#2dabe0] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                 </svg>
                 {b}
@@ -208,7 +208,7 @@ export default function HomePage() {
 
         {/* Slider */}
         <div className="animate-fade-up delay-5 relative z-10 w-full max-w-4xl mt-20">
-          <div className="absolute -inset-8 bg-[#2D6A6A]/[0.04] rounded-3xl blur-3xl pointer-events-none" />
+          <div className="absolute -inset-8 bg-[#17509e]/[0.04] rounded-3xl blur-3xl pointer-events-none" />
           <p className="text-center text-white uppercase text-base font-semibold mb-6 tracking-wide">{t.hero.sliderLabel}</p>
           <ImageCompareSlider
             after="/slider-drive.jpg"
@@ -249,8 +249,8 @@ export default function HomePage() {
           <div className="grid sm:grid-cols-3 gap-4">
             {whatCards.map(({ icon, label, desc }) => (
               <div key={label} className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-6 flex flex-col items-center text-center">
-                <div className="w-10 h-10 bg-[#2D6A6A]/10 rounded-xl flex items-center justify-center mb-4">
-                  <svg className="w-5 h-5 text-[#33A39A]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <div className="w-10 h-10 bg-[#17509e]/10 rounded-xl flex items-center justify-center mb-4">
+                  <svg className="w-5 h-5 text-[#2dabe0]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d={icon} />
                   </svg>
                 </div>
@@ -285,7 +285,7 @@ export default function HomePage() {
                 key={n}
                 className="card-shimmer border border-white/[0.06] rounded-2xl p-6 sm:p-8 bg-white/[0.02] hover:bg-white/[0.04] transition-colors flex gap-6 items-start"
               >
-                <span className="text-3xl font-bold text-[#33A39A] shrink-0 w-10 text-right" style={{ fontFamily: "var(--font-brand), sans-serif" }}>{n}</span>
+                <span className="text-3xl font-bold text-[#2dabe0] shrink-0 w-10 text-right" style={{ fontFamily: "var(--font-brand), sans-serif" }}>{n}</span>
                 <div className="flex-1">
                   <h3 className="text-xl font-semibold text-white mb-1.5">{title}</h3>
                   <p className="text-lg text-white leading-relaxed">{desc}</p>
@@ -351,20 +351,20 @@ export default function HomePage() {
           </div>
 
           <div className="max-w-sm mx-auto">
-            <div className="relative border border-[#2D6A6A]/25 rounded-2xl p-8 bg-gradient-to-b from-[#2D6A6A]/15 to-transparent overflow-hidden text-center">
-              <p className="text-sm font-bold tracking-widest uppercase text-[#33A39A] mb-5">{t.pricing.badge}</p>
+            <div className="relative border border-[#17509e]/25 rounded-2xl p-8 bg-gradient-to-b from-[#17509e]/15 to-transparent overflow-hidden text-center">
+              <p className="text-sm font-bold tracking-widest uppercase text-[#2dabe0] mb-5">{t.pricing.badge}</p>
               <div className="flex flex-col items-center justify-center mb-1">
                 <span className="text-5xl font-bold text-white">â‚¬89</span>
               </div>
               <p className="text-white text-lg font-medium mb-2">{t.pricing.vatNote}</p>
               <p className="flex items-center justify-center gap-1.5 text-white/50 text-xs mb-7">
-                <svg className="w-3.5 h-3.5 text-[#33A39A] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
+                <svg className="w-3.5 h-3.5 text-[#2dabe0] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
                 {noAutoRenew}
               </p>
               <ul className="space-y-3 mb-8 inline-flex flex-col items-start">
                 {pricingFeatures.map((f, i) => (
                   <li key={i} className="flex items-center gap-2.5 text-base text-white">
-                    <svg className="w-3.5 h-3.5 text-[#33A39A] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <svg className="w-3.5 h-3.5 text-[#2dabe0] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                     </svg>
                     {f}

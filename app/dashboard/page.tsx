@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -126,7 +126,7 @@ export default function DashboardPage() {
           </p>
           {daysLeft !== null && (
             <p className="text-xs text-white/40 mt-1">
-              {t.dashboard.subscription} <span className={daysLeft <= 30 ? "text-[#33A39A]" : "text-white/60"}>{daysLeft} {t.dashboard.daysLeft}</span>
+              {t.dashboard.subscription} <span className={daysLeft <= 30 ? "text-[#2dabe0]" : "text-white/60"}>{daysLeft} {t.dashboard.daysLeft}</span>
             </p>
           )}
         </div>

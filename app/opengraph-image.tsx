@@ -1,4 +1,4 @@
-import { ImageResponse } from "next/og";
+﻿import { ImageResponse } from "next/og";
 import { APP_NAME, APP_DOMAIN, APP_TAGLINE, APP_DESCRIPTION } from "@/lib/branding";
 
 export const alt = `${APP_NAME}, ${APP_TAGLINE}`;
@@ -29,7 +29,7 @@ export default function OpengraphImage() {
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 18, marginBottom: 40 }}>
-          <div style={{ width: 30, height: 30, borderRadius: 9999, background: "#2D6A6A" }} />
+          <div style={{ width: 30, height: 30, borderRadius: 9999, background: "#17509e" }} />
           <div style={{ fontSize: 46, fontWeight: 700, color: "#1f2937", letterSpacing: "-0.02em" }}>
             {APP_NAME}
           </div>
@@ -38,12 +38,12 @@ export default function OpengraphImage() {
           {taglineLine1}
         </div>
         {taglineLine2 ? (
-          <div style={{ display: "flex", fontSize: 84, fontWeight: 700, color: "#2D6A6A", letterSpacing: "-0.03em" }}>
+          <div style={{ display: "flex", fontSize: 84, fontWeight: 700, color: "#17509e", letterSpacing: "-0.03em" }}>
             {taglineLine2}
           </div>
         ) : null}
         <div style={{ display: "flex", marginTop: 44, fontSize: 26, color: "#6b7280" }}>
-          {APP_DESCRIPTION} · {APP_DOMAIN}
+          {APP_DESCRIPTION} Â· {APP_DOMAIN}
         </div>
       </div>
     ),

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect, useRef } from "react";
 import { DriveFile, DriveFolder } from "@/lib/drive/types";
@@ -211,7 +211,7 @@ export function MasonryGrid({ photos, subfolders = [], galleryId, allowDownload 
   const photoPart = `${shownPhotos} ${shownPhotos === 1 ? g.photo : g.photos}`;
   const videoPart = `${shownVideos} ${shownVideos === 1 ? g.video : g.videos}`;
   const countLabel =
-    shownVideos === 0 ? photoPart : shownPhotos === 0 ? videoPart : `${photoPart} · ${videoPart}`;
+    shownVideos === 0 ? photoPart : shownPhotos === 0 ? videoPart : `${photoPart} Â· ${videoPart}`;
 
   function openPhoto(index: number) {
     const photo = displayed[index];
@@ -229,7 +229,7 @@ export function MasonryGrid({ photos, subfolders = [], galleryId, allowDownload 
             onClick={() => setFilter("all")}
             className={`px-2 sm:px-4 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all ${
               filter === "all"
-                ? "bg-[#2D6A6A] text-white shadow-sm"
+                ? "bg-[#17509e] text-white shadow-sm"
                 : "text-stone-500 hover:text-stone-700"
             }`}
           >
@@ -239,31 +239,31 @@ export function MasonryGrid({ photos, subfolders = [], galleryId, allowDownload 
             onClick={() => setFilter("photos")}
             className={`flex items-center gap-1.5 px-2 sm:px-4 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all ${
               filter === "photos"
-                ? "bg-[#2D6A6A] text-white shadow-sm"
+                ? "bg-[#17509e] text-white shadow-sm"
                 : "text-stone-500 hover:text-stone-700"
             }`}
           >
             {g.filterPhotos}
-            <span className={`w-5 h-5 rounded-full text-[10px] font-bold flex items-center justify-center shrink-0 ${filter === "photos" ? "bg-white/20 text-white" : "bg-[#2D6A6A] text-white"}`}>{photoCount}</span>
+            <span className={`w-5 h-5 rounded-full text-[10px] font-bold flex items-center justify-center shrink-0 ${filter === "photos" ? "bg-white/20 text-white" : "bg-[#17509e] text-white"}`}>{photoCount}</span>
           </button>
           {videoCount > 0 && (
             <button
               onClick={() => setFilter("videos")}
               className={`flex items-center gap-1.5 px-2 sm:px-4 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all ${
                 filter === "videos"
-                  ? "bg-[#2D6A6A] text-white shadow-sm"
+                  ? "bg-[#17509e] text-white shadow-sm"
                   : "text-stone-500 hover:text-stone-700"
               }`}
             >
               {g.filterVideos}
-              <span className={`w-5 h-5 rounded-full text-[10px] font-bold flex items-center justify-center shrink-0 ${filter === "videos" ? "bg-white/20 text-white" : "bg-[#2D6A6A] text-white"}`}>{videoCount}</span>
+              <span className={`w-5 h-5 rounded-full text-[10px] font-bold flex items-center justify-center shrink-0 ${filter === "videos" ? "bg-white/20 text-white" : "bg-[#17509e] text-white"}`}>{videoCount}</span>
             </button>
           )}
           <button
             onClick={() => setFilter("favorites")}
             className={`flex items-center gap-1.5 px-2 sm:px-4 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all ${
               filter === "favorites"
-                ? "bg-[#2D6A6A] text-white shadow-sm"
+                ? "bg-[#17509e] text-white shadow-sm"
                 : "text-stone-500 hover:text-stone-700"
             }`}
           >
@@ -272,7 +272,7 @@ export function MasonryGrid({ photos, subfolders = [], galleryId, allowDownload 
             </svg>
             {g.filterFavorites}
             {favorites.size > 0 && (
-              <span className={`w-5 h-5 rounded-full text-[10px] font-bold flex items-center justify-center shrink-0 ${filter === "favorites" ? "bg-white/20 text-white" : "bg-[#2D6A6A] text-white"}`}>
+              <span className={`w-5 h-5 rounded-full text-[10px] font-bold flex items-center justify-center shrink-0 ${filter === "favorites" ? "bg-white/20 text-white" : "bg-[#17509e] text-white"}`}>
                 {favorites.size}
               </span>
             )}
@@ -302,7 +302,7 @@ export function MasonryGrid({ photos, subfolders = [], galleryId, allowDownload 
                 <div className="absolute top-full left-0 mt-1 z-20 bg-white border border-stone-200 rounded-xl shadow-lg py-1 min-w-[160px]">
                   <button
                     onClick={() => { setActiveFolder(null); setFolderDropdownOpen(false); }}
-                    className={`w-full text-left px-4 py-2 text-sm transition-colors ${!activeFolder ? "text-[#33A39A] font-semibold" : "text-stone-600 hover:bg-stone-50"}`}
+                    className={`w-full text-left px-4 py-2 text-sm transition-colors ${!activeFolder ? "text-[#2dabe0] font-semibold" : "text-stone-600 hover:bg-stone-50"}`}
                   >
                     {g.filterAll}
                   </button>
@@ -310,7 +310,7 @@ export function MasonryGrid({ photos, subfolders = [], galleryId, allowDownload 
                     <button
                       key={sf.id}
                       onClick={() => { setActiveFolder(sf.name); setFolderDropdownOpen(false); }}
-                      className={`w-full text-left px-4 py-2 text-sm transition-colors ${activeFolder === sf.name ? "text-[#33A39A] font-semibold" : "text-stone-600 hover:bg-stone-50"}`}
+                      className={`w-full text-left px-4 py-2 text-sm transition-colors ${activeFolder === sf.name ? "text-[#2dabe0] font-semibold" : "text-stone-600 hover:bg-stone-50"}`}
                     >
                       {sf.path}
                     </button>
@@ -349,7 +349,7 @@ export function MasonryGrid({ photos, subfolders = [], galleryId, allowDownload 
               onClick={toggleSelectionMode}
               className={`flex items-center gap-1.5 text-xs rounded-lg px-3 py-1.5 font-medium transition-all border ${
                 selectionMode
-                  ? "bg-[#2D6A6A] border-[#2D6A6A] text-white"
+                  ? "bg-[#17509e] border-[#17509e] text-white"
                   : "border-stone-300 text-stone-500 hover:text-stone-700 hover:border-stone-400"
               }`}
             >
@@ -392,7 +392,7 @@ export function MasonryGrid({ photos, subfolders = [], galleryId, allowDownload 
 
       {/* Reassurance: favourites are shared with the photographer */}
       {filter === "favorites" && displayed.length > 0 && (
-        <div className="flex items-center gap-2 mb-4 px-4 py-2.5 bg-[#2D6A6A]/10 border border-[#2D6A6A]/20 rounded-xl text-xs text-[#2D6A6A]">
+        <div className="flex items-center gap-2 mb-4 px-4 py-2.5 bg-[#17509e]/10 border border-[#17509e]/20 rounded-xl text-xs text-[#17509e]">
           <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
           </svg>

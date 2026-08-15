@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState, useCallback } from "react";
 import { useAuth } from "@/components/auth/AuthProvider";
@@ -34,7 +34,7 @@ type Gallery = {
 };
 
 function formatDate(ts: number | string | null | undefined) {
-  if (!ts) return "—";
+  if (!ts) return "â€”";
   const d = new Date(typeof ts === "number" ? ts : ts);
   return d.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
 }
@@ -43,7 +43,7 @@ function Avatar({ src, name, size = 7 }: { src?: string | null; name: string; si
   const initials = name?.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase() || "?";
   if (src) return <img src={src} alt={name} className={`w-${size} h-${size} rounded-full ring-1 ring-white/10 object-cover`} />;
   return (
-    <div className={`w-${size} h-${size} rounded-full bg-[#2D6A6A]/20 flex items-center justify-center text-xs font-bold text-[#33A39A] ring-1 ring-[#2D6A6A]/20`}>
+    <div className={`w-${size} h-${size} rounded-full bg-[#17509e]/20 flex items-center justify-center text-xs font-bold text-[#2dabe0] ring-1 ring-[#17509e]/20`}>
       {initials}
     </div>
   );
@@ -200,7 +200,7 @@ export default function AdminPage() {
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
         {[
           { label: "Active subscriptions", value: activeSubscriptions, tone: "ok" },
-          { label: "Est. revenue / year", value: `€${revenueEstimate.toLocaleString("en-US")}`, tone: "ok" },
+          { label: "Est. revenue / year", value: `â‚¬${revenueEstimate.toLocaleString("en-US")}`, tone: "ok" },
           { label: "New sign-ups (7d)", value: newThisWeek },
           { label: "New sign-ups (30d)", value: newThisMonth },
           { label: "Expiring <30d", value: expiringSoon.length, tone: expiringSoon.length > 0 ? "warn" : undefined },
@@ -217,7 +217,7 @@ export default function AdminPage() {
       {expiringSoon.length > 0 && (
         <div className="mb-8 border border-amber-500/20 bg-amber-500/[0.04] rounded-2xl p-5">
           <div className="text-sm font-semibold text-amber-400 mb-3" style={{ fontFamily: "var(--font-brand), sans-serif" }}>
-            ⏳ Expiring soon — {expiringSoon.length} {expiringSoon.length === 1 ? "subscription" : "subscriptions"} (≤30 days)
+            â³ Expiring soon â€” {expiringSoon.length} {expiringSoon.length === 1 ? "subscription" : "subscriptions"} (â‰¤30 days)
           </div>
           <div className="space-y-2">
             {expiringSoon.map((u) => (
@@ -225,7 +225,7 @@ export default function AdminPage() {
                 <div className="min-w-0 flex items-center gap-2">
                   <Avatar src={u.photoURL} name={u.displayName || u.email} size={6} />
                   <span className="text-white truncate">{u.displayName || u.email}</span>
-                  <span className="text-stone-500 truncate hidden sm:inline">· {u.email}</span>
+                  <span className="text-stone-500 truncate hidden sm:inline">Â· {u.email}</span>
                 </div>
                 <div className="flex items-center gap-3 shrink-0">
                   <span className={`font-semibold tabular-nums ${u.daysLeft <= 7 ? "text-red-400" : "text-amber-400"}`}>
@@ -287,25 +287,25 @@ export default function AdminPage() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="font-semibold text-white text-sm" style={{ fontFamily: "var(--font-brand), sans-serif" }}>
-                      {u.displayName || "—"}
+                      {u.displayName || "â€”"}
                     </span>
                     <span className="text-xs text-stone-500">{u.email}</span>
                   </div>
                   <div className="text-xs text-stone-500 mt-0.5">
-                    Joined: {formatDate(u.createdAt)} · Last sign-in: {formatDate(u.lastSignIn)}
+                    Joined: {formatDate(u.createdAt)} Â· Last sign-in: {formatDate(u.lastSignIn)}
                   </div>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                   {u.subscriptionActive ? (
                     <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                      ✓ Active {u.subscriptionExpiresAt ? (u.subscriptionExpiresAt > 4102444800000 ? "· lifetime" : `until ${formatDate(u.subscriptionExpiresAt)}`) : ""}
+                      âœ“ Active {u.subscriptionExpiresAt ? (u.subscriptionExpiresAt > 4102444800000 ? "Â· lifetime" : `until ${formatDate(u.subscriptionExpiresAt)}`) : ""}
                     </span>
                   ) : (
                     <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-white/[0.04] text-stone-500 border border-white/[0.06]">
                       No subscription
                     </span>
                   )}
-                  <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${userGalleries.length > 0 ? "bg-[#2D6A6A]/10 text-[#33A39A] border border-[#2D6A6A]/20" : "bg-white/[0.04] text-stone-500 border border-white/[0.06]"}`}>
+                  <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${userGalleries.length > 0 ? "bg-[#17509e]/10 text-[#2dabe0] border border-[#17509e]/20" : "bg-white/[0.04] text-stone-500 border border-white/[0.06]"}`}>
                     {userGalleries.length} {userGalleries.length === 1 ? "gallery" : "galleries"}
                   </span>
                   <svg
@@ -326,14 +326,14 @@ export default function AdminPage() {
                     <button
                       onClick={() => setSubscription(u.uid, "grant_lifetime")}
                       disabled={subBusy === u.uid}
-                      className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-[#2D6A6A] text-white hover:bg-[#245757] disabled:opacity-50 transition-colors"
+                      className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-[#17509e] text-white hover:bg-[#103a75] disabled:opacity-50 transition-colors"
                     >
                       Free lifetime
                     </button>
                     <button
                       onClick={() => setSubscription(u.uid, "grant_year")}
                       disabled={subBusy === u.uid}
-                      className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-[#2D6A6A]/40 text-[#33A39A] hover:border-[#2D6A6A] disabled:opacity-50 transition-colors"
+                      className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-[#17509e]/40 text-[#2dabe0] hover:border-[#17509e] disabled:opacity-50 transition-colors"
                     >
                       +1 year
                     </button>
@@ -444,7 +444,7 @@ export default function AdminPage() {
                                     </span>
                                   )}
                                 </div>
-                                <div className="text-xs text-stone-500 mt-0.5 font-mono">/gallery/{g.slug} · {formatDate(g.createdAt)}</div>
+                                <div className="text-xs text-stone-500 mt-0.5 font-mono">/gallery/{g.slug} Â· {formatDate(g.createdAt)}</div>
                               </div>
                               <div className="flex items-center gap-1.5 shrink-0">
                                 {/* View */}

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { useLanguage } from "@/lib/i18n";
@@ -27,7 +27,7 @@ export function FavoriteButton({ photoId, isFavorited, onToggle }: Props) {
       onClick={handleClick}
       className={`absolute top-2.5 right-2.5 w-8 h-8 flex items-center justify-center rounded-full transition-all duration-200 shadow-sm ${
         isFavorited
-          ? "bg-[#2D6A6A] text-white opacity-100 scale-100"
+          ? "bg-[#17509e] text-white opacity-100 scale-100"
           : "bg-black/30 backdrop-blur-sm text-white/60 hover:bg-black/60"
       } ${animating ? "animate-heart-pop" : ""}`}
       aria-label={isFavorited ? t.gallery.removeFavorite : t.gallery.addFavorite}

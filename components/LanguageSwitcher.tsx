@@ -1,15 +1,15 @@
-"use client";
+﻿"use client";
 
 import { useRef, useState, useEffect } from "react";
 import { useLanguage, Lang } from "@/lib/i18n";
 
 const LANGS: { code: Lang; label: string; flag: string }[] = [
-  { code: "en", label: "English",  flag: "🇬🇧" },
-  { code: "el", label: "Ελληνικά", flag: "🇬🇷" },
-  { code: "nl", label: "Nederlands", flag: "🇳🇱" },
-  { code: "de", label: "Deutsch",  flag: "🇩🇪" },
-  { code: "es", label: "Español",  flag: "🇪🇸" },
-  { code: "it", label: "Italiano", flag: "🇮🇹" },
+  { code: "en", label: "English",  flag: "ðŸ‡¬ðŸ‡§" },
+  { code: "el", label: "Î•Î»Î»Î·Î½Î¹ÎºÎ¬", flag: "ðŸ‡¬ðŸ‡·" },
+  { code: "nl", label: "Nederlands", flag: "ðŸ‡³ðŸ‡±" },
+  { code: "de", label: "Deutsch",  flag: "ðŸ‡©ðŸ‡ª" },
+  { code: "es", label: "EspaÃ±ol",  flag: "ðŸ‡ªðŸ‡¸" },
+  { code: "it", label: "Italiano", flag: "ðŸ‡®ðŸ‡¹" },
 ];
 
 export function LanguageSwitcher({ variant = "dark" }: { variant?: "dark" | "light" }) {
@@ -51,7 +51,7 @@ export function LanguageSwitcher({ variant = "dark" }: { variant?: "dark" | "lig
               key={l.code}
               onClick={() => { setLanguage(l.code); setOpen(false); }}
               className={`w-full text-left px-4 py-2 text-sm flex items-center gap-2.5 transition-colors ${
-                lang === l.code ? "text-[#33A39A] font-semibold bg-[#eef5f5]" : "text-stone-700 hover:bg-stone-50"
+                lang === l.code ? "text-[#2dabe0] font-semibold bg-[#e6f4fa]" : "text-stone-700 hover:bg-stone-50"
               }`}
             >
               <span>{l.flag}</span>

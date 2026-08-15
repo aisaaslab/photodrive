@@ -10,9 +10,9 @@ export function LogoLink() {
     <Image
       src="/logo.png"
       alt="PhotoDrive"
-      width={140}
-      height={32}
-      className="h-7 w-auto"
+      width={180}
+      height={42}
+      className="h-9 w-auto"
       priority
     />
   );

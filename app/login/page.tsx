@@ -69,7 +69,7 @@ export default function LoginPage() {
               />
               <div className={`w-4 h-4 rounded border transition-all duration-150 flex items-center justify-center ${
                 agreed
-                  ? "bg-[#2D6A6A] border-[#2D6A6A]"
+                  ? "bg-[#17509e] border-[#17509e]"
                   : "bg-transparent border-stone-600 group-hover:border-stone-400"
               }`}>
                 {agreed && (

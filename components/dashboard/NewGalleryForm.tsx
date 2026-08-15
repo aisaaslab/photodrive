@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { useAuth } from "@/components/auth/AuthProvider";
@@ -180,15 +180,15 @@ export function NewGalleryForm({ onCreated, onCancel, initialData }: Props) {
           <div className="flex items-center justify-between mb-5">
             <div>
               <div className="flex items-center gap-2 mb-0.5">
-                <span className="text-3xl font-bold text-white">€89</span>
+                <span className="text-3xl font-bold text-white">â‚¬89</span>
                 <span className="text-stone-500 text-sm">{f.perYear}</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-stone-500 line-through text-sm">€199</span>
-                <span className="bg-[#2D6A6A]/20 text-[#33A39A] text-xs font-bold px-2 py-0.5 rounded-full border border-[#2D6A6A]/20">-55%</span>
+                <span className="text-stone-500 line-through text-sm">â‚¬199</span>
+                <span className="bg-[#17509e]/20 text-[#2dabe0] text-xs font-bold px-2 py-0.5 rounded-full border border-[#17509e]/20">-55%</span>
               </div>
             </div>
-            <span className="bg-[#2D6A6A]/20 text-[#33A39A] text-xs font-semibold px-2.5 py-1 rounded-full border border-[#2D6A6A]/20">
+            <span className="bg-[#17509e]/20 text-[#2dabe0] text-xs font-semibold px-2.5 py-1 rounded-full border border-[#17509e]/20">
               {f.offer}
             </span>
           </div>
@@ -196,7 +196,7 @@ export function NewGalleryForm({ onCreated, onCancel, initialData }: Props) {
           <ul className="space-y-2 mb-6">
             {features.map((feat) => (
               <li key={feat} className="flex items-center gap-2 text-sm text-stone-300">
-                <svg className="w-3.5 h-3.5 text-[#33A39A] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <svg className="w-3.5 h-3.5 text-[#2dabe0] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                 </svg>
                 {feat}
@@ -353,7 +353,7 @@ export function NewGalleryForm({ onCreated, onCancel, initialData }: Props) {
                 onClick={() => setSocialOn((s) => ({ ...s, [soc.key]: !s[soc.key] } as typeof s))}
                 className="flex items-center gap-2.5 text-sm text-white w-full"
               >
-                <span className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 transition-colors ${socialOn[soc.key] ? "bg-[#2D6A6A] border-[#2D6A6A]" : "border-white/25"}`}>
+                <span className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 transition-colors ${socialOn[soc.key] ? "bg-[#17509e] border-[#17509e]" : "border-white/25"}`}>
                   {socialOn[soc.key] && (
                     <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />

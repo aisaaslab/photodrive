@@ -90,7 +90,7 @@ export function PasswordGate({ slug, galleryName }: Props) {
               placeholder={g.passwordPlaceholder}
               required
               autoFocus
-              className="w-full bg-white border border-stone-300 rounded-xl px-4 py-3.5 text-sm text-stone-900 placeholder-stone-400 outline-none focus:ring-2 focus:ring-[#2D6A6A]/50 focus:border-[#2D6A6A]/50 text-center tracking-widest transition-all"
+              className="w-full bg-white border border-stone-300 rounded-xl px-4 py-3.5 text-sm text-stone-900 placeholder-stone-400 outline-none focus:ring-2 focus:ring-[#17509e]/50 focus:border-[#17509e]/50 text-center tracking-widest transition-all"
             />
 
             {error && (
