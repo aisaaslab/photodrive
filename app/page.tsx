@@ -64,22 +64,22 @@ export default function HomePage() {
       <div className="aurora-bg"><span /></div>
 
       {/* NAV */}
-      <nav className="fixed top-0 inset-x-0 z-50 border-b border-white/[0.06] bg-[#080808]/85 backdrop-blur-xl">
+      <nav className="fixed top-0 inset-x-0 z-50 border-b border-stone-200 bg-white/90 backdrop-blur-xl">
         <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
           <LogoLink />
           <div className="flex items-center gap-5">
-            <a href="#how" className="text-base text-white hover:text-white transition-colors hidden sm:block">{t.nav.howItWorks}</a>
-            <a href="#features" className="text-base text-white hover:text-white transition-colors hidden sm:block">{t.nav.features}</a>
-            <a href="#pricing" className="text-base text-white hover:text-white transition-colors hidden sm:block">{t.nav.pricing}</a>
-            <Link href="/faq" className="text-base text-white hover:text-white transition-colors hidden sm:block">{t.nav.faq}</Link>
-            <LanguageSwitcher />
+            <a href="#how" className="text-base text-stone-700 hover:text-stone-900 transition-colors hidden sm:block">{t.nav.howItWorks}</a>
+            <a href="#features" className="text-base text-stone-700 hover:text-stone-900 transition-colors hidden sm:block">{t.nav.features}</a>
+            <a href="#pricing" className="text-base text-stone-700 hover:text-stone-900 transition-colors hidden sm:block">{t.nav.pricing}</a>
+            <Link href="/faq" className="text-base text-stone-700 hover:text-stone-900 transition-colors hidden sm:block">{t.nav.faq}</Link>
+            <LanguageSwitcher variant="light" />
             {!loading && (
               user ? (
-                <Link href="/dashboard" className="flex items-center gap-2 text-sm font-semibold text-white hover:text-white/80 transition-colors">
+                <Link href="/dashboard" className="flex items-center gap-2 text-sm font-semibold text-stone-700 hover:text-stone-900 transition-colors">
                   {user.photoURL ? (
                     <img src={user.photoURL} alt="" className="w-8 h-8 rounded-full object-cover" />
                   ) : (
-                    <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-xs font-bold">
+                    <div className="w-8 h-8 rounded-full bg-stone-200 flex items-center justify-center text-xs font-bold text-stone-700">
                       {user.displayName?.[0] ?? user.email?.[0] ?? "U"}
                     </div>
                   )}
@@ -87,7 +87,7 @@ export default function HomePage() {
               ) : (
                 <Link
                   href="/login"
-                  className="text-sm bg-white text-stone-900 font-semibold px-4 py-1.5 rounded-xl hover:bg-stone-100 transition-all hover:scale-[1.02]"
+                  className="text-sm bg-stone-900 text-white font-semibold px-4 py-1.5 rounded-xl hover:bg-stone-800 transition-all hover:scale-[1.02]"
                 >
                   {t.nav.login}
                 </Link>
@@ -96,7 +96,7 @@ export default function HomePage() {
             {/* Hamburger (mobile only) */}
             <button
               onClick={() => setMenuOpen((v) => !v)}
-              className="sm:hidden text-white p-1 -mr-1"
+              className="sm:hidden text-stone-800 p-1 -mr-1"
               aria-label="Menu"
               aria-expanded={menuOpen}
             >
@@ -112,11 +112,11 @@ export default function HomePage() {
         </div>
         {/* Mobile menu panel */}
         {menuOpen && (
-          <div className="sm:hidden border-t border-white/[0.06] bg-[#080808]/95 backdrop-blur-xl px-6 py-4 flex flex-col gap-4">
-            <a href="#how" onClick={() => setMenuOpen(false)} className="text-white text-base">{t.nav.howItWorks}</a>
-            <a href="#features" onClick={() => setMenuOpen(false)} className="text-white text-base">{t.nav.features}</a>
-            <a href="#pricing" onClick={() => setMenuOpen(false)} className="text-white text-base">{t.nav.pricing}</a>
-            <Link href="/faq" onClick={() => setMenuOpen(false)} className="text-white text-base">{t.nav.faq}</Link>
+          <div className="sm:hidden border-t border-stone-200 bg-white/95 backdrop-blur-xl px-6 py-4 flex flex-col gap-4">
+            <a href="#how" onClick={() => setMenuOpen(false)} className="text-stone-800 text-base">{t.nav.howItWorks}</a>
+            <a href="#features" onClick={() => setMenuOpen(false)} className="text-stone-800 text-base">{t.nav.features}</a>
+            <a href="#pricing" onClick={() => setMenuOpen(false)} className="text-stone-800 text-base">{t.nav.pricing}</a>
+            <Link href="/faq" onClick={() => setMenuOpen(false)} className="text-stone-800 text-base">{t.nav.faq}</Link>
           </div>
         )}
       </nav>
