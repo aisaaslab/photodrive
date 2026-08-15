@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -50,7 +50,7 @@ export function PasswordGate({ slug, galleryName }: Props) {
       {/* Top branding */}
       <div className="px-4 sm:px-8 py-4 sm:py-6 flex items-center justify-between">
         <span className="text-stone-400 font-semibold text-sm" style={{ fontFamily: "var(--font-brand), sans-serif" }}>
-          Galleroo
+          PhotoDrive
         </span>
         <LanguageSwitcher variant="light" />
       </div>

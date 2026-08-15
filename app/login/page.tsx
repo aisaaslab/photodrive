@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -25,7 +25,7 @@ export default function LoginPage() {
     <main className="min-h-screen flex flex-col bg-stone-950">
       <nav className="flex items-center justify-between px-4 sm:px-8 py-4 sm:py-6">
         <Link href="/" className="text-white font-semibold tracking-tight" style={{ fontFamily: "var(--font-brand), sans-serif" }}>
-          Galleroo
+          PhotoDrive
         </Link>
         <LanguageSwitcher />
       </nav>

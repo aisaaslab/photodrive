@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -53,7 +53,7 @@ export default function SuccessPage() {
     <main className="min-h-screen bg-[#080808] text-white flex flex-col px-6">
       <div className="aurora-bg"><span /></div>
       <div className="relative z-10 flex items-center justify-between py-5">
-        <span className="font-bold text-white text-lg" style={{ fontFamily: "var(--font-brand), sans-serif" }}>Galleroo</span>
+        <span className="font-bold text-white text-lg" style={{ fontFamily: "var(--font-brand), sans-serif" }}>PhotoDrive</span>
         <LanguageSwitcher />
       </div>
 

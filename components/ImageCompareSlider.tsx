@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useRef, useState, useCallback } from "react";
 import Image from "next/image";
@@ -60,12 +60,12 @@ export function ImageCompareSlider({
       onMouseLeave={onMouseUp}
       onTouchMove={onTouchMove}
     >
-      {/* Before image (Google Drive) — full width underneath */}
+      {/* Before image (Google Drive) â€” full width underneath */}
       <div className="absolute inset-0">
         <Image src={before} alt={beforeLabel} fill className="object-cover object-top" sizes="100vw" />
       </div>
 
-      {/* After image (Galleroo) — clipped on the left */}
+      {/* After image (PhotoDrive) â€” clipped on the left */}
       <div className="absolute inset-0 overflow-hidden" style={{ width: `${position}%` }}>
         <div className="absolute inset-0" style={{ width: containerRef.current?.offsetWidth ?? 800 }}>
           <Image src={after} alt={afterLabel} fill className="object-cover object-top" sizes="100vw" />

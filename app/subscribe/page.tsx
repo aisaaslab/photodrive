@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/components/auth/AuthProvider";
@@ -11,13 +11,13 @@ export default function SubscribePage() {
   const { user, loading: authLoading } = useAuth();
   const { t, lang } = useLanguage();
   const noAutoRenew = ({
-    el: "Εφάπαξ πληρωμή · χωρίς αυτόματη ανανέωση",
-    en: "One-time payment · no auto-renewal",
-    nl: "Eenmalige betaling · geen automatische verlenging",
-    de: "Einmalige Zahlung · keine automatische Verlängerung",
-    es: "Pago único · sin renovación automática",
-    it: "Pagamento unico · nessun rinnovo automatico",
-  } as Record<string, string>)[lang] ?? "One-time payment · no auto-renewal";
+    el: "Î•Ï†Î¬Ï€Î±Î¾ Ï€Î»Î·ÏÏ‰Î¼Î® Â· Ï‡Ï‰ÏÎ¯Ï‚ Î±Ï…Ï„ÏŒÎ¼Î±Ï„Î· Î±Î½Î±Î½Î­Ï‰ÏƒÎ·",
+    en: "One-time payment Â· no auto-renewal",
+    nl: "Eenmalige betaling Â· geen automatische verlenging",
+    de: "Einmalige Zahlung Â· keine automatische VerlÃ¤ngerung",
+    es: "Pago Ãºnico Â· sin renovaciÃ³n automÃ¡tica",
+    it: "Pagamento unico Â· nessun rinnovo automatico",
+  } as Record<string, string>)[lang] ?? "One-time payment Â· no auto-renewal";
   const s = t.subscribe;
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -70,7 +70,7 @@ export default function SubscribePage() {
     return () => { cancelled = true; };
   }, [user, authLoading, router]);
 
-  // If the user just logged in to pay (CTA → login → back here), start checkout automatically.
+  // If the user just logged in to pay (CTA â†’ login â†’ back here), start checkout automatically.
   const autoStarted = useRef(false);
   useEffect(() => {
     if (user && !checking && !autoStarted.current && new URLSearchParams(window.location.search).get("checkout") === "1") {
@@ -94,7 +94,7 @@ export default function SubscribePage() {
 
       <nav className="relative z-50 flex items-center justify-between px-6 py-5">
         <Link href="/" className="font-bold text-white text-lg" style={{ fontFamily: "var(--font-brand), sans-serif" }}>
-          Galleroo
+          PhotoDrive
         </Link>
         <LanguageSwitcher />
       </nav>
@@ -113,7 +113,7 @@ export default function SubscribePage() {
 
             <div className="text-center mb-6">
               <div className="flex items-end justify-center gap-1">
-                <span className="text-5xl font-bold text-white">€89</span>
+                <span className="text-5xl font-bold text-white">â‚¬89</span>
                 <span className="text-stone-400 text-sm mb-2">{s.perYear}</span>
               </div>
               <p className="text-white text-lg font-medium mt-1">{t.pricing.vatNote}</p>

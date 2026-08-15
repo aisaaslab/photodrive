@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -34,12 +34,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       <header className="sticky top-0 z-30 border-b border-white/[0.06] bg-[#080808]/85 backdrop-blur-xl">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 flex items-center justify-between" style={{ height: "64px" }}>
-          <Link
-            href="/"
-            className="font-bold text-white tracking-tight text-2xl"
-            style={{ fontFamily: "var(--font-brand), sans-serif" }}
-          >
-            Galleroo
+          <Link href="/">
+            <Image
+              src="/logo.png"
+              alt="PhotoDrive"
+              width={160}
+              height={36}
+              className="h-8 w-auto"
+              priority
+            />
           </Link>
 
           <div className="flex items-center gap-4">

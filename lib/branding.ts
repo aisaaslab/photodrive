@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Central branding configuration.
  *
  * All app-wide identity (name, domain, support email, owner legal info)
@@ -9,7 +9,7 @@
  */
 
 export const APP_NAME =
-  process.env.NEXT_PUBLIC_APP_NAME || "Galleroo";
+  process.env.NEXT_PUBLIC_APP_NAME || "PhotoDrive";
 
 export const APP_URL =
   process.env.NEXT_PUBLIC_APP_URL || "https://example.com";
@@ -17,7 +17,7 @@ export const APP_URL =
 /**
  * Slogan on the social link-preview image (app/opengraph-image.tsx), i.e. the
  * card people see when your link is pasted into a chat or a post. Two short
- * sentences render best — the image puts the second one on its own line.
+ * sentences render best â€” the image puts the second one on its own line.
  */
 export const APP_TAGLINE =
   process.env.NEXT_PUBLIC_APP_TAGLINE || "Share your work. Beautifully.";
@@ -31,7 +31,7 @@ export const SUPPORT_EMAIL =
 
 // These three appear verbatim on the public Terms and Privacy pages, which are
 // legal documents naming the business operator. Fill them in via .env.local
-// before going live — shipping the placeholders would publish wrong details.
+// before going live â€” shipping the placeholders would publish wrong details.
 export const OWNER_NAME =
   process.env.NEXT_PUBLIC_OWNER_NAME || "Your Company Name";
 
@@ -43,7 +43,7 @@ export const OWNER_ADDRESS =
 
 /**
  * Local tax authority, if your jurisdiction requires naming one on public terms
- * (Greece requires one, for example). Leave it unset and the row is not shown —
+ * (Greece requires one, for example). Leave it unset and the row is not shown â€”
  * most countries, including the US, have no equivalent to state.
  */
 export const OWNER_TAX_OFFICE = process.env.NEXT_PUBLIC_OWNER_TAX_OFFICE || "";

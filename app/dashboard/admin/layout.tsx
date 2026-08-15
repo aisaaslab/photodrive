@@ -1,7 +1,8 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { useAuth } from "@/components/auth/AuthProvider";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -40,9 +41,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <header className="relative z-10 border-b border-white/[0.06] bg-[#080808]/85 backdrop-blur-xl sticky top-0">
         <div className="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <span className="font-bold text-white" style={{ fontFamily: "var(--font-brand), sans-serif" }}>
-              Galleroo
-            </span>
+            <Image
+              src="/logo.png"
+              alt="PhotoDrive"
+              width={140}
+              height={32}
+              className="h-7 w-auto"
+              priority
+            />
             <span className="text-white/20">|</span>
             <span className="text-xs text-[#33A39A] font-semibold tracking-widest uppercase">Admin</span>
           </div>

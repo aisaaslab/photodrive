@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import Link from "next/link";
@@ -16,21 +16,21 @@ import { APP_NAME, DEMO_GALLERY_URL } from "@/lib/branding";
 export default function HomePage() {
   const { t, lang } = useLanguage();
   const noAutoRenew = ({
-    el: "Εφάπαξ πληρωμή · χωρίς αυτόματη ανανέωση",
-    en: "One-time payment · no auto-renewal",
-    nl: "Eenmalige betaling · geen automatische verlenging",
-    de: "Einmalige Zahlung · keine automatische Verlängerung",
-    es: "Pago único · sin renovación automática",
-    it: "Pagamento unico · nessun rinnovo automatico",
-  } as Record<string, string>)[lang] ?? "One-time payment · no auto-renewal";
+    el: "Î•Ï†Î¬Ï€Î±Î¾ Ï€Î»Î·ÏÏ‰Î¼Î® Â· Ï‡Ï‰ÏÎ¯Ï‚ Î±Ï…Ï„ÏŒÎ¼Î±Ï„Î· Î±Î½Î±Î½Î­Ï‰ÏƒÎ·",
+    en: "One-time payment Â· no auto-renewal",
+    nl: "Eenmalige betaling Â· geen automatische verlenging",
+    de: "Einmalige Zahlung Â· keine automatische VerlÃ¤ngerung",
+    es: "Pago Ãºnico Â· sin renovaciÃ³n automÃ¡tica",
+    it: "Pagamento unico Â· nessun rinnovo automatico",
+  } as Record<string, string>)[lang] ?? "One-time payment Â· no auto-renewal";
   const tutorial = ({
-    el: { label: "Tutorial", title: "Δες το Galleroo σε δράση." },
-    en: { label: "Tutorial", title: "See Galleroo in action." },
-    nl: { label: "Tutorial", title: "Zie Galleroo in actie." },
-    de: { label: "Tutorial", title: "Galleroo in Aktion." },
-    es: { label: "Tutorial", title: "Mira Galleroo en acción." },
-    it: { label: "Tutorial", title: "Galleroo in azione." },
-  } as Record<string, { label: string; title: string }>)[lang] ?? { label: "Tutorial", title: "See Galleroo in action." };
+    el: { label: "Tutorial", title: "Î”ÎµÏ‚ Ï„Î¿ PhotoDrive ÏƒÎµ Î´ÏÎ¬ÏƒÎ·." },
+    en: { label: "Tutorial", title: "See PhotoDrive in action." },
+    nl: { label: "Tutorial", title: "Zie PhotoDrive in actie." },
+    de: { label: "Tutorial", title: "PhotoDrive in Aktion." },
+    es: { label: "Tutorial", title: "Mira PhotoDrive en acciÃ³n." },
+    it: { label: "Tutorial", title: "PhotoDrive in azione." },
+  } as Record<string, { label: string; title: string }>)[lang] ?? { label: "Tutorial", title: "See PhotoDrive in action." };
   const { user, loading } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -126,7 +126,7 @@ export default function HomePage() {
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_40%_at_50%_-5%,rgba(244,63,94,0.08),transparent)] pointer-events-none" />
 
         <div className="relative z-10 max-w-4xl">
-          {/* Drive → Gallery badge */}
+          {/* Drive â†’ Gallery badge */}
           <div className="animate-fade-up delay-0 flex items-center justify-center mb-6">
             <div className="inline-flex items-center gap-4 bg-white/[0.05] border border-white/[0.1] rounded-full px-6 py-3">
               <svg viewBox="0 0 87.3 78" className="w-8 h-8 shrink-0" xmlns="http://www.w3.org/2000/svg">
@@ -354,7 +354,7 @@ export default function HomePage() {
             <div className="relative border border-[#2D6A6A]/25 rounded-2xl p-8 bg-gradient-to-b from-[#2D6A6A]/15 to-transparent overflow-hidden text-center">
               <p className="text-sm font-bold tracking-widest uppercase text-[#33A39A] mb-5">{t.pricing.badge}</p>
               <div className="flex flex-col items-center justify-center mb-1">
-                <span className="text-5xl font-bold text-white">€89</span>
+                <span className="text-5xl font-bold text-white">â‚¬89</span>
               </div>
               <p className="text-white text-lg font-medium mb-2">{t.pricing.vatNote}</p>
               <p className="flex items-center justify-center gap-1.5 text-white/50 text-xs mb-7">
@@ -422,7 +422,7 @@ export default function HomePage() {
             <Link href="/contact" className="hover:text-white transition-colors">{t.footer.contact}</Link>
             <LanguageSwitcher />
           </div>
-          <span className="text-sm text-white">© {new Date().getFullYear()} {APP_NAME}</span>
+          <span className="text-sm text-white">Â© {new Date().getFullYear()} {APP_NAME}</span>
         </div>
       </footer>
 
