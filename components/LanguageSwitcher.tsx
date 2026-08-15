@@ -1,15 +1,15 @@
-﻿"use client";
+"use client";
 
 import { useRef, useState, useEffect } from "react";
 import { useLanguage, Lang } from "@/lib/i18n";
 
 const LANGS: { code: Lang; label: string; flag: string }[] = [
-  { code: "en", label: "English",  flag: "ðŸ‡¬ðŸ‡§" },
-  { code: "el", label: "Î•Î»Î»Î·Î½Î¹ÎºÎ¬", flag: "ðŸ‡¬ðŸ‡·" },
-  { code: "nl", label: "Nederlands", flag: "ðŸ‡³ðŸ‡±" },
-  { code: "de", label: "Deutsch",  flag: "ðŸ‡©ðŸ‡ª" },
-  { code: "es", label: "EspaÃ±ol",  flag: "ðŸ‡ªðŸ‡¸" },
-  { code: "it", label: "Italiano", flag: "ðŸ‡®ðŸ‡¹" },
+  { code: "en", label: "English",  flag: "🇬🇧" },
+  { code: "el", label: "Ελληνικά", flag: "🇬🇷" },
+  { code: "nl", label: "Nederlands", flag: "🇳🇱" },
+  { code: "de", label: "Deutsch",  flag: "🇩🇪" },
+  { code: "es", label: "Español",  flag: "🇪🇸" },
+  { code: "it", label: "Italiano", flag: "🇮🇹" },
 ];
 
 export function LanguageSwitcher({ variant = "dark" }: { variant?: "dark" | "light" }) {
