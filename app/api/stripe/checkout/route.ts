@@ -25,13 +25,13 @@ export async function POST(req: NextRequest) {
     line_items: [
       {
         price_data: {
-          currency: "eur",
+          currency: "usd",
           // Shown on the Stripe checkout page and on the customer's receipt,
           // so it follows NEXT_PUBLIC_APP_NAME rather than being hardcoded.
           product_data: {
             name: `${APP_NAME} Annual license`,
           },
-          unit_amount: 8900,
+          unit_amount: 9900,
         },
         quantity: 1,
       },

@@ -27,7 +27,7 @@ export const APP_DESCRIPTION =
   process.env.NEXT_PUBLIC_APP_DESCRIPTION || "Professional galleries for photographers";
 
 export const SUPPORT_EMAIL =
-  process.env.NEXT_PUBLIC_SUPPORT_EMAIL || "support@example.com";
+  process.env.NEXT_PUBLIC_SUPPORT_EMAIL || "support@photodrive.com";
 
 // These three appear verbatim on the public Terms and Privacy pages, which are
 // legal documents naming the business operator. Fill them in via .env.local

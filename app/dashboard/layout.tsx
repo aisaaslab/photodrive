@@ -38,9 +38,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <Image
               src="/logo.png"
               alt="PhotoDrive"
-              width={200}
-              height={46}
-              className="h-10 w-auto"
+              width={240}
+              height={56}
+              className="h-12 w-auto"
               priority
             />
           </Link>

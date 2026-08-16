@@ -168,7 +168,7 @@ export default function AdminPage() {
 
   const now = Date.now();
   const DAY = 86400000;
-  const ANNUAL_PRICE = 89;
+  const ANNUAL_PRICE = 99;
   const LIFETIME = now + 50 * 365 * DAY; // above this = lifetime (comp)
 
   const activeSubscriptions = users.filter((u) => u.subscriptionActive).length;
@@ -200,7 +200,7 @@ export default function AdminPage() {
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
         {[
           { label: "Active subscriptions", value: activeSubscriptions, tone: "ok" },
-          { label: "Est. revenue / year", value: `â‚¬${revenueEstimate.toLocaleString("en-US")}`, tone: "ok" },
+          { label: "Est. revenue / year", value: `$${revenueEstimate.toLocaleString("en-US")}`, tone: "ok" },
           { label: "New sign-ups (7d)", value: newThisWeek },
           { label: "New sign-ups (30d)", value: newThisMonth },
           { label: "Expiring <30d", value: expiringSoon.length, tone: expiringSoon.length > 0 ? "warn" : undefined },

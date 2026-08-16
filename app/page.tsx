@@ -354,7 +354,7 @@ export default function HomePage() {
             <div className="relative border border-[#17509e]/25 rounded-2xl p-8 bg-gradient-to-b from-[#17509e]/15 to-transparent overflow-hidden text-center">
               <p className="text-sm font-bold tracking-widest uppercase text-[#2dabe0] mb-5">{t.pricing.badge}</p>
               <div className="flex flex-col items-center justify-center mb-1">
-                <span className="text-5xl font-bold text-white">â‚¬89</span>
+                <span className="text-5xl font-bold text-white">$99</span>
               </div>
               <p className="text-white text-lg font-medium mb-2">{t.pricing.vatNote}</p>
               <p className="flex items-center justify-center gap-1.5 text-white/50 text-xs mb-7">

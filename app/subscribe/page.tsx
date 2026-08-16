@@ -113,7 +113,7 @@ export default function SubscribePage() {
 
             <div className="text-center mb-6">
               <div className="flex items-end justify-center gap-1">
-                <span className="text-5xl font-bold text-white">â‚¬89</span>
+                <span className="text-5xl font-bold text-white">$99</span>
                 <span className="text-stone-400 text-sm mb-2">{s.perYear}</span>
               </div>
               <p className="text-white text-lg font-medium mt-1">{t.pricing.vatNote}</p>
