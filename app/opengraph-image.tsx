@@ -43,7 +43,7 @@ export default function OpengraphImage() {
           </div>
         ) : null}
         <div style={{ display: "flex", marginTop: 44, fontSize: 26, color: "#6b7280" }}>
-          {APP_DESCRIPTION} Â· {APP_DOMAIN}
+          {APP_DESCRIPTION} · {APP_DOMAIN}
         </div>
       </div>
     ),

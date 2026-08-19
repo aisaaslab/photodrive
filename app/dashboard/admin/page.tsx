@@ -34,7 +34,7 @@ type Gallery = {
 };
 
 function formatDate(ts: number | string | null | undefined) {
-  if (!ts) return "â€”";
+  if (!ts) return "—";
   const d = new Date(typeof ts === "number" ? ts : ts);
   return d.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
 }
@@ -217,7 +217,7 @@ export default function AdminPage() {
       {expiringSoon.length > 0 && (
         <div className="mb-8 border border-amber-500/20 bg-amber-500/[0.04] rounded-2xl p-5">
           <div className="text-sm font-semibold text-amber-400 mb-3" style={{ fontFamily: "var(--font-brand), sans-serif" }}>
-            â³ Expiring soon â€” {expiringSoon.length} {expiringSoon.length === 1 ? "subscription" : "subscriptions"} (â‰¤30 days)
+            ⏳ Expiring soon — {expiringSoon.length} {expiringSoon.length === 1 ? "subscription" : "subscriptions"} (≤30 days)
           </div>
           <div className="space-y-2">
             {expiringSoon.map((u) => (
@@ -225,7 +225,7 @@ export default function AdminPage() {
                 <div className="min-w-0 flex items-center gap-2">
                   <Avatar src={u.photoURL} name={u.displayName || u.email} size={6} />
                   <span className="text-white truncate">{u.displayName || u.email}</span>
-                  <span className="text-stone-500 truncate hidden sm:inline">Â· {u.email}</span>
+                  <span className="text-stone-500 truncate hidden sm:inline">· {u.email}</span>
                 </div>
                 <div className="flex items-center gap-3 shrink-0">
                   <span className={`font-semibold tabular-nums ${u.daysLeft <= 7 ? "text-red-400" : "text-amber-400"}`}>
@@ -287,18 +287,18 @@ export default function AdminPage() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="font-semibold text-white text-sm" style={{ fontFamily: "var(--font-brand), sans-serif" }}>
-                      {u.displayName || "â€”"}
+                      {u.displayName || "—"}
                     </span>
                     <span className="text-xs text-stone-500">{u.email}</span>
                   </div>
                   <div className="text-xs text-stone-500 mt-0.5">
-                    Joined: {formatDate(u.createdAt)} Â· Last sign-in: {formatDate(u.lastSignIn)}
+                    Joined: {formatDate(u.createdAt)} · Last sign-in: {formatDate(u.lastSignIn)}
                   </div>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                   {u.subscriptionActive ? (
                     <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                      âœ“ Active {u.subscriptionExpiresAt ? (u.subscriptionExpiresAt > 4102444800000 ? "Â· lifetime" : `until ${formatDate(u.subscriptionExpiresAt)}`) : ""}
+                      ✓ Active {u.subscriptionExpiresAt ? (u.subscriptionExpiresAt > 4102444800000 ? "· lifetime" : `until ${formatDate(u.subscriptionExpiresAt)}`) : ""}
                     </span>
                   ) : (
                     <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-white/[0.04] text-stone-500 border border-white/[0.06]">
@@ -444,7 +444,7 @@ export default function AdminPage() {
                                     </span>
                                   )}
                                 </div>
-                                <div className="text-xs text-stone-500 mt-0.5 font-mono">/gallery/{g.slug} Â· {formatDate(g.createdAt)}</div>
+                                <div className="text-xs text-stone-500 mt-0.5 font-mono">/gallery/{g.slug} · {formatDate(g.createdAt)}</div>
                               </div>
                               <div className="flex items-center gap-1.5 shrink-0">
                                 {/* View */}

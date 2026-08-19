@@ -211,7 +211,7 @@ export function MasonryGrid({ photos, subfolders = [], galleryId, allowDownload 
   const photoPart = `${shownPhotos} ${shownPhotos === 1 ? g.photo : g.photos}`;
   const videoPart = `${shownVideos} ${shownVideos === 1 ? g.video : g.videos}`;
   const countLabel =
-    shownVideos === 0 ? photoPart : shownPhotos === 0 ? videoPart : `${photoPart} Â· ${videoPart}`;
+    shownVideos === 0 ? photoPart : shownPhotos === 0 ? videoPart : `${photoPart} · ${videoPart}`;
 
   function openPhoto(index: number) {
     const photo = displayed[index];
