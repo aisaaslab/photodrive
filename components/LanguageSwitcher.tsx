@@ -35,7 +35,7 @@ export function LanguageSwitcher({ variant = "dark" }: { variant?: "dark" | "lig
         className={`flex items-center gap-2 text-sm font-bold rounded-full px-3 py-1.5 transition-all ${
           isDark
             ? "bg-white text-stone-900 hover:bg-stone-100"
-            : "bg-stone-900 text-white hover:bg-stone-700"
+            : "bg-white border border-stone-200 text-stone-700 hover:bg-stone-50 hover:border-stone-300"
         }`}
       >
         <span className="text-base leading-none">{current.flag}</span>

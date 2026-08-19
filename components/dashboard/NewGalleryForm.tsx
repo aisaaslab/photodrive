@@ -7,7 +7,7 @@ import { useLanguage } from "@/lib/i18n";
 interface Props {
   onCreated: () => void;
   onCancel?: () => void;
-  initialData?: { name: string; driveUrl: string; password: string; website?: string; instagram?: string; facebook?: string };
+  initialData?: { name: string; driveUrl: string; password: string; website?: string; instagram?: string; facebook?: string; description?: string; eventDate?: string; location?: string };
 }
 
 function isValidDriveUrl(url: string): boolean {
@@ -68,6 +68,10 @@ export function NewGalleryForm({ onCreated, onCancel, initialData }: Props) {
     instagram: !!initialData?.instagram,
     facebook: !!initialData?.facebook,
   });
+  // Optional gallery metadata: subtitle, event date, location.
+  const [description, setDescription] = useState(initialData?.description ?? "");
+  const [eventDate, setEventDate] = useState(initialData?.eventDate ?? "");
+  const [location, setLocation] = useState(initialData?.location ?? "");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showPayment, setShowPayment] = useState(false);
@@ -107,6 +111,9 @@ export function NewGalleryForm({ onCreated, onCancel, initialData }: Props) {
           website: socialOn.website ? social.website.trim() || undefined : undefined,
           instagram: socialOn.instagram ? social.instagram.trim() || undefined : undefined,
           facebook: socialOn.facebook ? social.facebook.trim() || undefined : undefined,
+          description: description.trim() || undefined,
+          eventDate: eventDate || undefined,
+          location: location.trim() || undefined,
         }),
       });
 
@@ -121,6 +128,9 @@ export function NewGalleryForm({ onCreated, onCancel, initialData }: Props) {
       setPassword("");
       setSocial({ website: "", instagram: "", facebook: "" });
       setSocialOn({ website: false, instagram: false, facebook: false });
+      setDescription("");
+      setEventDate("");
+      setLocation("");
       onCreated();
     } finally {
       setLoading(false);
@@ -135,6 +145,9 @@ export function NewGalleryForm({ onCreated, onCancel, initialData }: Props) {
       website: socialOn.website ? social.website : "",
       instagram: socialOn.instagram ? social.instagram : "",
       facebook: socialOn.facebook ? social.facebook : "",
+      description,
+      eventDate,
+      location,
     }));
     setError("");
     try {
@@ -263,6 +276,45 @@ export function NewGalleryForm({ onCreated, onCancel, initialData }: Props) {
             required
             className="w-full bg-[#1a1a1a] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-stone-600 outline-none focus:border-white/25 transition-all"
           />
+        </div>
+
+        {/* Optional gallery metadata */}
+        <div>
+          <label className="block text-xs font-medium text-white mb-1.5">
+            {f.descriptionLabel}
+          </label>
+          <textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder={f.descriptionPlaceholder}
+            rows={2}
+            className="w-full bg-[#1a1a1a] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-stone-600 outline-none focus:border-white/25 transition-all resize-none"
+          />
+        </div>
+        <div className="grid sm:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-xs font-medium text-white mb-1.5">
+              {f.eventDateLabel}
+            </label>
+            <input
+              type="date"
+              value={eventDate}
+              onChange={(e) => setEventDate(e.target.value)}
+              className="w-full bg-[#1a1a1a] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-stone-600 outline-none focus:border-white/25 transition-all"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-white mb-1.5">
+              {f.locationLabel}
+            </label>
+            <input
+              type="text"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              placeholder={f.locationPlaceholder}
+              className="w-full bg-[#1a1a1a] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-stone-600 outline-none focus:border-white/25 transition-all"
+            />
+          </div>
         </div>
 
         {/* Drive URL */}

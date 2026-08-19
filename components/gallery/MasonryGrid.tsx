@@ -43,6 +43,11 @@ export function MasonryGrid({ photos, subfolders = [], galleryId, allowDownload 
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [zipping, setZipping] = useState(false);
   const [zipProgress, setZipProgress] = useState(0);
+  // Sort + search are gallery-viewer controls. They only render when the
+  // gallery is large enough to justify them (> 8 photos) to avoid clutter on
+  // tiny galleries. See the threshold check in the controls bar JSX below.
+  const [sort, setSort] = useState<"default" | "name" | "nameDesc">("default");
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
     getSessionId();
@@ -196,13 +201,25 @@ export function MasonryGrid({ photos, subfolders = [], galleryId, allowDownload 
   const videoCount = folderFiltered.filter((p) => p.mimeType.startsWith("video/")).length;
 
   const displayed =
-    filter === "favorites"
+    (filter === "favorites"
       ? folderFiltered.filter((p) => favorites.has(p.id))
       : filter === "photos"
       ? folderFiltered.filter((p) => p.mimeType.startsWith("image/"))
       : filter === "videos"
       ? folderFiltered.filter((p) => p.mimeType.startsWith("video/"))
-      : folderFiltered;
+      : folderFiltered
+    )
+      // Search: case-insensitive match on filename. Applied after the filter
+      // so "Favorites + search" works together.
+      .filter((p) => !search || p.name.toLowerCase().includes(search.toLowerCase()))
+      // Sort: copy via .slice() so we never mutate the filtered array. Default
+      // preserves Drive's natural order (by name ascending in the API query).
+      .slice()
+      .sort((a, b) => {
+        if (sort === "name") return a.name.localeCompare(b.name, undefined, { numeric: true });
+        if (sort === "nameDesc") return b.name.localeCompare(a.name, undefined, { numeric: true });
+        return 0;
+      });
 
   // Count label: breaks down photos vs videos so a mixed view (e.g. "All")
   // doesn't call videos "photos".
@@ -319,6 +336,48 @@ export function MasonryGrid({ photos, subfolders = [], galleryId, allowDownload 
               )}
             </div>
           )}
+
+          {/* Search + Sort — only on galleries large enough to justify them.
+              Threshold: > 8 photos. Below that, searching/sorting adds clutter
+              without value. */}
+          {photos.length > 8 && (
+            <>
+              {/* Search */}
+              <div className="relative">
+                <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-stone-400 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                </svg>
+                <input
+                  type="text"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder={g.searchPlaceholder}
+                  className="w-32 sm:w-40 bg-stone-100 border border-stone-200 rounded-xl pl-8 pr-3 py-1.5 text-xs sm:text-sm text-stone-700 placeholder-stone-400 outline-none focus:border-[#17509e]/50 focus:bg-white transition-all"
+                />
+                {search && (
+                  <button
+                    onClick={() => setSearch("")}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 transition-colors"
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                )}
+              </div>
+
+              {/* Sort */}
+              <select
+                value={sort}
+                onChange={(e) => setSort(e.target.value as "default" | "name" | "nameDesc")}
+                className="bg-stone-100 border border-stone-200 rounded-xl px-2.5 py-1.5 text-xs sm:text-sm text-stone-600 outline-none focus:border-[#17509e]/50 cursor-pointer transition-all"
+              >
+                <option value="default">{g.sortDefault}</option>
+                <option value="name">{g.sortNameAZ}</option>
+                <option value="nameDesc">{g.sortNameZA}</option>
+              </select>
+            </>
+          )}
         </div>
 
         <div className="flex items-center gap-2">
@@ -410,6 +469,19 @@ export function MasonryGrid({ photos, subfolders = [], galleryId, allowDownload 
           </div>
           <p className="text-stone-500 text-sm">{g.noFavorites}</p>
           <p className="text-stone-400 text-xs mt-1">{g.noFavoritesHint}</p>
+        </div>
+      )}
+
+      {/* Empty search state — only when a search yields nothing (and it's not
+          the favorites tab, which has its own empty state above). */}
+      {search && displayed.length === 0 && filter !== "favorites" && (
+        <div className="text-center py-24 animate-fade-up">
+          <div className="w-14 h-14 bg-stone-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <svg className="w-7 h-7 text-stone-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+            </svg>
+          </div>
+          <p className="text-stone-500 text-sm">{g.searchPlaceholder}</p>
         </div>
       )}
 

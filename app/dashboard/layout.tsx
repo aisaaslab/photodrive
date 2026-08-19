@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase/client";
@@ -8,13 +8,15 @@ import { useAuth } from "@/components/auth/AuthProvider";
 import { useLanguage } from "@/lib/i18n";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { DeleteAccountButton } from "@/components/dashboard/DeleteAccountButton";
+import { AvatarEditor } from "@/components/dashboard/AvatarEditor";
 import Image from "next/image";
 import Link from "next/link";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth();
+  const { user, loading, profile } = useAuth();
   const { t } = useLanguage();
   const router = useRouter();
+  const [avatarEditorOpen, setAvatarEditorOpen] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) router.replace("/login");
@@ -27,6 +29,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </div>
     );
   }
+
+  // Prefer the Firestore profile's photoURL (custom avatars live there) over
+  // Firebase Auth's photoURL (which is the Google profile photo and can't hold
+  // a data URL).
+  const avatarUrl = profile?.photoURL || user.photoURL || null;
+  const displayName = profile?.name || user.displayName || user.email;
 
   return (
     <div className="min-h-screen flex flex-col bg-[#080808] text-white">
@@ -49,20 +57,26 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <LanguageSwitcher />
 
             <div className="hidden sm:flex items-center gap-3">
-              {user.photoURL ? (
-                <Image
-                  src={user.photoURL}
-                  alt={user.displayName ?? ""}
-                  width={30}
-                  height={30}
-                  className="rounded-full ring-1 ring-white/20"
-                />
-              ) : (
-                <div className="w-7 h-7 bg-white/10 rounded-full flex items-center justify-center text-xs font-semibold text-white">
-                  {(user.displayName ?? user.email ?? "?")[0].toUpperCase()}
-                </div>
-              )}
-              <span className="text-sm font-medium text-stone-300">{user.displayName ?? user.email}</span>
+              {/* Click avatar to edit — opens the AvatarEditor modal */}
+              <button
+                onClick={() => setAvatarEditorOpen(true)}
+                title={t.gallery.avatar}
+                className="relative shrink-0"
+              >
+                {avatarUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={avatarUrl}
+                    alt={displayName ?? ""}
+                    className="w-8 h-8 rounded-full object-cover ring-1 ring-white/20"
+                  />
+                ) : (
+                  <div className="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center text-xs font-semibold text-white ring-1 ring-white/20">
+                    {(displayName ?? "?")[0].toUpperCase()}
+                  </div>
+                )}
+              </button>
+              <span className="text-sm font-medium text-stone-300">{displayName}</span>
             </div>
 
             <div className="w-px h-4 bg-white/10 hidden sm:block" />
@@ -87,6 +101,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <footer className="relative z-10 max-w-5xl mx-auto w-full px-4 sm:px-6 pb-8 flex justify-center">
         <DeleteAccountButton />
       </footer>
+
+      {avatarEditorOpen && <AvatarEditor onClose={() => setAvatarEditorOpen(false)} />}
     </div>
   );
 }

@@ -5,6 +5,9 @@ import { useAuth } from "@/components/auth/AuthProvider";
 import { useLanguage } from "@/lib/i18n";
 import { GalleryDoc } from "@/lib/firestore/types";
 import { APP_URL } from "@/lib/branding";
+import { driveFileThumbUrl } from "@/lib/drive/public-url";
+import { TITLE_COLORS, titleFontFamily } from "@/lib/gallery/title-style";
+import { CoverPickerModal } from "./CoverPickerModal";
 
 interface Props {
   gallery: GalleryDoc;
@@ -40,6 +43,17 @@ export function GalleryCard({ gallery, onDelete, onUpdate }: Props) {
     instagram: gallery.instagram ?? "",
     facebook: gallery.facebook ?? "",
   });
+  // Optional gallery metadata, edited in the same modal as the other fields.
+  const [editDescription, setEditDescription] = useState(gallery.description ?? "");
+  const [editEventDate, setEditEventDate] = useState(gallery.eventDate ?? "");
+  const [editLocation, setEditLocation] = useState(gallery.location ?? "");
+  const [editBookLink, setEditBookLink] = useState(gallery.bookLink ?? "");
+  const [editBookEnabled, setEditBookEnabled] = useState(gallery.bookEnabled === true);
+  // Title styling: font id from the curated set + a hex color swatch.
+  const [editTitleFont, setEditTitleFont] = useState(gallery.titleFont ?? "classic");
+  const [editTitleColor, setEditTitleColor] = useState(gallery.titleColor ?? "#ffffff");
+  const [editTitleSize, setEditTitleSize] = useState(gallery.titleSize ?? "md");
+  const [showCoverPicker, setShowCoverPicker] = useState(false);
   const [saving, setSaving] = useState(false);
   const [editError, setEditError] = useState("");
   const [showSelections, setShowSelections] = useState(false);
@@ -133,6 +147,14 @@ export function GalleryCard({ gallery, onDelete, onUpdate }: Props) {
       body.instagram = editSocial.instagram.trim();
       body.facebook = editSocial.facebook.trim();
       body.allowDownload = editAllowDownload;
+      body.description = editDescription.trim();
+      body.eventDate = editEventDate;
+      body.location = editLocation.trim();
+      body.bookLink = editBookLink.trim();
+      body.bookEnabled = editBookEnabled;
+      body.titleFont = editTitleFont;
+      body.titleColor = editTitleColor;
+      body.titleSize = editTitleSize;
 
       const res = await fetch(`/api/galleries/${gallery.id}`, {
         method: "PATCH",
@@ -167,6 +189,14 @@ export function GalleryCard({ gallery, onDelete, onUpdate }: Props) {
     setRemovePassword(false);
     setEditAllowDownload(gallery.allowDownload !== false);
     setEditSocial({ website: gallery.website ?? "", instagram: gallery.instagram ?? "", facebook: gallery.facebook ?? "" });
+    setEditDescription(gallery.description ?? "");
+    setEditEventDate(gallery.eventDate ?? "");
+    setEditLocation(gallery.location ?? "");
+    setEditBookLink(gallery.bookLink ?? "");
+    setEditBookEnabled(gallery.bookEnabled === true);
+    setEditTitleFont(gallery.titleFont ?? "classic");
+    setEditTitleColor(gallery.titleColor ?? "#ffffff");
+    setEditTitleSize(gallery.titleSize ?? "md");
     setEditError("");
   }
 
@@ -177,12 +207,33 @@ export function GalleryCard({ gallery, onDelete, onUpdate }: Props) {
       })
     : null;
 
+  // Translated label for a title font id (labels live in the galleryCard i18n
+  // block so each language names the styles natively).
+  function titleFontLabel(fid: string, labels: typeof c): string {
+    switch (fid) {
+      case "serif": return labels.fontSerif;
+      case "script": return labels.fontScript;
+      case "modern": return labels.fontModern;
+      case "mono": return labels.fontMono;
+      default: return labels.fontClassic;
+    }
+  }
+
+  // Translated label for a title size id.
+  function titleSizeLabel(sid: string, labels: typeof c): string {
+    switch (sid) {
+      case "sm": return labels.sizeSmall;
+      case "lg": return labels.sizeLarge;
+      case "xl": return labels.sizeXLarge;
+      default: return labels.sizeMedium;
+    }
+  }
+
   return (
     <>
       <div className="bg-[#111111] border border-white/[0.08] rounded-2xl overflow-hidden hover:border-white/[0.18] transition-all duration-200 group animate-fade-up">
-        <div className="p-4">
           {isEditing ? (
-            <div className="space-y-3">
+            <div className="p-4 space-y-3">
               <div>
                 <label className="text-xs font-medium text-white/70 mb-1 block">{c.nameLabel}</label>
                 <input
@@ -190,6 +241,173 @@ export function GalleryCard({ gallery, onDelete, onUpdate }: Props) {
                   onChange={(e) => setEditName(e.target.value)}
                   className="w-full bg-[#1a1a1a] border border-white/10 rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-white/25 transition-all"
                 />
+              </div>
+
+              {/* Cover picker */}
+              <div>
+                <label className="text-xs font-medium text-white/70 mb-1 block">{c.chooseCover}</label>
+                <button
+                  onClick={() => setShowCoverPicker(true)}
+                  className="w-full flex items-center justify-center gap-1.5 bg-white/[0.03] border border-white/[0.08] rounded-lg px-3 py-2 text-xs text-white/70 hover:text-white hover:border-white/20 transition-all"
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.7}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
+                  </svg>
+                  {gallery.coverFileId ? c.coverCurrent : c.chooseCover}
+                </button>
+              </div>
+
+              {/* Optional metadata */}
+              <div>
+                <label className="text-xs font-medium text-white/70 mb-1 block">{c.descriptionLabel}</label>
+                <textarea
+                  value={editDescription}
+                  onChange={(e) => setEditDescription(e.target.value)}
+                  rows={2}
+                  placeholder={t.newGalleryForm.descriptionPlaceholder}
+                  className="w-full bg-[#1a1a1a] border border-white/10 rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-white/25 transition-all resize-none placeholder-stone-600"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-medium text-white/70 mb-1 block">{c.eventDateLabel}</label>
+                  <input
+                    type="date"
+                    value={editEventDate}
+                    onChange={(e) => setEditEventDate(e.target.value)}
+                    className="w-full bg-[#1a1a1a] border border-white/10 rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-white/25 transition-all"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-white/70 mb-1 block">{c.locationLabel}</label>
+                  <input
+                    type="text"
+                    value={editLocation}
+                    onChange={(e) => setEditLocation(e.target.value)}
+                    placeholder={t.newGalleryForm.locationPlaceholder}
+                    className="w-full bg-[#1a1a1a] border border-white/10 rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-white/25 transition-all placeholder-stone-600"
+                  />
+                </div>
+              </div>
+
+              {/* Title style — pick a font + color for the gallery title.
+                  Each font button renders a live "Aa" sample in that font
+                  (the fonts are loaded globally via next/font, so previews
+                  are real). Colors are curated light swatches that stay
+                  readable over the hero image. */}
+              <div className="bg-[#1a1a1a] border border-white/10 rounded-lg p-3 space-y-3">
+                <label className="text-xs font-medium text-white/70 block">{c.titleFontLabel}</label>
+                <div className="grid grid-cols-5 gap-1.5">
+                  {(["classic", "serif", "script", "modern", "mono"] as const).map((fid) => (
+                    <button
+                      key={fid}
+                      type="button"
+                      onClick={() => setEditTitleFont(fid)}
+                      className={`flex flex-col items-center gap-1 rounded-lg border py-2 px-1 transition-all ${
+                        editTitleFont === fid
+                          ? "border-[#2dabe0] bg-[#2dabe0]/10"
+                          : "border-white/10 hover:border-white/25"
+                      }`}
+                    >
+                      <span
+                        className="text-white text-lg leading-none"
+                        style={{ fontFamily: titleFontFamily(fid) }}
+                      >
+                        Aa
+                      </span>
+                      <span className="text-[9px] text-white/50">{titleFontLabel(fid, c)}</span>
+                    </button>
+                  ))}
+                </div>
+
+                <label className="text-xs font-medium text-white/70 block">{c.titleColorLabel}</label>
+                <div className="flex flex-wrap gap-2">
+                  {TITLE_COLORS.map((color) => (
+                    <button
+                      key={color}
+                      type="button"
+                      title={color}
+                      onClick={() => setEditTitleColor(color)}
+                      className={`w-7 h-7 rounded-full border-2 transition-all ${
+                        editTitleColor === color
+                          ? "border-[#2dabe0] ring-2 ring-[#2dabe0]/30 scale-110"
+                          : "border-white/20 hover:border-white/50"
+                      }`}
+                      style={{ backgroundColor: color }}
+                    />
+                  ))}
+                </div>
+
+                {/* Title size — 4 steps, previewed with "Aa" at scaled sizes */}
+                <label className="text-xs font-medium text-white/70 block">{c.titleSizeLabel}</label>
+                <div className="grid grid-cols-4 gap-1.5">
+                  {(["sm", "md", "lg", "xl"] as const).map((sid, i) => (
+                    <button
+                      key={sid}
+                      type="button"
+                      onClick={() => setEditTitleSize(sid)}
+                      className={`flex flex-col items-center gap-1 rounded-lg border py-2 px-1 transition-all ${
+                        editTitleSize === sid
+                          ? "border-[#2dabe0] bg-[#2dabe0]/10"
+                          : "border-white/10 hover:border-white/25"
+                      }`}
+                    >
+                      <span
+                        className="text-white leading-none"
+                        // Preview scale roughly mirrors the real title sizes.
+                        style={{ fontSize: `${0.8 + i * 0.25}rem` }}
+                      >
+                        Aa
+                      </span>
+                      <span className="text-[9px] text-white/50">{titleSizeLabel(sid, c)}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* "Book this photographer" CTA — a link + on/off toggle.
+                  Accepts any URL: mailto:, https://wa.me/, https://m.me/,
+                  a booking page, etc. Quick-fill chips for common types. */}
+              <div className="bg-[#1a1a1a] border border-white/10 rounded-lg p-3 space-y-2.5">
+                <label className="flex items-center justify-between cursor-pointer">
+                  <span className="text-xs font-medium text-white/80">{c.bookCtaLabel}</span>
+                  <button
+                    type="button"
+                    onClick={() => setEditBookEnabled((v) => !v)}
+                    className={`relative w-9 h-5 rounded-full transition-colors ${editBookEnabled ? "bg-[#17509e]" : "bg-white/10"}`}
+                  >
+                    <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow-sm transition-transform ${editBookEnabled ? "translate-x-4" : "translate-x-0.5"}`} />
+                  </button>
+                </label>
+                {editBookEnabled && (
+                  <>
+                    <input
+                      type="text"
+                      value={editBookLink}
+                      onChange={(e) => setEditBookLink(e.target.value)}
+                      placeholder={c.bookLinkPlaceholder}
+                      className="w-full bg-[#111111] border border-white/10 rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-white/25 transition-all placeholder-stone-600"
+                    />
+                    {/* Quick-fill chips for common contact types */}
+                    <div className="flex flex-wrap gap-1.5">
+                      {[
+                        { label: "Email", prefix: "mailto:" },
+                        { label: "WhatsApp", prefix: "https://wa.me/" },
+                        { label: "Messenger", prefix: "https://m.me/" },
+                        { label: "Website", prefix: "https://" },
+                      ].map((chip) => (
+                        <button
+                          key={chip.label}
+                          type="button"
+                          onClick={() => setEditBookLink(chip.prefix)}
+                          className="text-[10px] font-medium text-white/60 bg-white/[0.06] border border-white/10 rounded-full px-2.5 py-1 hover:text-white hover:border-white/20 transition-all"
+                        >
+                          {chip.label}
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
               </div>
 
               <div>
@@ -293,34 +511,73 @@ export function GalleryCard({ gallery, onDelete, onUpdate }: Props) {
             </div>
           ) : (
             <>
-              <div className="flex items-center gap-2 mb-0.5">
-                <h3 className="font-semibold text-white text-sm leading-snug truncate">{gallery.name}</h3>
-                {gallery.passwordHash && !removePassword && (
-                  <button
-                    onClick={() => setShowPassword((v) => !v)}
-                    className="shrink-0 bg-white/[0.06] text-white/70 text-xs px-2 py-0.5 rounded-full flex items-center gap-1 border border-white/10 hover:bg-white/[0.10] transition-colors"
-                  >
-                    <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
-                    </svg>
-                    {showPassword && gallery.password
-                      ? <span className="font-mono tracking-wider">{gallery.password}</span>
-                      : c.password
-                    }
-                  </button>
+              {/* Cover banner — shows the chosen cover photo, or a branded
+                  gradient if no cover is set. Clicking it opens the cover
+                  picker directly (no need to enter edit mode first). */}
+              <button
+                onClick={() => setShowCoverPicker(true)}
+                className="relative w-full h-32 overflow-hidden block"
+                title={c.chooseCover}
+              >
+                {gallery.coverFileId ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={driveFileThumbUrl(gallery.coverFileId, 400)}
+                    alt=""
+                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    onError={(e) => {
+                      // Fallback to our proxy if Google's thumbnail CDN fails.
+                      const img = e.currentTarget;
+                      if (!img.dataset.fallback) {
+                        img.dataset.fallback = "1";
+                        img.src = `/api/photos/proxy?fileId=${gallery.coverFileId}&size=thumb`;
+                      }
+                    }}
+                  />
+                ) : (
+                  <div className="absolute inset-0 bg-gradient-to-br from-[#17509e] via-[#0d2d5c] to-stone-800" />
                 )}
-              </div>
-              {createdDate && (
-                <p className="text-xs text-white/50 mt-0.5 mb-3">{createdDate}</p>
-              )}
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                  <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-white/90 text-stone-900 text-xs font-semibold px-3 py-1.5 rounded-full flex items-center gap-1.5">
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.508 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.066-.75-1.993-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z" />
+                    </svg>
+                    {c.chooseCover}
+                  </div>
+                </div>
+              </button>
 
-              <div className="flex gap-1.5">
+              {/* Card body */}
+              <div className="p-4">
+                <div className="flex items-center gap-2 mb-0.5">
+                  <h3 className="font-semibold text-white text-sm leading-snug truncate flex-1">{gallery.name}</h3>
+                  {gallery.passwordHash && !removePassword && (
+                    <button
+                      onClick={() => setShowPassword((v) => !v)}
+                      className="shrink-0 bg-white/[0.06] text-white/70 text-xs px-2 py-0.5 rounded-full flex items-center gap-1 border border-white/10 hover:bg-white/[0.10] transition-colors"
+                    >
+                      <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+                      </svg>
+                      {showPassword && gallery.password
+                        ? <span className="font-mono tracking-wider">{gallery.password}</span>
+                        : c.password
+                      }
+                    </button>
+                  )}
+                </div>
+                {createdDate && (
+                  <p className="text-xs text-white/50 mt-0.5 mb-4">{createdDate}</p>
+                )}
+
+                {/* Copy link — primary action, full width so it's the obvious
+                    thing to click after creating a gallery. */}
                 <button
                   onClick={copyLink}
-                  className={`flex-1 flex items-center justify-center gap-1.5 text-xs rounded-lg py-2 transition-all font-medium border ${
+                  className={`w-full flex items-center justify-center gap-1.5 text-xs rounded-lg py-2.5 transition-all font-semibold border ${
                     copied
                       ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-400"
-                      : "border-white/10 text-white hover:bg-white/[0.06] hover:border-white/20"
+                      : "bg-white text-stone-900 border-transparent hover:bg-stone-100"
                   }`}
                 >
                   {copied ? (
@@ -340,51 +597,66 @@ export function GalleryCard({ gallery, onDelete, onUpdate }: Props) {
                   )}
                 </button>
 
-                <a
-                  href={galleryUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  title={c.openGallery}
-                  className="shrink-0 flex items-center justify-center border border-white/10 text-white/70 rounded-lg px-3 py-2 hover:bg-white/[0.06] hover:border-white/20 hover:text-white transition-all"
-                >
-                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
-                  </svg>
-                </a>
+                {/* Segmented icon toolbar — all secondary actions in one clean
+                    row with visual separators. Order: view → client data →
+                    gallery settings → danger. Delete is last with a red hover
+                    so destructive intent is unmistakable. */}
+                <div className="flex border border-white/10 rounded-lg overflow-hidden mt-2 bg-white/[0.02]">
+                  <a
+                    href={galleryUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title={c.openGallery}
+                    className="flex-1 flex items-center justify-center py-2 text-white/60 hover:text-white hover:bg-white/[0.06] border-r border-white/10 transition-colors"
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                    </svg>
+                  </a>
 
-                <button
-                  onClick={openSelections}
-                  title={c.selections}
-                  className="shrink-0 flex items-center justify-center border border-white/10 text-white/70 rounded-lg px-3 py-2 hover:bg-[#17509e]/15 hover:border-[#17509e]/40 hover:text-[#2dabe0] transition-all"
-                >
-                  <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
-                  </svg>
-                </button>
+                  <button
+                    onClick={openSelections}
+                    title={c.selections}
+                    className="flex-1 flex items-center justify-center py-2 text-white/60 hover:text-[#2dabe0] hover:bg-[#17509e]/15 border-r border-white/10 transition-colors"
+                  >
+                    <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
+                    </svg>
+                  </button>
 
-                <button
-                  onClick={() => setIsEditing(true)}
-                  title={c.edit}
-                  className="shrink-0 flex items-center justify-center border border-white/10 text-white/70 rounded-lg px-3 py-2 hover:bg-white/[0.06] hover:border-white/20 hover:text-white transition-all"
-                >
-                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
-                  </svg>
-                </button>
+                  <button
+                    onClick={() => setShowCoverPicker(true)}
+                    title={c.chooseCover}
+                    className="flex-1 flex items-center justify-center py-2 text-white/60 hover:text-white hover:bg-white/[0.06] border-r border-white/10 transition-colors"
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
+                    </svg>
+                  </button>
 
-                <button
-                  onClick={() => setShowDeleteConfirm(true)}
-                  title={c.delete}
-                  className="shrink-0 flex items-center justify-center border border-white/10 text-white/70 rounded-lg px-3 py-2 hover:border-red-500/30 hover:text-red-400 hover:bg-red-500/10 transition-all"
-                >
-                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
-                  </svg>
-                </button>
+                  <button
+                    onClick={() => setIsEditing(true)}
+                    title={c.edit}
+                    className="flex-1 flex items-center justify-center py-2 text-white/60 hover:text-white hover:bg-white/[0.06] border-r border-white/10 transition-colors"
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+                    </svg>
+                  </button>
+
+                  <button
+                    onClick={() => setShowDeleteConfirm(true)}
+                    title={c.delete}
+                    className="flex-1 flex items-center justify-center py-2 text-white/60 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                    </svg>
+                  </button>
+                </div>
               </div>
             </>
           )}
-        </div>
       </div>
 
       {showSelections && (
@@ -498,6 +770,17 @@ export function GalleryCard({ gallery, onDelete, onUpdate }: Props) {
             </div>
           </div>
         </div>
+      )}
+
+      {showCoverPicker && (
+        <CoverPickerModal
+          gallery={gallery}
+          onClose={() => setShowCoverPicker(false)}
+          onSaved={(coverFileId) => {
+            onUpdate({ ...gallery, coverFileId });
+            setShowCoverPicker(false);
+          }}
+        />
       )}
     </>
   );

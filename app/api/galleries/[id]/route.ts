@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAdminAuth, getAdminDb } from "@/lib/firebase/admin";
 import { hashPassword } from "@/lib/gallery/password";
 import { extractFolderId } from "@/lib/drive/url-parser";
+import { validTitleFont, validTitleColor, validTitleSize } from "@/lib/gallery/title-style";
 
 async function getUid(req: NextRequest): Promise<string | null> {
   const token = req.headers.get("authorization")?.replace("Bearer ", "");
@@ -54,6 +55,31 @@ export async function PATCH(
     updates.pwChangedAt = Date.now();
   }
   if (typeof body.allowDownload === "boolean") updates.allowDownload = body.allowDownload;
+
+  // Optional gallery metadata. Each is stored as null when cleared (empty
+  // string / invalid date), so the field disappears from the public render.
+  if (typeof body.description === "string")
+    updates.description = body.description.trim() || null;
+  if (typeof body.eventDate === "string")
+    updates.eventDate = /^\d{4}-\d{2}-\d{2}$/.test(body.eventDate) ? body.eventDate : null;
+  if (typeof body.location === "string")
+    updates.location = body.location.trim() || null;
+  // coverFileId: a Drive file id string, or null to clear the cover.
+  if (body.coverFileId !== undefined)
+    updates.coverFileId = typeof body.coverFileId === "string" ? body.coverFileId : null;
+  // "Book this photographer" CTA: a URL (mailto:, https://wa.me/, etc.) and a
+  // toggle. When bookEnabled is false, the CTA is hidden on the public page.
+  if (typeof body.bookLink === "string")
+    updates.bookLink = body.bookLink.trim() || null;
+  if (typeof body.bookEnabled === "boolean") updates.bookEnabled = body.bookEnabled;
+  // Title styling: validated against the curated sets in lib/gallery/title-style.ts.
+  // Unknown ids / malformed colors are dropped to null (back to defaults).
+  if (body.titleFont !== undefined)
+    updates.titleFont = validTitleFont(body.titleFont);
+  if (body.titleColor !== undefined)
+    updates.titleColor = validTitleColor(body.titleColor);
+  if (body.titleSize !== undefined)
+    updates.titleSize = validTitleSize(body.titleSize);
 
   const normUrl = (u: unknown): string | null => {
     if (typeof u !== "string") return null;

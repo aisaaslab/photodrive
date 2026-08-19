@@ -58,6 +58,21 @@ export async function POST(req: NextRequest) {
   // Downloads are allowed unless explicitly turned off when creating.
   const allowDownload = body.allowDownload !== false;
 
+  // Optional gallery metadata: free-text description, event date (YYYY-MM-DD),
+  // and location. All guarded so absent/junk values are dropped, not stored.
+  const description =
+    typeof body.description === "string" ? body.description.trim() || undefined : undefined;
+  const eventDate =
+    typeof body.eventDate === "string" && /^\d{4}-\d{2}-\d{2}$/.test(body.eventDate)
+      ? body.eventDate
+      : undefined;
+  const location =
+    typeof body.location === "string" ? body.location.trim() || undefined : undefined;
+  // "Book this photographer" CTA: a URL + on/off toggle. Defaults to off.
+  const bookLink =
+    typeof body.bookLink === "string" ? body.bookLink.trim() || undefined : undefined;
+  const bookEnabled = body.bookEnabled === true;
+
   const now = Date.now();
   const data = {
     photographerId: uid,
@@ -77,6 +92,11 @@ export async function POST(req: NextRequest) {
     ...(website ? { website } : {}),
     ...(instagram ? { instagram } : {}),
     ...(facebook ? { facebook } : {}),
+    ...(description ? { description } : {}),
+    ...(eventDate ? { eventDate } : {}),
+    ...(location ? { location } : {}),
+    ...(bookLink ? { bookLink } : {}),
+    bookEnabled,
     allowDownload,
     createdAt: now,
     updatedAt: now,

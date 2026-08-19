@@ -30,3 +30,16 @@ export function driveImageUrl(photo: Pick<DriveFile, "id" | "thumbnailLink">, si
 export function driveDownloadUrl(fileId: string): string {
   return `https://drive.usercontent.google.com/download?id=${fileId}&export=download`;
 }
+
+/**
+ * Thumbnail URL for a Drive file when we only have the file id (no
+ * thumbnailLink). Used by the dashboard gallery card to show the cover
+ * thumbnail without re-fetching the whole folder listing.
+ *
+ * This is the same fallback `driveImageUrl` uses when no thumbnailLink is
+ * available — Google's slower thumbnail generator, but always works for files
+ * in "anyone with the link" folders.
+ */
+export function driveFileThumbUrl(fileId: string, size: number): string {
+  return `https://drive.google.com/thumbnail?id=${fileId}&sz=w${size}`;
+}
