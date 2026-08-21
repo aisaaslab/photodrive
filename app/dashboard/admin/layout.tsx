@@ -38,7 +38,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     <div className="min-h-screen bg-[#080808] text-white">
       <div className="aurora-bg"><span /></div>
       {/* Top nav */}
-      <header className="relative z-10 border-b border-white/[0.06] bg-[#080808]/85 backdrop-blur-xl sticky top-0">
+      <header className="relative z-10 border-b border-stone-200 bg-white/90 backdrop-blur-xl sticky top-0">
         <div className="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Image
@@ -49,12 +49,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               className="h-12 w-auto"
               priority
             />
-            <span className="text-white/20">|</span>
+            <span className="text-stone-300">|</span>
             <span className="text-xs text-[#2dabe0] font-semibold tracking-widest uppercase">Admin</span>
           </div>
           <a
             href="/dashboard"
-            className="text-xs text-stone-400 hover:text-white transition-colors"
+            className="text-xs text-stone-500 hover:text-stone-900 transition-colors"
           >
             ← Dashboard
           </a>

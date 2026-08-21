@@ -40,7 +40,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     <div className="min-h-screen flex flex-col bg-[#080808] text-white">
       <div className="aurora-bg"><span /></div>
 
-      <header className="sticky top-0 z-30 border-b border-white/[0.06] bg-[#080808]/85 backdrop-blur-xl">
+      <header className="sticky top-0 z-30 border-b border-stone-200 bg-white/90 backdrop-blur-xl">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 flex items-center justify-between" style={{ height: "64px" }}>
           <Link href="/">
             <Image
@@ -54,7 +54,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </Link>
 
           <div className="flex items-center gap-4">
-            <LanguageSwitcher />
+            <LanguageSwitcher variant="light" />
 
             <div className="hidden sm:flex items-center gap-3">
               {/* Click avatar to edit — opens the AvatarEditor modal */}
@@ -68,22 +68,22 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   <img
                     src={avatarUrl}
                     alt={displayName ?? ""}
-                    className="w-8 h-8 rounded-full object-cover ring-1 ring-white/20"
+                    className="w-8 h-8 rounded-full object-cover ring-1 ring-stone-300"
                   />
                 ) : (
-                  <div className="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center text-xs font-semibold text-white ring-1 ring-white/20">
+                  <div className="w-8 h-8 bg-stone-200 rounded-full flex items-center justify-center text-xs font-bold text-stone-700 ring-1 ring-stone-300">
                     {(displayName ?? "?")[0].toUpperCase()}
                   </div>
                 )}
               </button>
-              <span className="text-sm font-medium text-stone-300">{displayName}</span>
+              <span className="text-sm font-medium text-stone-700">{displayName}</span>
             </div>
 
-            <div className="w-px h-4 bg-white/10 hidden sm:block" />
+            <div className="w-px h-4 bg-stone-200 hidden sm:block" />
 
             <button
               onClick={() => signOut(auth).then(() => router.push("/login"))}
-              className="flex items-center gap-1.5 text-sm text-stone-400 hover:text-white transition-colors"
+              className="flex items-center gap-1.5 text-sm text-stone-500 hover:text-stone-900 transition-colors"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
