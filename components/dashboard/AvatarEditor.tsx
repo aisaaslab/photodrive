@@ -81,7 +81,6 @@ export function AvatarEditor({ onClose }: { onClose: () => void }) {
     try {
       await updateUserProfile(user.uid, {
         photoURL: preview ?? undefined,
-        name: currentName,
       });
       await refreshProfile();
       onClose();

@@ -35,12 +35,20 @@ export default function NotFound() {
             {n.title}
           </h1>
           <p className="text-stone-400 leading-relaxed mb-8">{n.body}</p>
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2 bg-white text-stone-900 font-semibold px-6 py-3 rounded-full hover:bg-stone-100 transition-all"
-          >
-            {n.back}
-          </Link>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+            <Link
+              href="/"
+              className="inline-flex items-center gap-2 bg-white text-stone-900 font-semibold px-6 py-3 rounded-full hover:bg-stone-100 transition-all"
+            >
+              {n.back}
+            </Link>
+            <Link
+              href="/dashboard"
+              className="inline-flex items-center gap-2 border border-white/20 text-white font-semibold px-6 py-3 rounded-full hover:bg-white/10 transition-all"
+            >
+              {n.dashboard}
+            </Link>
+          </div>
         </div>
       </div>
     </main>

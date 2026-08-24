@@ -31,15 +31,18 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  // Fetch subscription data from Firestore for all users
+  // Fetch subscription data from Firestore for all users. The Firestore
+  // `name` is also preferred for displayName — it's the source of truth the
+  // user can edit in Account settings (Auth displayName is the Google name).
   const userDocs = await getAdminDb().collection("users").get();
-  const subMap: Record<string, { status: string; expiresAt: number; comp: boolean }> = {};
+  const subMap: Record<string, { status: string; expiresAt: number; comp: boolean; name?: string }> = {};
   for (const doc of userDocs.docs) {
     const d = doc.data();
     subMap[doc.id] = {
       status: d.subscriptionStatus ?? "none",
       expiresAt: d.subscriptionExpiresAt ?? 0,
       comp: d.compGranted === true,
+      name: typeof d.name === "string" && d.name ? d.name : undefined,
     };
   }
 
@@ -50,7 +53,7 @@ export async function GET(req: NextRequest) {
     return {
       uid: u.uid,
       email: u.email ?? "",
-      displayName: u.displayName ?? "",
+      displayName: sub?.name ?? u.displayName ?? "",
       photoURL: u.photoURL ?? null,
       createdAt: u.metadata.creationTime,
       lastSignIn: u.metadata.lastSignInTime,

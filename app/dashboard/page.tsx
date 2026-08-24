@@ -11,7 +11,7 @@ import { GalleryDoc } from "@/lib/firestore/types";
 type SortOption = "newest" | "oldest" | "name_asc" | "name_desc";
 
 export default function DashboardPage() {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const { t } = useLanguage();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -23,6 +23,7 @@ export default function DashboardPage() {
   const [sort, setSort] = useState<SortOption>("newest");
   const [daysLeft, setDaysLeft] = useState<number | null>(null);
   const [pendingGallery, setPendingGallery] = useState<{ name: string; driveUrl: string; password: string } | null>(null);
+  const [restoredFromPayment, setRestoredFromPayment] = useState(false);
 
   async function loadGalleries() {
     if (!user) return;
@@ -49,8 +50,12 @@ export default function DashboardPage() {
         try {
           setPendingGallery(JSON.parse(stored));
           setShowForm(true);
+          setRestoredFromPayment(true);
         } catch {}
-        localStorage.removeItem("pending_gallery");
+        // Deliberately NOT removed here: keep the saved form until the gallery
+        // is actually created, so a refresh (or a slow payment activation)
+        // no longer throws the user's work away. NewGalleryForm's onCreated /
+        // the cancel button clear it.
       }
       router.replace("/dashboard");
     }
@@ -107,7 +112,9 @@ export default function DashboardPage() {
     return result;
   }, [galleries, search, sort]);
 
-  const firstName = user?.displayName?.split(" ")[0];
+  // Firestore profile is the source of truth — the user can edit their
+  // display name in Account settings.
+  const firstName = (profile?.name || user?.displayName || "")?.split(" ")[0];
 
   return (
     <div className="space-y-8 animate-fade-up">
@@ -150,9 +157,17 @@ export default function DashboardPage() {
               loadGalleries();
               setShowForm(false);
               setPendingGallery(null);
+              setRestoredFromPayment(false);
+              localStorage.removeItem("pending_gallery");
             }}
-            onCancel={() => { setShowForm(false); setPendingGallery(null); }}
+            onCancel={() => {
+              setShowForm(false);
+              setPendingGallery(null);
+              setRestoredFromPayment(false);
+              localStorage.removeItem("pending_gallery");
+            }}
             initialData={pendingGallery ?? undefined}
+            autoSubmit={restoredFromPayment}
           />
         </div>
       )}

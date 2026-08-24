@@ -5,10 +5,11 @@ import { UserDoc } from "./types";
 /**
  * Creates or merges the photographer's profile on login.
  *
- * `photoURL` from Google is only written on the FIRST create, or if the user
- * doesn't already have one. This preserves custom avatars uploaded via the
- * dashboard — without this check, every login would overwrite a uploaded
- * avatar with the Google profile photo (or empty string if none).
+ * `photoURL` and `name` from Google are only written on the FIRST create, or
+ * if the user doesn't already have values. This preserves custom avatars
+ * uploaded via the dashboard — and, just as importantly, display names the
+ * user has corrected in Account settings. Without this check, every login
+ * would overwrite both with the (never-changing) Google profile values.
  */
 export async function upsertUser(uid: string, profile: Omit<UserDoc, "uid" | "createdAt">) {
   const ref = doc(db, "users", uid);
@@ -16,9 +17,15 @@ export async function upsertUser(uid: string, profile: Omit<UserDoc, "uid" | "cr
   const data: Record<string, unknown> = {
     uid,
     email: profile.email,
-    name: profile.name,
     createdAt: serverTimestamp(),
   };
+  if (!existing.exists()) {
+    data.name = profile.name;
+  } else if (!existing.data()?.name) {
+    // Set the Google name only when there is nothing stored yet — never
+    // overwrite a user-edited name.
+    data.name = profile.name;
+  }
   // Only set photoURL from Google on first create, or if the user doesn't
   // already have one stored. This protects custom avatars from being
   // overwritten on subsequent logins.

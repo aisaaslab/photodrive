@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { useLanguage } from "@/lib/i18n";
 
@@ -8,6 +8,8 @@ interface Props {
   onCreated: () => void;
   onCancel?: () => void;
   initialData?: { name: string; driveUrl: string; password: string; website?: string; instagram?: string; facebook?: string; description?: string; eventDate?: string; location?: string };
+  /** After payment, auto-submit the restored form once the subscription is active. */
+  autoSubmit?: boolean;
 }
 
 function isValidDriveUrl(url: string): boolean {
@@ -50,7 +52,7 @@ const SOCIALS = [
   },
 ] as const;
 
-export function NewGalleryForm({ onCreated, onCancel, initialData }: Props) {
+export function NewGalleryForm({ onCreated, onCancel, initialData, autoSubmit }: Props) {
   const { user } = useAuth();
   const { t } = useLanguage();
   const f = t.newGalleryForm;
@@ -79,50 +81,58 @@ export function NewGalleryForm({ onCreated, onCancel, initialData }: Props) {
 
   const driveValid = driveUrl.length > 0 && isValidDriveUrl(driveUrl);
   const driveInvalid = driveUrl.length > 0 && !isValidDriveUrl(driveUrl);
+  const submittingRef = useRef(false);
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!user) return;
-    setError("");
-    setLoading(true);
-
+  async function isSubscriptionActive(): Promise<boolean> {
+    if (!user) return false;
     try {
       const token = await user.getIdToken();
-
       const subRes = await fetch("/api/user/subscription", {
         headers: { Authorization: `Bearer ${token}` },
       });
       const subData = await subRes.json();
-      if (!subData.isActive) {
-        setShowPayment(true);
-        return;
-      }
+      return !!subData.isActive;
+    } catch {
+      return false;
+    }
+  }
 
-      const res = await fetch("/api/galleries", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          name,
-          driveUrl,
-          password: password || undefined,
-          website: socialOn.website ? social.website.trim() || undefined : undefined,
-          instagram: socialOn.instagram ? social.instagram.trim() || undefined : undefined,
-          facebook: socialOn.facebook ? social.facebook.trim() || undefined : undefined,
-          description: description.trim() || undefined,
-          eventDate: eventDate || undefined,
-          location: location.trim() || undefined,
-        }),
-      });
+  // When a 402 comes back from gallery creation, the subscription may have
+  // JUST been activated (webhook/verify landing moments after our check).
+  // Poll briefly before showing the payment card so a paid user is never
+  // asked to pay twice.
+  async function waitForActivation(tries = 6, delayMs = 1500): Promise<boolean> {
+    for (let i = 0; i < tries; i++) {
+      if (i > 0) await new Promise((r) => setTimeout(r, delayMs));
+      if (await isSubscriptionActive()) return true;
+    }
+    return false;
+  }
 
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.error ?? f.error);
-        return;
-      }
+  async function createGallery(): Promise<boolean> {
+    if (!user) return false;
+    const token = await user.getIdToken();
+    const res = await fetch("/api/galleries", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        name,
+        driveUrl,
+        password: password || undefined,
+        website: socialOn.website ? social.website.trim() || undefined : undefined,
+        instagram: socialOn.instagram ? social.instagram.trim() || undefined : undefined,
+        facebook: socialOn.facebook ? social.facebook.trim() || undefined : undefined,
+        description: description.trim() || undefined,
+        eventDate: eventDate || undefined,
+        location: location.trim() || undefined,
+      }),
+    });
 
+    const data = await res.json();
+    if (res.ok) {
       setName("");
       setDriveUrl("");
       setPassword("");
@@ -132,9 +142,69 @@ export function NewGalleryForm({ onCreated, onCancel, initialData }: Props) {
       setEventDate("");
       setLocation("");
       onCreated();
+      return true;
+    }
+
+    if (res.status === 402) {
+      if (await waitForActivation()) {
+        // Subscription became active in the meantime — retry once.
+        return createGallery();
+      }
+      setShowPayment(true);
+      return false;
+    }
+
+    setError(data.error ?? f.error);
+    return false;
+  }
+
+  async function submitForm(opts?: { justPaid?: boolean; skipSubscriptionCheck?: boolean }): Promise<void> {
+    if (!user || submittingRef.current) return;
+    submittingRef.current = true;
+    setError("");
+    setLoading(true);
+
+    try {
+      if (!opts?.skipSubscriptionCheck && !(await isSubscriptionActive())) {
+        // justPaid: the user completed checkout moments ago — activation may
+        // still be landing, so poll briefly before showing the payment card.
+        // Otherwise (a fresh, unpaid visitor) show the card immediately.
+        if (!opts?.justPaid || !(await waitForActivation())) {
+          setShowPayment(true);
+          return;
+        }
+      }
+
+      await createGallery();
     } finally {
       setLoading(false);
+      submittingRef.current = false;
     }
+  }
+
+  // Post-payment flow: the dashboard restores this form with autoSubmit so the
+  // gallery the user paid for is created without another click.
+  useEffect(() => {
+    if (!autoSubmit || !user) return;
+    let cancelled = false;
+    (async () => {
+      // justPaid lets submitForm tolerate an activation that is still landing
+      // (slow webhook) instead of immediately showing the payment card.
+      try {
+        if (!cancelled) await submitForm({ justPaid: true });
+      } catch {
+        // Network/API failure — leave the form filled so the user can retry.
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoSubmit, user]);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    await submitForm();
   }
 
   async function handleCheckout() {
@@ -157,14 +227,23 @@ export function NewGalleryForm({ onCreated, onCancel, initialData }: Props) {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
+      if (data.alreadyPaid) {
+        // A previous paid session was found — no new charge. The route just
+        // activated the subscription server-side, so skip the pre-check and
+        // create the gallery directly.
+        setShowPayment(false);
+        setCheckoutLoading(false);
+        await submitForm({ skipSubscriptionCheck: true });
+        return;
+      }
       if (data.url) {
         window.location.href = data.url;
         return;
       }
       setError(f.error);
+      setCheckoutLoading(false);
     } catch {
       setError(f.error);
-    } finally {
       setCheckoutLoading(false);
     }
   }
@@ -193,12 +272,12 @@ export function NewGalleryForm({ onCreated, onCancel, initialData }: Props) {
           <div className="flex items-center justify-between mb-5">
             <div>
               <div className="flex items-center gap-2 mb-0.5">
-                <span className="text-3xl font-bold text-white">â‚¬89</span>
+                <span className="text-3xl font-bold text-white">$99</span>
                 <span className="text-stone-500 text-sm">{f.perYear}</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-stone-500 line-through text-sm">â‚¬199</span>
-                <span className="bg-[#17509e]/20 text-[#2dabe0] text-xs font-bold px-2 py-0.5 rounded-full border border-[#17509e]/20">-55%</span>
+                <span className="text-stone-500 line-through text-sm">$199</span>
+                <span className="bg-[#17509e]/20 text-[#2dabe0] text-xs font-bold px-2 py-0.5 rounded-full border border-[#17509e]/20">-50%</span>
               </div>
             </div>
             <span className="bg-[#17509e]/20 text-[#2dabe0] text-xs font-semibold px-2.5 py-1 rounded-full border border-[#17509e]/20">

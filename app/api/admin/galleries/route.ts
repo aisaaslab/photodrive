@@ -15,16 +15,21 @@ export async function GET(req: NextRequest) {
     ...(d.data() as Record<string, unknown>),
   })) as GalleryDoc[]).sort((a, b) => Number(b.createdAt ?? 0) - Number(a.createdAt ?? 0));
 
-  // Fetch user info for all unique photographer IDs
+  // Fetch user info for all unique photographer IDs. Firestore `name` wins
+  // over Auth displayName — it's what the user can edit in Account settings.
   const photographerIds = [...new Set(galleries.map((g) => g.photographerId).filter(Boolean))] as string[];
   const userMap: Record<string, { email: string; displayName: string; photoURL?: string }> = {};
   await Promise.all(
     photographerIds.map(async (pid) => {
       try {
-        const user = await getAdminAuth().getUser(pid);
+        const [user, userDoc] = await Promise.all([
+          getAdminAuth().getUser(pid),
+          getAdminDb().collection("users").doc(pid).get(),
+        ]);
+        const fsName = typeof userDoc.data()?.name === "string" ? userDoc.data()?.name : "";
         userMap[pid] = {
           email: user.email ?? "",
-          displayName: user.displayName ?? "",
+          displayName: fsName || user.displayName || "",
           photoURL: user.photoURL,
         };
       } catch {}

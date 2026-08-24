@@ -42,6 +42,10 @@ export default function SubscribePage() {
       const data = await res.json();
       if (data.url) {
         window.location.href = data.url;
+      } else if (data.alreadyPaid) {
+        // A paid session already exists — the route activated it, so go to
+        // the account page instead of charging again.
+        router.replace("/dashboard/account");
       } else {
         setError(s.error);
       }

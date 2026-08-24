@@ -31,7 +31,7 @@ export default function HomePage() {
     es: { label: "Tutorial", title: "Mira PhotoDrive en acción." },
     it: { label: "Tutorial", title: "PhotoDrive in azione." },
   } as Record<string, { label: string; title: string }>)[lang] ?? { label: "Tutorial", title: "See PhotoDrive in action." };
-  const { user, loading } = useAuth();
+  const { user, profile, loading } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
 
   const whatCards = [
@@ -76,11 +76,12 @@ export default function HomePage() {
             {!loading && (
               user ? (
                 <Link href="/dashboard" className="flex items-center gap-2 text-sm font-semibold text-stone-700 hover:text-stone-900 transition-colors">
-                  {user.photoURL ? (
-                    <img src={user.photoURL} alt="" className="w-8 h-8 rounded-full object-cover" />
+                  {profile?.photoURL || user.photoURL ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={profile?.photoURL || user.photoURL || ""} alt="" className="w-8 h-8 rounded-full object-cover" />
                   ) : (
                     <div className="w-8 h-8 rounded-full bg-stone-200 flex items-center justify-center text-xs font-bold text-stone-700">
-                      {user.displayName?.[0] ?? user.email?.[0] ?? "U"}
+                      {(profile?.name || user.displayName)?.[0]?.toUpperCase() ?? user.email?.[0]?.toUpperCase() ?? "U"}
                     </div>
                   )}
                 </Link>

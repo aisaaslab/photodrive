@@ -1,51 +1,117 @@
 ﻿"use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useEffect, useRef, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { useLanguage } from "@/lib/i18n";
 import Link from "next/link";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
+const MAX_TRIES = 40; // 40 × 1.5s ≈ 60s — the webhook is normally <5s but this
+                      // leaves room for Stripe retries and slow propagation.
+
 export default function SuccessPage() {
+  return (
+    <Suspense>
+      <SuccessContent />
+    </Suspense>
+  );
+}
+
+function SuccessContent() {
   const { user, loading } = useAuth();
   const { t } = useLanguage();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [checking, setChecking] = useState(true);
   const [ready, setReady] = useState(false);
-  const [attempts, setAttempts] = useState(0);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const sessionId = searchParams.get("session_id");
+
+  // If the auth session is lost (e.g. cookie cleared mid-checkout), send the
+  // user through login and back — previously this page spun forever.
+  useEffect(() => {
+    if (loading) return;
+    if (!user) {
+      const next = sessionId
+        ? `/subscribe/success?session_id=${encodeURIComponent(sessionId)}`
+        : "/subscribe/success";
+      router.replace(`/login?next=${encodeURIComponent(next)}`);
+    }
+  }, [loading, user, router, sessionId]);
 
   useEffect(() => {
     if (loading || !user) return;
 
+    let cancelled = false;
     let tries = 0;
 
-    async function check() {
-      tries++;
-      setAttempts(tries);
-      try {
-        const token = await user!.getIdToken();
-        const res = await fetch("/api/user/subscription", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const data = await res.json();
-        if (data.isActive) {
-          setReady(true);
-          setChecking(false);
-          setTimeout(() => router.replace("/dashboard?gallery=pending"), 2000);
-          return;
-        }
-      } catch {}
-
-      if (tries < 8) {
-        setTimeout(check, 1500);
-      } else {
-        setChecking(false);
-      }
+    async function checkSubscription(): Promise<boolean> {
+      const token = await user!.getIdToken();
+      const res = await fetch("/api/user/subscription", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      return !!data.isActive;
     }
 
-    check();
-  }, [user, loading, router]);
+    function finish() {
+      setReady(true);
+      setChecking(false);
+      setTimeout(() => router.replace("/dashboard?gallery=pending"), 2000);
+    }
+
+    async function activate() {
+      // Reconcile with Stripe FIRST: if the webhook failed or was slow, this
+      // fetches the session server-side and activates the subscription
+      // directly, so the user never gets stuck on the pending screen.
+      if (sessionId) {
+        try {
+          const token = await user!.getIdToken();
+          const res = await fetch("/api/stripe/verify", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ sessionId }),
+          });
+          if (res.ok && (await res.json()).activated) {
+            if (!cancelled) finish();
+            return;
+          }
+        } catch {}
+      }
+
+      // Webhook may still land while we poll — up to ~60s.
+      async function poll() {
+        if (cancelled) return;
+        tries++;
+        try {
+          if (await checkSubscription()) {
+            finish();
+            return;
+          }
+        } catch {}
+
+        if (tries < MAX_TRIES) {
+          timerRef.current = setTimeout(poll, 1500);
+        } else {
+          setChecking(false);
+        }
+      }
+
+      poll();
+    }
+
+    activate();
+
+    return () => {
+      cancelled = true;
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, [user, loading, router, sessionId]);
 
   const ss = t.subscribeSuccess;
 
@@ -92,12 +158,20 @@ export default function SuccessPage() {
             <p className="text-stone-400 text-sm mb-6 leading-relaxed">
               {ss.pendingSubtitle}
             </p>
-            <Link
-              href="/dashboard"
-              className="inline-flex items-center justify-center bg-white text-stone-900 font-bold px-6 py-2.5 rounded-xl text-sm hover:bg-stone-100 transition-all"
-            >
-              {ss.goToDashboard}
-            </Link>
+            <div className="flex flex-col gap-2">
+              <Link
+                href="/dashboard?gallery=pending"
+                className="inline-flex items-center justify-center bg-white text-stone-900 font-bold px-6 py-2.5 rounded-xl text-sm hover:bg-stone-100 transition-all"
+              >
+                {ss.goToDashboard}
+              </Link>
+              <Link
+                href="/dashboard/account"
+                className="inline-flex items-center justify-center text-white/60 hover:text-white px-6 py-2 rounded-xl text-sm transition-all"
+              >
+                {ss.viewAccount}
+              </Link>
+            </div>
           </>
         )}
       </div>
