@@ -12,7 +12,7 @@ const VIDEO_LABELS: Record<string, { play: string; replay: string }> = {
   it: { play: "Guarda la demo", replay: "Guarda di nuovo" },
 };
 
-export function DemoVideo({ webm = "/tutorial-v2.webm", mp4 = "/tutorial-v2.mp4", label, title }: { webm?: string; mp4?: string; label?: string; title?: string }) {
+export function DemoVideo({ webm = "/photodrive_homepage_video.webm", mp4, label, title }: { webm?: string; mp4?: string; label?: string; title?: string }) {
   const { lang } = useLanguage();
   const L = VIDEO_LABELS[lang] ?? VIDEO_LABELS.en;
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -54,7 +54,7 @@ export function DemoVideo({ webm = "/tutorial-v2.webm", mp4 = "/tutorial-v2.mp4"
             className="w-full block"
           >
             <source src={webm} type="video/webm" />
-            <source src={mp4} type="video/mp4" />
+            {mp4 && <source src={mp4} type="video/mp4" />}
           </video>
 
           {/* Overlay — shows when not playing */}

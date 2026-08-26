@@ -224,7 +224,7 @@ export default function HomePage() {
       <DemoForm />
 
       {/* DEMO VIDEO */}
-      <DemoVideo label={tutorial.label} title={tutorial.title} />
+      <DemoVideo webm="/photodrive_homepage_video.webm" mp4="/photodrive_homepage_video.mp4" label={tutorial.label} title={tutorial.title} />
 
       {/* WHAT IS IT */}
       <section className="py-16 sm:py-28 px-6 border-t border-white/5">
