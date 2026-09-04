@@ -1,13 +1,21 @@
 ﻿"use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import Image from "next/image";
+import Link from "next/link";
 import { useAuth } from "@/components/auth/AuthProvider";
+
+const TABS = [
+  { href: "/dashboard/admin", label: "Overview" },
+  { href: "/dashboard/admin/users", label: "Users" },
+  { href: "/dashboard/admin/plans", label: "Plans" },
+];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
   const [checking, setChecking] = useState(true);
   const [allowed, setAllowed] = useState(false);
 
@@ -17,7 +25,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
     // Verify admin server-side
     user.getIdToken().then((token) =>
-      fetch("/api/admin/users", { headers: { Authorization: `Bearer ${token}` } })
+      fetch("/api/admin/session", { headers: { Authorization: `Bearer ${token}` } })
     ).then((res) => {
       if (res.ok) { setAllowed(true); setChecking(false); }
       else { router.replace("/dashboard"); }
@@ -58,6 +66,25 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           >
             ← Dashboard
           </a>
+        </div>
+        {/* Back-office tabs */}
+        <div className="max-w-7xl mx-auto px-6 pb-3 flex items-center gap-1.5">
+          {TABS.map((tab) => {
+            const active = pathname === tab.href;
+            return (
+              <Link
+                key={tab.href}
+                href={tab.href}
+                className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                  active
+                    ? "bg-stone-900 text-white"
+                    : "text-stone-600 hover:text-stone-900 hover:bg-stone-100"
+                }`}
+              >
+                {tab.label}
+              </Link>
+            );
+          })}
         </div>
       </header>
       <main className="relative z-10 max-w-7xl mx-auto px-6 py-10">

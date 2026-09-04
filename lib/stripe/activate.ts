@@ -1,4 +1,12 @@
 import { getAdminAuth, getAdminDb } from "@/lib/firebase/admin";
+import type { PlanInterval } from "@/lib/firestore/types";
+
+const MONTH_MS = 30 * 24 * 60 * 60 * 1000;
+const YEAR_MS = 365 * 24 * 60 * 60 * 1000;
+
+function periodMs(interval: PlanInterval | null | undefined): number {
+  return interval === "monthly" ? MONTH_MS : YEAR_MS;
+}
 
 /**
  * Shared, idempotent subscription activator used by BOTH the Stripe webhook
@@ -6,8 +14,8 @@ import { getAdminAuth, getAdminDb } from "@/lib/firebase/admin";
  *
  * Why idempotency matters: the same payment can be delivered more than once
  * (Stripe retries webhooks; the success page may re-verify an already-active
- * session). Without the guard below, each delivery would stack another 365
- * days onto subscriptionExpiresAt.
+ * session). Without the guard below, each delivery would stack another
+ * subscription period onto subscriptionExpiresAt.
  *
  * A `payments/{sessionId}` document is also written as the durable record of
  * the purchase — the account page reads it for payment confirmation.
@@ -18,10 +26,33 @@ export async function activateSubscription(opts: {
   amountTotal?: number | null;
   currency?: string | null;
   stripeCustomerId?: string | null;
+  // Plan context from the checkout session metadata. interval decides the
+  // granted period; planId also snapshots name/interval onto the user doc.
+  planId?: string | null;
+  interval?: PlanInterval | null;
 }) {
-  const YEAR_MS = 365 * 24 * 60 * 60 * 1000;
+  const grantedMs = periodMs(opts.interval);
   const db = getAdminDb();
   const userRef = db.collection("users").doc(opts.uid);
+
+  // Resolve plan details (name) for display; a deleted plan falls back to the
+  // metadata interval only.
+  let planName: string | null = null;
+  if (opts.planId) {
+    try {
+      const snap = await db.collection("plans").doc(opts.planId).get();
+      planName = (snap.data()?.name as string | undefined) ?? null;
+    } catch {
+      planName = null;
+    }
+  }
+  const planFields = opts.planId
+    ? {
+        planId: opts.planId,
+        planInterval: opts.interval ?? "yearly",
+        ...(planName ? { planName } : {}),
+      }
+    : {};
 
   if (opts.sessionId) {
     const paymentRef = db.collection("payments").doc(opts.sessionId);
@@ -38,13 +69,14 @@ export async function activateSubscription(opts: {
         userSnap.data()?.subscriptionStatus === "active" && currentExpires > now;
 
       // Only extend when not already active — replays must be no-ops.
-      const expiresAt = currentlyActive ? currentExpires : now + YEAR_MS;
+      const expiresAt = currentlyActive ? currentExpires : now + grantedMs;
 
       tx.set(
         userRef,
         {
           subscriptionStatus: "active",
           subscriptionExpiresAt: expiresAt,
+          ...planFields,
           ...(opts.stripeCustomerId ? { stripeCustomerId: opts.stripeCustomerId } : {}),
         },
         { merge: true }
@@ -55,6 +87,7 @@ export async function activateSubscription(opts: {
         amountTotal: opts.amountTotal ?? null,
         currency: opts.currency ?? null,
         customerId: opts.stripeCustomerId ?? null,
+        planId: opts.planId ?? null,
         activatedAt: now,
       });
     });
@@ -74,7 +107,8 @@ export async function activateSubscription(opts: {
         userRef,
         {
           subscriptionStatus: "active",
-          subscriptionExpiresAt: now + YEAR_MS,
+          subscriptionExpiresAt: now + grantedMs,
+          ...planFields,
           ...(opts.stripeCustomerId ? { stripeCustomerId: opts.stripeCustomerId } : {}),
         },
         { merge: true }

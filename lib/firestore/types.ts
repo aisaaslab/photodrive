@@ -46,6 +46,40 @@ export interface UserDoc {
   subscriptionStatus?: "active" | "expired" | "none";
   subscriptionExpiresAt?: number;
   stripeCustomerId?: string;
+  // Snapshot of the plan currently assigned/purchased (kept even if the plan
+  // document is later deleted, so history still renders).
+  planId?: string;
+  planName?: string;
+  planInterval?: PlanInterval;
+}
+
+/** Billing period of a payment plan. */
+export type PlanInterval = "monthly" | "yearly";
+
+/**
+ * A payment plan managed in the admin back office.
+ *
+ * - `isPublic` plans are listed on the landing-page pricing section and the
+ *   subscribe page; private plans are only reachable via their direct
+ *   /subscribe?plan={id} link or by admin assignment.
+ * - `active` plans can be purchased / assigned; inactive ones are kept for
+ *   reference only.
+ * - `highlight` draws attention to the card on the pricing grid.
+ */
+export interface PlanDoc {
+  id: string;
+  name: string;
+  description?: string;
+  interval: PlanInterval;
+  priceCents: number;
+  currency: string;
+  features: string[];
+  isPublic: boolean;
+  active: boolean;
+  highlight?: boolean;
+  sortOrder: number;
+  createdAt: number;
+  updatedAt: number;
 }
 
 export interface FavoriteDoc {

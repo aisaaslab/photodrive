@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ImageCompareSlider } from "@/components/ImageCompareSlider";
 import { LogoLink } from "@/components/LogoLink";
@@ -11,6 +11,16 @@ import { DemoForm } from "@/components/demo/DemoForm";
 import { DemoVideo } from "@/components/DemoVideo";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { APP_NAME, DEMO_GALLERY_URL } from "@/lib/branding";
+
+type PublicPlan = {
+  id: string;
+  name: string;
+  description: string;
+  interval: "monthly" | "yearly";
+  priceCents: number;
+  features: string[];
+  highlight: boolean;
+};
 
 
 export default function HomePage() {
@@ -23,6 +33,14 @@ export default function HomePage() {
     es: "Pago único · sin renovación automática",
     it: "Pagamento unico · nessun rinnovo automatico",
   } as Record<string, string>)[lang] ?? "One-time payment · no auto-renewal";
+  const perInterval = ({
+    el: { monthly: "/ μήνα", yearly: "/ χρόνο" },
+    en: { monthly: "/ month", yearly: "/ year" },
+    nl: { monthly: "/ maand", yearly: "/ jaar" },
+    de: { monthly: "/ Monat", yearly: "/ Jahr" },
+    es: { monthly: "/ mes", yearly: "/ año" },
+    it: { monthly: "/ mese", yearly: "/ anno" },
+  } as Record<string, Record<string, string>>)[lang] ?? { monthly: "/ month", yearly: "/ year" };
   const tutorial = ({
     el: { label: "Tutorial", title: "Δες το PhotoDrive σε δράση." },
     en: { label: "Tutorial", title: "See PhotoDrive in action." },
@@ -33,6 +51,19 @@ export default function HomePage() {
   } as Record<string, { label: string; title: string }>)[lang] ?? { label: "Tutorial", title: "See PhotoDrive in action." };
   const { user, profile, loading } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
+
+  // Public payment plans (managed in the admin back office). Empty until the
+  // admin creates some — the default annual card below is the fallback.
+  const [publicPlans, setPublicPlans] = useState<PublicPlan[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/plans")
+      .then((r) => (r.ok ? r.json() : { plans: [] }))
+      .then((data) => { if (!cancelled) setPublicPlans(data.plans ?? []); })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, []);
 
   const whatCards = [
     { icon: "M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3", label: t.what.card1Label, desc: t.what.card1Desc },
@@ -340,7 +371,7 @@ export default function HomePage() {
 
       {/* PRICING */}
       <section id="pricing" className="py-16 sm:py-28 px-6 border-t border-white/5">
-        <div className="max-w-3xl mx-auto">
+        <div className={publicPlans.length > 1 ? "max-w-5xl mx-auto" : "max-w-3xl mx-auto"}>
           <div className="text-center mb-10 sm:mb-16">
             <p className="text-base font-semibold tracking-[0.2em] uppercase text-white mb-5">{t.pricing.label}</p>
             <h2
@@ -351,6 +382,59 @@ export default function HomePage() {
             </h2>
           </div>
 
+          {publicPlans.length > 0 ? (
+            /* Dynamic plans managed in the admin back office */
+            <div className={`grid gap-4 mx-auto ${publicPlans.length === 1 ? "max-w-sm" : publicPlans.length === 2 ? "max-w-2xl sm:grid-cols-2" : "max-w-5xl sm:grid-cols-2 lg:grid-cols-3"}`}>
+              {publicPlans.map((plan) => (
+                <div
+                  key={plan.id}
+                  className={`relative border rounded-2xl p-7 overflow-hidden flex flex-col text-center ${
+                    plan.highlight
+                      ? "border-[#17509e]/50 bg-gradient-to-b from-[#17509e]/20 to-transparent"
+                      : "border-white/[0.08] bg-white/[0.03]"
+                  }`}
+                >
+                  {plan.highlight && (
+                    <span className="absolute top-4 right-4 text-[10px] font-bold tracking-widest uppercase text-[#2dabe0] bg-[#17509e]/20 border border-[#17509e]/30 rounded-full px-2.5 py-1">
+                      {t.pricing.badge}
+                    </span>
+                  )}
+                  <p className="text-sm font-bold tracking-widest uppercase text-[#2dabe0] mb-4">{plan.name}</p>
+                  {plan.description && <p className="text-white/60 text-xs mb-4">{plan.description}</p>}
+                  <div className="flex items-end justify-center gap-1 mb-1">
+                    <span className="text-4xl font-bold text-white">
+                      ${(plan.priceCents / 100) % 1 === 0 ? (plan.priceCents / 100).toFixed(0) : (plan.priceCents / 100).toFixed(2)}
+                    </span>
+                    <span className="text-stone-400 text-sm mb-1.5">{perInterval[plan.interval]}</span>
+                  </div>
+                  <p className="text-white text-sm font-medium mb-2">{t.pricing.vatNote}</p>
+                  <p className="flex items-center justify-center gap-1.5 text-white/50 text-xs mb-6">
+                    <svg className="w-3.5 h-3.5 text-[#2dabe0] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
+                    {noAutoRenew}
+                  </p>
+                  {plan.features.length > 0 && (
+                    <ul className="space-y-3 mb-8 inline-flex flex-col items-start">
+                      {plan.features.map((f, i) => (
+                        <li key={i} className="flex items-center gap-2.5 text-base text-white">
+                          <svg className="w-3.5 h-3.5 text-[#2dabe0] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                          </svg>
+                          {f}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                  <Link
+                    href={`/subscribe?plan=${plan.id}`}
+                    className="block w-full text-center bg-white text-stone-900 font-bold rounded-xl py-3.5 text-sm hover:bg-stone-100 transition-all hover:scale-[1.01] shadow-lg shadow-black/20 mt-auto"
+                  >
+                    {t.pricing.cta}
+                  </Link>
+                </div>
+              ))}
+            </div>
+          ) : (
+          /* Fallback: default annual card (shown before any plans are created) */
           <div className="max-w-sm mx-auto">
             <div className="relative border border-[#17509e]/25 rounded-2xl p-8 bg-gradient-to-b from-[#17509e]/15 to-transparent overflow-hidden text-center">
               <p className="text-sm font-bold tracking-widest uppercase text-[#2dabe0] mb-5">{t.pricing.badge}</p>
@@ -380,6 +464,7 @@ export default function HomePage() {
               </Link>
             </div>
           </div>
+          )}
         </div>
       </section>
 

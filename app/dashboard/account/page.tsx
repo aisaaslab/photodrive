@@ -39,6 +39,7 @@ export default function AccountPage() {
 
   const [status, setStatus] = useState<string | null>(null);
   const [expiresAt, setExpiresAt] = useState<number | null>(null);
+  const [planName, setPlanName] = useState<string | null>(null);
   const [payments, setPayments] = useState<Payment[] | null>(null);
   const [name, setName] = useState("");
   const [savingName, setSavingName] = useState(false);
@@ -64,6 +65,7 @@ export default function AccountPage() {
           const data = await subRes.json();
           setStatus(data.status ?? "none");
           setExpiresAt(data.expiresAt ?? null);
+          setPlanName(data.planName ?? null);
         }
         if (payRes.ok) {
           const data = await payRes.json();
@@ -153,6 +155,9 @@ export default function AccountPage() {
                 <span className="inline-flex items-center gap-1.5 bg-amber-500/10 text-amber-400 text-xs font-semibold px-2.5 py-1 rounded-full border border-amber-500/20">
                   {a.statusNone}
                 </span>
+              )}
+              {isActive && planName && (
+                <span className="text-xs font-medium text-[#2dabe0]">{planName}</span>
               )}
               {isActive && expiresAt !== null && (
                 <span className="text-xs text-white/60">

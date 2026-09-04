@@ -69,6 +69,8 @@ export async function POST(req: NextRequest) {
       currency: session.currency ?? null,
       stripeCustomerId:
         typeof session.customer === "string" ? session.customer : null,
+      planId: session.metadata?.planId ?? null,
+      interval: (session.metadata?.interval as "monthly" | "yearly" | undefined) ?? null,
     });
   } catch (err) {
     console.error("[stripe verify] activation write failed for uid", decoded.uid, err);

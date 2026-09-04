@@ -21,7 +21,13 @@ export async function GET(req: NextRequest) {
     const expiresAt: number = data?.subscriptionExpiresAt ?? 0;
     const isActive = status === "active" && expiresAt > Date.now();
 
-    return NextResponse.json({ isActive, status, expiresAt });
+    return NextResponse.json({
+      isActive,
+      status,
+      expiresAt,
+      planName: typeof data?.planName === "string" ? data.planName : null,
+      planInterval: typeof data?.planInterval === "string" ? data.planInterval : null,
+    });
   } catch {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
