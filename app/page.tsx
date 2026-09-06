@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { ImageCompareSlider } from "@/components/ImageCompareSlider";
 import { LogoLink } from "@/components/LogoLink";
@@ -20,7 +20,51 @@ type PublicPlan = {
   priceCents: number;
   features: string[];
   highlight: boolean;
+  sortOrder: number;
 };
+
+/**
+ * A pricing tier: the monthly + yearly variants of the same plan, paired by
+ * (normalized) name. A tier only renders in the modes it has a variant for.
+ */
+type PlanTier = {
+  key: string;
+  name: string;
+  monthly: PublicPlan | null;
+  yearly: PublicPlan | null;
+  sortOrder: number;
+};
+
+function buildTiers(plans: PublicPlan[]): PlanTier[] {
+  const map = new Map<string, PlanTier>();
+  for (const p of plans) {
+    const key = p.name.trim().toLowerCase();
+    let tier = map.get(key);
+    if (!tier) {
+      tier = { key, name: p.name.trim(), monthly: null, yearly: null, sortOrder: p.sortOrder ?? 0 };
+      map.set(key, tier);
+    }
+    if (p.interval === "monthly") tier.monthly = p;
+    else tier.yearly = p;
+    tier.sortOrder = Math.min(tier.sortOrder, p.sortOrder ?? 0);
+  }
+  return [...map.values()].sort(
+    (a, b) => a.sortOrder - b.sortOrder || a.name.localeCompare(b.name, "en")
+  );
+}
+
+/** Whole-percent saving of the yearly variant vs 12× the monthly one. */
+function discountPct(monthlyCents: number, yearlyCents: number): number {
+  if (monthlyCents <= 0 || yearlyCents <= 0) return 0;
+  const perMonth = yearlyCents / 12;
+  if (perMonth >= monthlyCents) return 0;
+  return Math.round((1 - perMonth / monthlyCents) * 100);
+}
+
+function formatUsd(cents: number): string {
+  const v = cents / 100;
+  return `$${v % 1 === 0 ? v.toFixed(0) : v.toFixed(2)}`;
+}
 
 
 export default function HomePage() {
@@ -41,6 +85,14 @@ export default function HomePage() {
     es: { monthly: "/ mes", yearly: "/ año" },
     it: { monthly: "/ mese", yearly: "/ anno" },
   } as Record<string, Record<string, string>>)[lang] ?? { monthly: "/ month", yearly: "/ year" };
+  const billing = ({
+    el: { monthly: "Μηνιαίο", yearly: "Ετήσιο", save: "Εξοικονομείς", off: "ΕΚΠΤΩΣΗ", upTo: "Έως" },
+    en: { monthly: "Monthly", yearly: "Yearly", save: "Save", off: "OFF", upTo: "Up to" },
+    nl: { monthly: "Maandelijks", yearly: "Jaarlijks", save: "Bespaar", off: "KORTING", upTo: "Tot" },
+    de: { monthly: "Monatlich", yearly: "Jährlich", save: "Spare", off: "RABATT", upTo: "Bis zu" },
+    es: { monthly: "Mensual", yearly: "Anual", save: "Ahorra", off: "DTO.", upTo: "Hasta" },
+    it: { monthly: "Mensile", yearly: "Annuale", save: "Risparmia", off: "SCONTO", upTo: "Fino a" },
+  } as Record<string, Record<string, string>>)[lang] ?? { monthly: "Monthly", yearly: "Yearly", save: "Save", off: "OFF", upTo: "Up to" };
   const tutorial = ({
     el: { label: "Tutorial", title: "Δες το PhotoDrive σε δράση." },
     en: { label: "Tutorial", title: "See PhotoDrive in action." },
@@ -64,6 +116,29 @@ export default function HomePage() {
       .catch(() => {});
     return () => { cancelled = true; };
   }, []);
+
+  // Pair monthly/yearly variants into tiers; the toggle only appears when
+  // both billing modes exist. Defaults to yearly (the discounted mode).
+  const tiers = useMemo(() => buildTiers(publicPlans), [publicPlans]);
+  const monthlyTiers = tiers.filter((t) => t.monthly);
+  const yearlyTiers = tiers.filter((t) => t.yearly);
+  const [billingMode, setBillingMode] = useState<"monthly" | "yearly">("yearly");
+  const showToggle = monthlyTiers.length > 0 && yearlyTiers.length > 0;
+  const effectiveMode = showToggle ? billingMode : yearlyTiers.length > 0 ? "yearly" : "monthly";
+  const visibleTiers = effectiveMode === "yearly" ? yearlyTiers : monthlyTiers;
+
+  // Auto discount badge: whole-% savings of each paired tier, max wins.
+  const pairedDiscounts = tiers
+    .flatMap((t) => (t.monthly && t.yearly ? [discountPct(t.monthly.priceCents, t.yearly.priceCents)] : []))
+    .filter((d) => d > 0);
+  const maxDiscount = pairedDiscounts.length > 0 ? Math.max(...pairedDiscounts) : 0;
+  const distinctDiscounts = [...new Set(pairedDiscounts)];
+  const discountBadge =
+    maxDiscount <= 0
+      ? null
+      : distinctDiscounts.length === 1
+        ? `${maxDiscount}% ${billing.off}`
+        : `${billing.upTo} ${maxDiscount}% ${billing.off}`;
 
   const whatCards = [
     { icon: "M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3", label: t.what.card1Label, desc: t.what.card1Desc },
@@ -371,7 +446,7 @@ export default function HomePage() {
 
       {/* PRICING */}
       <section id="pricing" className="py-16 sm:py-28 px-6 border-t border-white/5">
-        <div className={publicPlans.length > 1 ? "max-w-5xl mx-auto" : "max-w-3xl mx-auto"}>
+        <div className={tiers.length > 1 ? "max-w-5xl mx-auto" : "max-w-3xl mx-auto"}>
           <div className="text-center mb-10 sm:mb-16">
             <p className="text-base font-semibold tracking-[0.2em] uppercase text-white mb-5">{t.pricing.label}</p>
             <h2
@@ -383,56 +458,106 @@ export default function HomePage() {
           </div>
 
           {publicPlans.length > 0 ? (
-            /* Dynamic plans managed in the admin back office */
-            <div className={`grid gap-4 mx-auto ${publicPlans.length === 1 ? "max-w-sm" : publicPlans.length === 2 ? "max-w-2xl sm:grid-cols-2" : "max-w-5xl sm:grid-cols-2 lg:grid-cols-3"}`}>
-              {publicPlans.map((plan) => (
-                <div
-                  key={plan.id}
-                  className={`relative border rounded-2xl p-7 overflow-hidden flex flex-col text-center ${
-                    plan.highlight
-                      ? "border-[#17509e]/50 bg-gradient-to-b from-[#17509e]/20 to-transparent"
-                      : "border-white/[0.08] bg-white/[0.03]"
-                  }`}
-                >
-                  {plan.highlight && (
-                    <span className="absolute top-4 right-4 text-[10px] font-bold tracking-widest uppercase text-[#2dabe0] bg-[#17509e]/20 border border-[#17509e]/30 rounded-full px-2.5 py-1">
-                      {t.pricing.badge}
-                    </span>
-                  )}
-                  <p className="text-sm font-bold tracking-widest uppercase text-[#2dabe0] mb-4">{plan.name}</p>
-                  {plan.description && <p className="text-white/60 text-xs mb-4">{plan.description}</p>}
-                  <div className="flex items-end justify-center gap-1 mb-1">
-                    <span className="text-4xl font-bold text-white">
-                      ${(plan.priceCents / 100) % 1 === 0 ? (plan.priceCents / 100).toFixed(0) : (plan.priceCents / 100).toFixed(2)}
-                    </span>
-                    <span className="text-stone-400 text-sm mb-1.5">{perInterval[plan.interval]}</span>
-                  </div>
-                  <p className="text-white text-sm font-medium mb-2">{t.pricing.vatNote}</p>
-                  <p className="flex items-center justify-center gap-1.5 text-white/50 text-xs mb-6">
-                    <svg className="w-3.5 h-3.5 text-[#2dabe0] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
-                    {noAutoRenew}
-                  </p>
-                  {plan.features.length > 0 && (
-                    <ul className="space-y-3 mb-8 inline-flex flex-col items-start">
-                      {plan.features.map((f, i) => (
-                        <li key={i} className="flex items-center gap-2.5 text-base text-white">
-                          <svg className="w-3.5 h-3.5 text-[#2dabe0] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-                          </svg>
-                          {f}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                  <Link
-                    href={`/subscribe?plan=${plan.id}`}
-                    className="block w-full text-center bg-white text-stone-900 font-bold rounded-xl py-3.5 text-sm hover:bg-stone-100 transition-all hover:scale-[1.01] shadow-lg shadow-black/20 mt-auto"
+            /* Dynamic plans managed in the admin back office, grouped into
+               monthly/yearly tiers with a billing toggle */
+            <>
+              {showToggle && (
+                <div className="flex items-center justify-center gap-3 mb-10">
+                  <span className={`text-sm transition-colors ${effectiveMode === "monthly" ? "text-white font-medium" : "text-white/40"}`}>
+                    {billing.monthly}
+                  </span>
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={effectiveMode === "yearly"}
+                    aria-label="Toggle yearly billing"
+                    onClick={() => setBillingMode(effectiveMode === "yearly" ? "monthly" : "yearly")}
+                    className={`w-11 h-6 rounded-full p-0.5 transition-colors cursor-pointer ${
+                      effectiveMode === "yearly" ? "bg-[#17509e]" : "border border-white/20 bg-transparent"
+                    }`}
                   >
-                    {t.pricing.cta}
-                  </Link>
+                    <div className={`w-4 h-4 bg-white rounded-full transition-transform duration-300 ${effectiveMode === "yearly" ? "translate-x-5" : "translate-x-0"}`} />
+                  </button>
+                  <span className={`text-sm transition-colors ${effectiveMode === "yearly" ? "text-white font-medium" : "text-white/40"}`}>
+                    {billing.yearly}
+                  </span>
+                  {discountBadge && (
+                    <span className="text-xs bg-[#D9D9D9] text-black px-2 py-1 rounded-full font-medium">
+                      {discountBadge}
+                    </span>
+                  )}
                 </div>
-              ))}
-            </div>
+              )}
+              <div className={`grid gap-4 mx-auto ${visibleTiers.length === 1 ? "max-w-sm" : visibleTiers.length === 2 ? "max-w-2xl sm:grid-cols-2" : "max-w-5xl sm:grid-cols-2 lg:grid-cols-3"}`}>
+                {visibleTiers.map((tier) => {
+                  const plan = effectiveMode === "yearly" ? tier.yearly : tier.monthly;
+                  if (!plan) return null;
+                  const popular = tier.monthly?.highlight === true || tier.yearly?.highlight === true;
+                  const savePct = tier.monthly && tier.yearly && effectiveMode === "yearly"
+                    ? discountPct(tier.monthly.priceCents, tier.yearly.priceCents)
+                    : 0;
+                  return (
+                    <div
+                      key={tier.key}
+                      className={`relative border rounded-2xl p-7 overflow-hidden flex flex-col text-center ${
+                        popular
+                          ? "border-[#17509e]/50 bg-gradient-to-b from-[#17509e]/20 to-transparent"
+                          : "border-white/[0.08] bg-white/[0.03]"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between gap-2 mb-4">
+                        <p className="text-sm font-bold tracking-widest uppercase text-[#2dabe0]">{tier.name}</p>
+                        {popular && (
+                          <span className="text-[10px] font-bold tracking-widest uppercase text-[#2dabe0] bg-[#17509e]/20 border border-[#17509e]/30 rounded-full px-2.5 py-1 shrink-0">
+                            {t.pricing.badge}
+                          </span>
+                        )}
+                      </div>
+                      {plan.description && <p className="text-white/60 text-xs mb-4">{plan.description}</p>}
+                      <div className="flex items-end justify-center gap-1 mb-1">
+                        <span className="text-4xl font-bold text-white">{formatUsd(plan.priceCents)}</span>
+                        <span className="text-stone-400 text-sm mb-1.5">{perInterval[plan.interval]}</span>
+                      </div>
+                      {savePct > 0 ? (
+                        <p className="text-xs font-semibold text-emerald-400 mb-2">{billing.save} {savePct}%</p>
+                      ) : (
+                        <p className="text-white text-sm font-medium mb-2">{t.pricing.vatNote}</p>
+                      )}
+                      {savePct > 0 && <p className="text-white/60 text-[11px] mb-2">{t.pricing.vatNote}</p>}
+                      <p className="flex items-center justify-center gap-1.5 text-white/50 text-xs mb-6">
+                        <svg className="w-3.5 h-3.5 text-[#2dabe0] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
+                        {noAutoRenew}
+                      </p>
+                      <Link
+                        href={`/subscribe?plan=${plan.id}`}
+                        className="block w-full text-center bg-white text-stone-900 font-bold rounded-xl py-3 text-sm hover:bg-stone-100 transition-all hover:scale-[1.01] shadow-lg shadow-black/20"
+                      >
+                        {t.pricing.cta}
+                      </Link>
+                      {plan.features.length > 0 && (
+                        <>
+                          <div className="flex items-center gap-2 mt-7 mb-4">
+                            <div className="flex-1 h-px bg-white/[0.08]" />
+                            <span className="text-xs font-medium text-stone-400">{t.nav.features}</span>
+                            <div className="flex-1 h-px bg-white/[0.08]" />
+                          </div>
+                          <ul className="space-y-2.5 inline-flex flex-col items-start">
+                            {plan.features.map((f, i) => (
+                              <li key={i} className="flex items-center gap-2.5 text-sm text-white text-left">
+                                <svg className="w-3.5 h-3.5 text-[#2dabe0] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                                </svg>
+                                {f}
+                              </li>
+                            ))}
+                          </ul>
+                        </>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </>
           ) : (
           /* Fallback: default annual card (shown before any plans are created) */
           <div className="max-w-sm mx-auto">

@@ -18,6 +18,7 @@ export async function GET() {
         currency: p.currency,
         features: p.features,
         highlight: p.highlight,
+        sortOrder: p.sortOrder,
       })),
     });
   } catch {
