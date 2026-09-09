@@ -124,8 +124,8 @@ export function CreateUserModal({
             >
               <option value="">No plan — free account</option>
               {plans.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name} · {p.interval} · ${(p.priceCents / 100).toFixed(2)}
+                <option key={p.id} value={p.id} disabled={!p.active}>
+                  {p.name} · {p.interval} · ${(p.priceCents / 100).toFixed(2)}{p.active ? "" : " (inactive)"}
                 </option>
               ))}
             </select>

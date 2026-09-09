@@ -30,6 +30,9 @@ export async function POST(req: NextRequest) {
     if (!planId) return NextResponse.json({ error: "Missing planId" }, { status: 400 });
     const plan = await getPlanById(planId);
     if (!plan) return NextResponse.json({ error: "Plan not found" }, { status: 400 });
+    if (!plan.active) {
+      return NextResponse.json({ error: "This plan is inactive — activate it first in the Plans tab" }, { status: 400 });
+    }
     const expiresAt = await assignPlanToUser(uid, plan);
     return NextResponse.json({ ok: true, expiresAt, plan: { id: plan.id, name: plan.name, interval: plan.interval } });
   } else if (action === "grant_lifetime") {

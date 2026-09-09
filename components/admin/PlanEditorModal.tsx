@@ -204,19 +204,25 @@ export function PlanEditorModal({
             />
           </div>
 
-          <div className="space-y-2.5">
-            <label className="flex items-center justify-between gap-3 cursor-pointer">
-              <span className="text-sm text-white">Public — show on landing page pricing</span>
+          <div className="space-y-3">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-sm text-white">Public — show on landing page pricing</p>
+                <p className="text-[11px] text-stone-600 mt-0.5">Off = hidden from the pricing grid; still reachable by direct link and assignable below.</p>
+              </div>
               <Toggle checked={isPublic} onChange={setIsPublic} />
-            </label>
+            </div>
             <label className="flex items-center justify-between gap-3 cursor-pointer">
               <span className="text-sm text-white">Highlight as “popular” on the pricing grid</span>
               <Toggle checked={highlight} onChange={setHighlight} />
             </label>
-            <label className="flex items-center justify-between gap-3 cursor-pointer">
-              <span className="text-sm text-white">Active — can be purchased &amp; assigned</span>
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-sm text-white">Active — can be purchased &amp; assigned</p>
+                <p className="text-[11px] text-stone-600 mt-0.5">Off = retired: hidden from checkout and can no longer be assigned. Users who already have it keep their access.</p>
+              </div>
               <Toggle checked={active} onChange={setActive} />
-            </label>
+            </div>
           </div>
         </div>
 

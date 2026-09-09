@@ -72,12 +72,33 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             );
           })}
         </div>
-        <Link
-          href="/dashboard"
-          className="text-xs text-white/50 hover:text-white transition-colors shrink-0"
-        >
-          ← Dashboard
-        </Link>
+        <div className="flex items-center gap-3 shrink-0">
+          <a
+            href="/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs text-white/50 hover:text-white transition-colors"
+            title="Open the site in a new tab"
+          >
+            View site ↗
+          </a>
+          <a
+            href="/#pricing"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs text-white/50 hover:text-white transition-colors"
+            title="Open the pricing section in a new tab to check your changes"
+          >
+            Pricing ↗
+          </a>
+          <span className="w-px h-3 bg-white/10" />
+          <Link
+            href="/dashboard"
+            className="text-xs text-white/50 hover:text-white transition-colors shrink-0"
+          >
+            ← Dashboard
+          </Link>
+        </div>
       </div>
       {children}
     </div>

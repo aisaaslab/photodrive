@@ -381,7 +381,7 @@ export default function HomePage() {
               {t.how.title1}{" "}
               <em className="not-italic text-rose-gradient">{t.how.title2}</em>
             </h2>
-            <p className="mt-4 text-white text-lg max-w-xl mx-auto leading-relaxed">
+            <p className="mt-4 text-white text-lg max-w-xl mx-auto leading-relaxed text-balance">
               {t.how.subtitle}
             </p>
           </div>
@@ -509,7 +509,7 @@ export default function HomePage() {
                         <p className="text-sm font-bold tracking-widest uppercase text-[#2dabe0]">{tier.name}</p>
                         {popular && (
                           <span className="text-[10px] font-bold tracking-widest uppercase text-[#2dabe0] bg-[#17509e]/20 border border-[#17509e]/30 rounded-full px-2.5 py-1 shrink-0">
-                            {t.pricing.badge}
+                            {t.pricing.popular}
                           </span>
                         )}
                       </div>
@@ -521,13 +521,15 @@ export default function HomePage() {
                       {savePct > 0 ? (
                         <p className="text-xs font-semibold text-emerald-400 mb-2">{billing.save} {savePct}%</p>
                       ) : (
-                        <p className="text-white text-sm font-medium mb-2">{t.pricing.vatNote}</p>
+                        <p className={`text-white text-sm font-medium ${plan.interval === "yearly" ? "mb-2" : "mb-6"}`}>{plan.interval === "yearly" ? t.pricing.vatNote : t.pricing.vatNoteMonthly}</p>
                       )}
                       {savePct > 0 && <p className="text-white/60 text-[11px] mb-2">{t.pricing.vatNote}</p>}
-                      <p className="flex items-center justify-center gap-1.5 text-white/50 text-xs mb-6">
-                        <svg className="w-3.5 h-3.5 text-[#2dabe0] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
-                        {noAutoRenew}
-                      </p>
+                      {plan.interval === "yearly" && (
+                        <p className="flex items-center justify-center gap-1.5 text-white/50 text-xs mb-6">
+                          <svg className="w-3.5 h-3.5 text-[#2dabe0] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
+                          {noAutoRenew}
+                        </p>
+                      )}
                       <Link
                         href={`/subscribe?plan=${plan.id}`}
                         className="block w-full text-center bg-white text-stone-900 font-bold rounded-xl py-3 text-sm hover:bg-stone-100 transition-all hover:scale-[1.01] shadow-lg shadow-black/20"
@@ -605,7 +607,7 @@ export default function HomePage() {
             <br />
             <em className="not-italic text-rose-gradient">{t.cta.title2}</em>
           </h2>
-          <p className="text-white text-lg mb-10 leading-relaxed max-w-lg mx-auto">
+          <p className="text-white text-lg mb-10 leading-relaxed max-w-lg mx-auto text-balance">
             {t.cta.subtitle}
           </p>
           <Link

@@ -93,8 +93,14 @@ export default function AdminUsersPage() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
 
+  // User delete state (hard delete — works directly, no revoke needed first)
+  const [userDeleteConfirm, setUserDeleteConfirm] = useState<string | null>(null);
+  const [userDeletingId, setUserDeletingId] = useState<string | null>(null);
+
   // Subscription / access management
   const [subBusy, setSubBusy] = useState<string | null>(null);
+  const [revokeConfirm, setRevokeConfirm] = useState<string | null>(null);
+  const [subMessage, setSubMessage] = useState<Record<string, { kind: "ok" | "error"; text: string }>>({});
   const [planSelect, setPlanSelect] = useState<Record<string, string>>({});
 
   const loadData = useCallback(async () => {
@@ -164,14 +170,62 @@ export default function AdminUsersPage() {
   const setSubscription = async (uid: string, action: "assign_plan" | "grant_lifetime" | "grant_year" | "revoke", planId?: string) => {
     if (!user) return;
     setSubBusy(uid);
-    const token = await user.getIdToken();
-    const res = await fetch("/api/admin/subscription", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ uid, action, planId }),
+    setSubMessage((prev) => {
+      const next = { ...prev };
+      delete next[uid];
+      return next;
     });
-    if (res.ok) await loadData();
-    setSubBusy(null);
+    try {
+      const token = await user.getIdToken();
+      const res = await fetch("/api/admin/subscription", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ uid, action, planId }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setSubMessage((prev) => ({ ...prev, [uid]: { kind: "error", text: data.error || "Action failed. Please try again." } }));
+        return;
+      }
+      await loadData();
+      const labels: Record<string, string> = {
+        assign_plan: "Plan assigned — subscription is now active.",
+        grant_lifetime: "Lifetime access granted.",
+        grant_year: "+1 year of access granted.",
+        revoke: "Access revoked — account kept, subscription removed.",
+      };
+      setSubMessage((prev) => ({ ...prev, [uid]: { kind: "ok", text: labels[action] ?? "Done." } }));
+      if (action === "revoke") setRevokeConfirm(null);
+    } catch {
+      setSubMessage((prev) => ({ ...prev, [uid]: { kind: "error", text: "Action failed. Please try again." } }));
+    } finally {
+      setSubBusy(null);
+    }
+  };
+
+  const deleteUser = async (uid: string) => {
+    if (!user) return;
+    setUserDeletingId(uid);
+    try {
+      const token = await user.getIdToken();
+      const res = await fetch(`/api/admin/users/${encodeURIComponent(uid)}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setSubMessage((prev) => ({ ...prev, [uid]: { kind: "error", text: data.error || "Could not delete the user." } }));
+        return;
+      }
+      setUsers((prev) => prev.filter((u) => u.uid !== uid));
+      setGalleries((prev) => prev.filter((g) => g.photographerId !== uid));
+      setUserDeleteConfirm(null);
+      if (expandedUid === uid) setExpandedUid(null);
+    } catch {
+      setSubMessage((prev) => ({ ...prev, [uid]: { kind: "error", text: "Could not delete the user." } }));
+    } finally {
+      setUserDeletingId(null);
+    }
   };
 
   const galleriesFor = (uid: string) => galleries.filter((g) => g.photographerId === uid);
@@ -317,14 +371,15 @@ export default function AdminUsersPage() {
                       >
                         <option value="">Choose plan…</option>
                         {plans.map((p) => (
-                          <option key={p.id} value={p.id}>
-                            {p.name} · {p.interval} · ${(p.priceCents / 100).toFixed(2)}{p.active ? "" : " (inactive)"}
+                          <option key={p.id} value={p.id} disabled={!p.active}>
+                            {p.name} · {p.interval} · ${(p.priceCents / 100).toFixed(2)}{p.active ? "" : " (inactive — activate in Plans tab)"}
                           </option>
                         ))}
                       </select>
                       <button
                         onClick={() => selectedPlan && setSubscription(u.uid, "assign_plan", selectedPlan)}
                         disabled={subBusy === u.uid || !selectedPlan}
+                        title="Activates the chosen plan on this account immediately"
                         className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-[#17509e] text-white hover:bg-[#103a75] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                       >
                         Assign plan
@@ -333,6 +388,7 @@ export default function AdminUsersPage() {
                       <button
                         onClick={() => setSubscription(u.uid, "grant_lifetime")}
                         disabled={subBusy === u.uid}
+                        title="Grants complimentary lifetime access"
                         className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-[#17509e]/40 text-[#2dabe0] hover:border-[#17509e] disabled:opacity-50 transition-colors"
                       >
                         Free lifetime
@@ -340,21 +396,51 @@ export default function AdminUsersPage() {
                       <button
                         onClick={() => setSubscription(u.uid, "grant_year")}
                         disabled={subBusy === u.uid}
+                        title="Grants complimentary access for one year"
                         className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-[#17509e]/40 text-[#2dabe0] hover:border-[#17509e] disabled:opacity-50 transition-colors"
                       >
                         +1 year
                       </button>
-                      <button
-                        onClick={() => setSubscription(u.uid, "revoke")}
-                        disabled={subBusy === u.uid}
-                        className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-red-500/30 text-red-400 hover:bg-red-500/10 disabled:opacity-50 transition-colors"
-                      >
-                        Revoke
-                      </button>
+                      {revokeConfirm === u.uid ? (
+                        <span className="flex items-center gap-1.5">
+                          <span className="text-xs text-red-400">Remove access?</span>
+                          <button
+                            onClick={() => setSubscription(u.uid, "revoke")}
+                            disabled={subBusy === u.uid}
+                            title="Removes the subscription — the account stays, premium access goes"
+                            className="px-2.5 py-1.5 text-xs font-semibold rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 disabled:opacity-50 transition-colors"
+                          >
+                            {subBusy === u.uid ? "..." : "Yes, revoke"}
+                          </button>
+                          <button
+                            onClick={() => setRevokeConfirm(null)}
+                            className="px-2.5 py-1.5 border border-white/10 text-stone-400 text-xs rounded-lg"
+                          >
+                            No
+                          </button>
+                        </span>
+                      ) : (
+                        <button
+                          onClick={() => setRevokeConfirm(u.uid)}
+                          disabled={subBusy === u.uid}
+                          title="Removes the subscription — the account stays, premium access goes"
+                          className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-red-500/30 text-red-400 hover:bg-red-500/10 disabled:opacity-50 transition-colors"
+                        >
+                          Revoke access
+                        </button>
+                      )}
                       {subBusy === u.uid && (
                         <span className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
                       )}
                     </div>
+                    <p className="text-[11px] text-stone-600 mt-2">
+                      Revoke removes premium access but keeps the account. Deleting (below) removes the account, its subscription and its galleries permanently.
+                    </p>
+                    {subMessage[u.uid] && (
+                      <p className={`text-xs mt-2 ${subMessage[u.uid].kind === "ok" ? "text-emerald-400" : "text-red-400"}`}>
+                        {subMessage[u.uid].kind === "ok" ? "✓ " : ""}{subMessage[u.uid].text}
+                      </p>
+                    )}
                     {plans.length === 0 && (
                       <p className="text-[11px] text-stone-600 mt-2">
                         No payment plans yet — create one in the Plans tab to assign it here.
@@ -530,6 +616,40 @@ export default function AdminUsersPage() {
                       ))}
                     </div>
                   )}
+                  {/* Danger zone: permanent user delete */}
+                  <div className="px-5 py-4 border-t border-red-500/10 bg-red-500/[0.02] flex items-center justify-between gap-3 flex-wrap">
+                    <div>
+                      <p className="text-xs font-semibold text-red-400">Delete user permanently</p>
+                      <p className="text-[11px] text-stone-500 mt-0.5">
+                        Removes the account, its subscription and {userGalleries.length} {userGalleries.length === 1 ? "gallery" : "galleries"}. No need to revoke first. Cannot be undone.
+                      </p>
+                    </div>
+                    {userDeleteConfirm === u.uid ? (
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-xs text-red-400">Sure?</span>
+                        <button
+                          onClick={() => deleteUser(u.uid)}
+                          disabled={userDeletingId === u.uid}
+                          className="px-3 py-1.5 bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-semibold rounded-lg hover:bg-red-500/20 disabled:opacity-50"
+                        >
+                          {userDeletingId === u.uid ? "Deleting..." : "Yes, delete"}
+                        </button>
+                        <button
+                          onClick={() => setUserDeleteConfirm(null)}
+                          className="px-3 py-1.5 border border-white/10 text-stone-400 text-xs rounded-lg"
+                        >
+                          No
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => setUserDeleteConfirm(u.uid)}
+                        className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-red-500/30 text-red-400 hover:bg-red-500/10 transition-colors"
+                      >
+                        Delete user…
+                      </button>
+                    )}
+                  </div>
                 </div>
               )}
             </div>

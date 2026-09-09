@@ -130,6 +130,9 @@ export async function POST(req: NextRequest) {
   if (planId) {
     const plan = await getPlanById(planId);
     if (!plan) return NextResponse.json({ error: "Plan not found" }, { status: 400 });
+    if (!plan.active) {
+      return NextResponse.json({ error: "This plan is inactive — activate it first in the Plans tab" }, { status: 400 });
+    }
   }
 
   let created;
