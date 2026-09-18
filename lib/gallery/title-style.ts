@@ -41,8 +41,9 @@ export function validTitleFont(id: unknown): TitleFontId | null {
 }
 
 /**
- * Curated light swatches — all readable over the dark hero gradient, so any
- * pick is a safe pick. Displayed as round color chips; no names needed.
+ * Curated swatches — mostly light so they stay readable over the dark hero
+ * gradient, plus black for light-cover photos. Displayed as round color
+ * chips; no names needed.
  */
 export const TITLE_COLORS = [
   "#ffffff", // white
@@ -59,6 +60,7 @@ export const TITLE_COLORS = [
   "#c5c8f0", // periwinkle
   "#f8a488", // salmon
   "#d4d4d4", // silver
+  "#000000", // black
 ] as const;
 
 /** Returns the hex only if it's a 6-digit hex color, else null. */

@@ -15,7 +15,7 @@
   GALLEROO · HTML email template (English)
   • Table-based, inline styles → works in Gmail, Apple Mail, Outlook, etc.
   • IMPORTANT: before sending, replace the image src (assets/...) with
-    ABSOLUTE URLs (e.g. https://YOUR-DOMAIN.com/email/wordmark.png), otherwise
+    ABSOLUTE URLs (e.g. https://www.photodrive.co/email/wordmark.png), otherwise
     they will not load for recipients.
 -->
 <style>
@@ -83,7 +83,7 @@
               <table role="presentation" cellpadding="0" cellspacing="0" border="0">
                 <tr>
                   <td align="center" bgcolor="#5FC8B0" style="border-radius:999px;">
-                    <a href="https://YOUR-DOMAIN.com/" class="px" style="display:inline-block;padding:15px 34px;font-family:'Mulish','Helvetica Neue',Arial,sans-serif;font-size:16px;font-weight:800;color:#06140F;text-decoration:none;border-radius:999px;">Get started &nbsp;→</a>
+                    <a href="https://www.photodrive.co/" class="px" style="display:inline-block;padding:15px 34px;font-family:'Mulish','Helvetica Neue',Arial,sans-serif;font-size:16px;font-weight:800;color:#06140F;text-decoration:none;border-radius:999px;">Get started &nbsp;→</a>
                   </td>
                 </tr>
               </table>
@@ -98,7 +98,7 @@
           </tr>
           <tr>
             <td class="px-pad" align="center" style="padding:10px 44px 38px;">
-              <a href="https://YOUR-DOMAIN.com/gallery/YOUR-GALLERY-ID" class="px" style="font-family:'Mulish','Helvetica Neue',Arial,sans-serif;font-size:13px;font-weight:700;color:#5FC8B0;text-decoration:none;">See an example gallery →</a>
+              <a href="https://www.photodrive.co/gallery/YOUR-GALLERY-ID" class="px" style="font-family:'Mulish','Helvetica Neue',Arial,sans-serif;font-size:13px;font-weight:700;color:#5FC8B0;text-decoration:none;">See an example gallery →</a>
             </td>
           </tr>
 
@@ -174,7 +174,7 @@
                     <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center">
                       <tr>
                         <td align="center" bgcolor="#06140F" style="border-radius:999px;">
-                          <a href="https://YOUR-DOMAIN.com/" class="px" style="display:inline-block;padding:13px 30px;font-family:'Mulish','Helvetica Neue',Arial,sans-serif;font-size:15px;font-weight:800;color:#5FC8B0;text-decoration:none;border-radius:999px;">YOUR-DOMAIN.com &nbsp;→</a>
+                          <a href="https://www.photodrive.co/" class="px" style="display:inline-block;padding:13px 30px;font-family:'Mulish','Helvetica Neue',Arial,sans-serif;font-size:15px;font-weight:800;color:#5FC8B0;text-decoration:none;border-radius:999px;">photodrive.co &nbsp;→</a>
                         </td>
                       </tr>
                     </table>
@@ -187,9 +187,9 @@
           <!-- FOOTER -->
           <tr>
             <td class="px-pad" align="center" style="padding:8px 44px 40px;border-top:1px solid rgba(255,255,255,0.07);">
-              <p class="px" style="margin:26px 0 6px;font-family:'Mulish','Helvetica Neue',Arial,sans-serif;font-size:15px;font-weight:900;color:#5FC8B0;">YOUR-DOMAIN.com</p>
+              <p class="px" style="margin:26px 0 6px;font-family:'Mulish','Helvetica Neue',Arial,sans-serif;font-size:15px;font-weight:900;color:#5FC8B0;">photodrive.co</p>
               <p class="px" style="margin:0 0 16px;font-family:'Mulish','Helvetica Neue',Arial,sans-serif;font-size:13px;color:#9AACA7;">
-                <a href="mailto:support@YOUR-DOMAIN.com" style="color:#9AACA7;text-decoration:none;">support@YOUR-DOMAIN.com</a>
+                <a href="mailto:support@photodrive.co" style="color:#9AACA7;text-decoration:none;">support@photodrive.co</a>
               </p>
               <p class="px" style="margin:0 0 4px;font-family:'Mulish','Helvetica Neue',Arial,sans-serif;font-size:12px;line-height:1.6;color:#67786F;">
                 You're receiving this email from Galleroo.
@@ -199,7 +199,7 @@
               </p>
               <div id="unsubDone" style="display:none;margin:14px auto 0;max-width:360px;background:rgba(95,200,176,0.10);border:1px solid rgba(95,200,176,0.30);border-radius:10px;padding:14px 18px;">
                 <p class="px" style="margin:0;font-family:'Mulish','Helvetica Neue',Arial,sans-serif;font-size:13px;font-weight:800;color:#5FC8B0;">✓ You've been unsubscribed</p>
-                <p class="px" style="margin:5px 0 0;font-family:'Mulish','Helvetica Neue',Arial,sans-serif;font-size:12px;line-height:1.5;color:#9AACA7;">You will no longer receive emails from Galleroo. You can re-subscribe anytime at YOUR-DOMAIN.com.</p>
+                <p class="px" style="margin:5px 0 0;font-family:'Mulish','Helvetica Neue',Arial,sans-serif;font-size:12px;line-height:1.5;color:#9AACA7;">You will no longer receive emails from Galleroo. You can re-subscribe anytime at photodrive.co.</p>
               </div>
             </td>
           </tr>
