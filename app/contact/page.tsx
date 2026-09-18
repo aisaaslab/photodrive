@@ -1,32 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useLanguage } from "@/lib/i18n";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { ContactModal } from "@/components/contact/ContactModal";
-import { SUPPORT_EMAIL as FALLBACK_EMAIL } from "@/lib/branding";
 
 export default function ContactPage() {
   const { t } = useLanguage();
   const c = t.contact;
   const [open, setOpen] = useState(false);
-  const [supportEmail, setSupportEmail] = useState(FALLBACK_EMAIL);
-
-  // Runtime support email (admin-editable via Firestore `settings/site`,
-  // no deploy needed). Falls back to the build-time env value.
-  useEffect(() => {
-    let cancelled = false;
-    fetch("/api/site-settings")
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => {
-        if (!cancelled && data?.supportEmail) setSupportEmail(data.supportEmail);
-      })
-      .catch(() => {});
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   return (
     <main className="bg-[#080808] text-white min-h-screen">
@@ -61,13 +44,6 @@ export default function ContactPage() {
         </button>
 
         <p className="text-stone-500 text-xs leading-relaxed mt-8">
-          {c.directEmail}{" "}
-          <a href={`mailto:${supportEmail}`} className="text-stone-300 underline underline-offset-2 hover:text-white">
-            {supportEmail}
-          </a>
-        </p>
-
-        <p className="text-stone-500 text-xs leading-relaxed mt-2">
           {c.responseTime}
         </p>
       </div>

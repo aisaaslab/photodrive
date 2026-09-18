@@ -1,10 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useLanguage } from "@/lib/i18n";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
-import { SUPPORT_EMAIL as FALLBACK_EMAIL } from "@/lib/branding";
 
 function FAQItem({ q, a }: { q: string; a: string }) {
   const [open, setOpen] = useState(false);
@@ -27,21 +26,6 @@ function FAQItem({ q, a }: { q: string; a: string }) {
 export default function FAQPage() {
   const { t } = useLanguage();
   const f = t.faq;
-  const [supportEmail, setSupportEmail] = useState(FALLBACK_EMAIL);
-
-  // Runtime support email (admin-editable, no deploy needed).
-  useEffect(() => {
-    let cancelled = false;
-    fetch("/api/site-settings")
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => {
-        if (!cancelled && data?.supportEmail) setSupportEmail(data.supportEmail);
-      })
-      .catch(() => {});
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   return (
     <main className="bg-[#080808] text-white min-h-screen">
@@ -67,20 +51,12 @@ export default function FAQPage() {
         <div className="mt-16 bg-white/[0.03] border border-white/[0.06] rounded-2xl p-6 text-center">
           <p className="text-white font-medium mb-2">{f.noAnswerTitle}</p>
           <p className="text-stone-400 text-sm mb-4">{f.noAnswerSubtitle}</p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-2">
-            <Link
-              href="/contact"
-              className="inline-flex items-center gap-2 bg-white text-stone-900 font-semibold px-6 py-2.5 rounded-xl text-sm hover:bg-stone-100 transition-all"
-            >
-              {t.contact.writeToUs}
-            </Link>
-            <a
-              href={`mailto:${supportEmail}`}
-              className="inline-flex items-center gap-2 font-medium px-6 py-2.5 rounded-xl text-sm text-stone-400 hover:text-white transition-all"
-            >
-              {supportEmail}
-            </a>
-          </div>
+          <Link
+            href="/contact"
+            className="inline-flex items-center gap-2 bg-white text-stone-900 font-semibold px-6 py-2.5 rounded-xl text-sm hover:bg-stone-100 transition-all"
+          >
+            {t.contact.writeToUs}
+          </Link>
         </div>
       </div>
     </main>
