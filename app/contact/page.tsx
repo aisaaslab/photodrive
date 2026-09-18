@@ -1,13 +1,32 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useLanguage } from "@/lib/i18n";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
-import { SUPPORT_EMAIL } from "@/lib/branding";
+import { ContactModal } from "@/components/contact/ContactModal";
+import { SUPPORT_EMAIL as FALLBACK_EMAIL } from "@/lib/branding";
 
 export default function ContactPage() {
   const { t } = useLanguage();
   const c = t.contact;
+  const [open, setOpen] = useState(false);
+  const [supportEmail, setSupportEmail] = useState(FALLBACK_EMAIL);
+
+  // Runtime support email (admin-editable via Firestore `settings/site`,
+  // no deploy needed). Falls back to the build-time env value.
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/site-settings")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (!cancelled && data?.supportEmail) setSupportEmail(data.supportEmail);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   return (
     <main className="bg-[#080808] text-white min-h-screen">
@@ -22,13 +41,13 @@ export default function ContactPage() {
         <h1 className="text-3xl font-bold mb-2" style={{ fontFamily: "var(--font-brand), sans-serif" }}>
           {c.title}
         </h1>
-        <p className="text-stone-400 text-sm mb-12 leading-relaxed">
+        <p className="text-stone-400 text-sm mb-10 leading-relaxed">
           {c.subtitle}
         </p>
 
-        <a
-          href={`mailto:${SUPPORT_EMAIL}`}
-          className="flex items-center gap-4 border border-white/8 rounded-2xl p-5 hover:border-white/20 hover:bg-white/[0.02] transition-all group"
+        <button
+          onClick={() => setOpen(true)}
+          className="w-full flex items-center gap-4 border border-white/8 rounded-2xl p-5 hover:border-white/20 hover:bg-white/[0.02] transition-all group text-left"
         >
           <div className="w-10 h-10 border border-white/8 rounded-xl flex items-center justify-center shrink-0 group-hover:border-white/20 transition-colors">
             <svg className="w-4 h-4 text-stone-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -37,15 +56,23 @@ export default function ContactPage() {
           </div>
           <div>
             <p className="text-xs text-stone-500 mb-0.5">Email</p>
-            <p className="text-white text-sm font-medium">{SUPPORT_EMAIL}</p>
+            <p className="text-white text-sm font-medium">{c.writeToUs} →</p>
           </div>
-        </a>
+        </button>
 
         <p className="text-stone-500 text-xs leading-relaxed mt-8">
+          {c.directEmail}{" "}
+          <a href={`mailto:${supportEmail}`} className="text-stone-300 underline underline-offset-2 hover:text-white">
+            {supportEmail}
+          </a>
+        </p>
+
+        <p className="text-stone-500 text-xs leading-relaxed mt-2">
           {c.responseTime}
         </p>
       </div>
+
+      <ContactModal open={open} onClose={() => setOpen(false)} />
     </main>
   );
 }
-
