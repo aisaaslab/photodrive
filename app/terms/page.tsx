@@ -3,11 +3,14 @@
 import Link from "next/link";
 import { useLanguage } from "@/lib/i18n";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
-import { SUPPORT_EMAIL, OWNER_NAME, OWNER_VAT, OWNER_ADDRESS, OWNER_TAX_OFFICE } from "@/lib/branding";
+import { OWNER_NAME, OWNER_VAT, OWNER_ADDRESS, OWNER_TAX_OFFICE } from "@/lib/branding";
+import { useSupportEmail } from "@/lib/use-support-email";
 
 export default function TermsPage() {
   const { t } = useLanguage();
   const s = t.terms;
+  // Admin-managed support email (Firestore `settings/site`), never env.
+  const SUPPORT_EMAIL = useSupportEmail();
 
   return (
     <main className="bg-[#080808] text-white min-h-screen">

@@ -17,14 +17,13 @@ function isValidEmail(v: string): boolean {
 /**
  * Resolve the support email recipient.
  *
- * Priority:
- *   1. Firestore `settings/site`.supportEmail (editable in admin back office)
- *   2. CONTACT_TO_EMAIL (server-only, no NEXT_PUBLIC_ prefix — this is the
- *      fix for the Vercel "Remove the public framework prefix" error: Vercel
- *      refuses sensitive-looking values in NEXT_PUBLIC_* vars because they
- *      ship in the browser bundle)
- *   3. Legacy NEXT_PUBLIC_SUPPORT_EMAIL (kept for backwards compat)
- *   4. Built-in default
+ * Single source of truth: Firestore `settings/site`.supportEmail, edited in
+ * the admin back office (Dashboard → Admin → Settings). No env variable is
+ * read here on purpose — env-based email is intentionally unsupported (Vercel
+ * rejects sensitive-looking values under the NEXT_PUBLIC_ prefix, and the
+ * address must stay editable at runtime without redeploys).
+ *
+ * Falls back to the built-in default when no admin value is stored yet.
  */
 export async function getSupportEmail(): Promise<string> {
   try {
@@ -32,16 +31,10 @@ export async function getSupportEmail(): Promise<string> {
     const stored = snap.exists
       ? ((snap.data()?.supportEmail as string | undefined) ?? "")
       : "";
-    if (stored && isValidEmail(stored)) return stored.trim();
+    if (stored && isValidEmail(stored)) return stored.trim().toLowerCase();
   } catch {
-    // Firestore unavailable (e.g. build time) — fall through to env.
+    // Firestore unavailable — fall through to the default.
   }
-
-  const fromPrivate = (process.env.CONTACT_TO_EMAIL ?? "").trim();
-  if (fromPrivate && isValidEmail(fromPrivate)) return fromPrivate;
-
-  const legacy = (process.env.NEXT_PUBLIC_SUPPORT_EMAIL ?? "").trim();
-  if (legacy && isValidEmail(legacy)) return legacy;
 
   return DEFAULT_SUPPORT_EMAIL;
 }

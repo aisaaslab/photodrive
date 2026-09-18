@@ -3,11 +3,14 @@
 import Link from "next/link";
 import { useLanguage } from "@/lib/i18n";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
-import { OWNER_NAME, OWNER_VAT, OWNER_ADDRESS, SUPPORT_EMAIL } from "@/lib/branding";
+import { OWNER_NAME, OWNER_VAT, OWNER_ADDRESS } from "@/lib/branding";
+import { useSupportEmail } from "@/lib/use-support-email";
 
 export default function PrivacyPage() {
   const { t } = useLanguage();
   const p = t.privacy;
+  // Admin-managed support email (Firestore `settings/site`), never env.
+  const SUPPORT_EMAIL = useSupportEmail();
 
   return (
     <main className="bg-[#080808] text-white min-h-screen">

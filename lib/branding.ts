@@ -27,18 +27,13 @@ export const APP_DESCRIPTION =
   process.env.NEXT_PUBLIC_APP_DESCRIPTION || "Professional galleries for photographers";
 
 /**
- * Build-time fallback for the support email. The live value is resolved at
- * runtime via GET /api/site-settings (Firestore `settings/site`, editable in
- * the admin back office under Settings) — see lib/site-settings.ts.
- *
- * NOTE: do NOT create a NEXT_PUBLIC_SUPPORT_EMAIL variable in Vercel. Vercel
- * rejects sensitive-looking values under the NEXT_PUBLIC_ prefix ("Remove
- * the public framework prefix to keep this value private") because those
- * values ship in the browser bundle. Use the server-only CONTACT_TO_EMAIL
- * variable instead (or just edit it in Admin → Settings, which wins).
+ * Placeholder shown before the live support email loads. The live value is
+ * resolved at runtime via GET /api/site-settings (Firestore `settings/site`,
+ * editable in Admin → Settings) — see lib/site-settings.ts and
+ * lib/use-support-email.ts. No env variable is read here on purpose: the
+ * support email is admin-managed only and must never come from env.
  */
-export const SUPPORT_EMAIL =
-  process.env.NEXT_PUBLIC_SUPPORT_EMAIL || "support@photodrive.co";
+export const SUPPORT_EMAIL = "support@photodrive.co";
 
 // These three appear verbatim on the public Terms and Privacy pages, which are
 // legal documents naming the business operator. Fill them in via .env.local

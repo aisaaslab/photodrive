@@ -272,8 +272,9 @@ STAGE 3 — STRIPE, PART ONE (KEYS)
 3. Set NEXT_PUBLIC_APP_URL and APP_URL to http://localhost:3000 for now.
 4. Fill in the remaining branding variables in `.env.local` by asking me for
    them: NEXT_PUBLIC_APP_NAME, NEXT_PUBLIC_APP_TAGLINE,
-   NEXT_PUBLIC_APP_DESCRIPTION, NEXT_PUBLIC_SUPPORT_EMAIL,
+   NEXT_PUBLIC_APP_DESCRIPTION,
    NEXT_PUBLIC_OWNER_NAME, NEXT_PUBLIC_OWNER_VAT, NEXT_PUBLIC_OWNER_ADDRESS.
+   (The support email is set later in Dashboard → Admin → Settings, not via env.)
    Leave NEXT_PUBLIC_OWNER_TAX_OFFICE empty — it has no US equivalent and the
    row is hidden when empty. Leave NEXT_PUBLIC_DEMO_GALLERY_URL empty for now.
    The tagline and description appear only on the preview card shown when
@@ -1111,7 +1112,6 @@ At the bottom of `.env.local`, fill in these values with **your** info:
 
 ```env
 NEXT_PUBLIC_APP_NAME=MyGallery
-NEXT_PUBLIC_SUPPORT_EMAIL=support@mygallery.com
 NEXT_PUBLIC_OWNER_NAME=YOUR FULL LEGAL NAME
 NEXT_PUBLIC_OWNER_VAT=YOUR_TAX_ID_NUMBER
 NEXT_PUBLIC_OWNER_ADDRESS=Your business street, City, Country
@@ -1120,8 +1120,11 @@ NEXT_PUBLIC_DEMO_GALLERY_URL=
 
 These appear:
 - `APP_NAME` → throughout the website (header, footer, page titles, emails)
-- `SUPPORT_EMAIL` → on Contact, FAQ, Privacy, Terms pages
 - `OWNER_NAME` / `OWNER_VAT` / `OWNER_ADDRESS` → on Terms of Service & Privacy Policy
+
+The support email is NOT an env variable. Set it after deploying in
+Dashboard → Admin → Settings (stored in Firestore `settings/site`). It is
+the contact-form recipient and the address shown on Privacy/Terms.
 
 6. **Save the file.** On Mac: `Cmd + S`. On Windows: `Ctrl + S`.
 

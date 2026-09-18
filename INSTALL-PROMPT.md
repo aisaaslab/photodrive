@@ -147,8 +147,9 @@ STAGE 3 — STRIPE, PART ONE (KEYS)
 3. Set NEXT_PUBLIC_APP_URL and APP_URL to http://localhost:3000 for now.
 4. Fill in the remaining branding variables in `.env.local` by asking me for
    them: NEXT_PUBLIC_APP_NAME, NEXT_PUBLIC_APP_TAGLINE,
-   NEXT_PUBLIC_APP_DESCRIPTION, NEXT_PUBLIC_SUPPORT_EMAIL,
+   NEXT_PUBLIC_APP_DESCRIPTION,
    NEXT_PUBLIC_OWNER_NAME, NEXT_PUBLIC_OWNER_VAT, NEXT_PUBLIC_OWNER_ADDRESS.
+   (The support email is set later in Dashboard → Admin → Settings, not via env.)
    Leave NEXT_PUBLIC_OWNER_TAX_OFFICE empty — it has no US equivalent and the
    row is hidden when empty. Leave NEXT_PUBLIC_DEMO_GALLERY_URL empty for now.
    The tagline and description appear only on the preview card shown when
