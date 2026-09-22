@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { IBM_Plex_Sans } from "next/font/google";
 import { Playfair_Display, Dancing_Script, Poppins, Space_Mono } from "next/font/google";
 import "./globals.css";
@@ -72,6 +73,18 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body suppressHydrationWarning className="min-h-full flex flex-col bg-stone-50 text-stone-900" style={{ fontFamily: "var(--font-sans), system-ui, sans-serif" }}>
         <ClientProviders>{children}</ClientProviders>
         <SiteAnalytics />
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=AW-18467164685"
+          strategy="afterInteractive"
+        />
+        <Script id="google-ads-tag" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'AW-18467164685');
+          `}
+        </Script>
       </body>
     </html>
   );
