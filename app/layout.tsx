@@ -42,6 +42,8 @@ const spaceMono = Space_Mono({
 const description =
   "Share professional galleries with your clients straight from Google Drive.";
 
+const GTM_ID = "GTM-5789H3DW";
+
 export const metadata: Metadata = {
   metadataBase: new URL(APP_URL),
   title: `${APP_NAME}, Professional galleries for photographers`,
@@ -71,8 +73,30 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           hydrates, causing a spurious hydration mismatch. This is the React-
           recommended fix for third-party DOM mutations on this element. */}
       <body suppressHydrationWarning className="min-h-full flex flex-col bg-stone-50 text-stone-900" style={{ fontFamily: "var(--font-sans), system-ui, sans-serif" }}>
+        {/* Google Tag Manager (noscript) */}
+        <noscript>
+          <iframe
+            src={`https://www.googletagmanager.com/ns.html?id=${GTM_ID}`}
+            height="0"
+            width="0"
+            style={{ display: "none", visibility: "hidden" }}
+            title="gtm"
+          />
+        </noscript>
+        {/* End Google Tag Manager (noscript) */}
         <ClientProviders>{children}</ClientProviders>
         <SiteAnalytics />
+        {/* Google Tag Manager */}
+        <Script id="google-tag-manager" strategy="afterInteractive">
+          {`
+            (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+            new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+            j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+            'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+            })(window,document,'script','dataLayer','${GTM_ID}');
+          `}
+        </Script>
+        {/* End Google Tag Manager */}
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=AW-18467164685"
           strategy="afterInteractive"
