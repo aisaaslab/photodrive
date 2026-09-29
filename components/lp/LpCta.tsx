@@ -16,7 +16,7 @@ export function LpCta({ placement, variant = "primary", children, className = ""
   const styles =
     variant === "light"
       ? "bg-white text-[#0f2447] hover:bg-blue-50"
-      : "bg-[#1d6fe8] text-white hover:bg-[#1a62cf] shadow-lg shadow-blue-600/25";
+      : "bg-primary text-white hover:bg-primary-dark shadow-lg shadow-blue-600/25";
   return (
     <Link
       href="/login"

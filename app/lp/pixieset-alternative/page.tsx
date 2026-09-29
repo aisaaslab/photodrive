@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { LpCta } from "@/components/lp/LpCta";
-import { BeforeAfter, DeviceHero } from "@/components/lp/Mockups";
-import { Check, CheckCircle, Dash, DriveLogo } from "@/components/lp/icons";
+import { Hero } from "@/components/Hero";
+import { BeforeAfter } from "@/components/lp/Mockups";
+import { Check, CheckCircle, Dash, GoogleDriveIcon } from "@/components/lp/icons";
 import { APP_NAME } from "@/lib/branding";
 
 const title = `A Simpler Pixieset Alternative for Google Drive | ${APP_NAME}`;
@@ -20,10 +21,8 @@ export const metadata: Metadata = {
 
 const CTA_LABEL = "Create Your Free Gallery";
 
-const HERO_BULLETS = ["No re-uploading.", "No moving your photos.", "No complicated migration."];
-
 const FLOW = [
-  { label: "Google Drive", sub: "Your storage", icon: <DriveLogo className="h-9 w-9" /> },
+  { label: "Google Drive", sub: "Your storage", icon: <GoogleDriveIcon className="h-9 w-9" /> },
   {
     label: APP_NAME,
     sub: "Your presentation layer",
@@ -93,32 +92,7 @@ export default function PixiesetAlternativePage() {
         </div>
       </header>
 
-      {/* HERO */}
-      <section className="relative overflow-hidden">
-        <Image src="/lp/hero-bg.webp" alt="" fill priority sizes="100vw" className="object-cover object-bottom opacity-60" />
-        <div className="absolute inset-0 bg-gradient-to-r from-white via-white/85 to-white/20" aria-hidden />
-        <div className="relative mx-auto grid max-w-6xl items-center gap-14 px-5 py-16 sm:py-24 lg:grid-cols-2">
-          <div>
-            <span className="inline-block rounded-full bg-blue-100/80 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-blue-700">Pixieset alternative</span>
-            <h1 className="mt-5 text-4xl font-extrabold leading-[1.1] tracking-tight text-[#0f2447] sm:text-5xl">
-              Looking for a Simpler Pixieset Alternative?
-            </h1>
-            <p className="mt-5 max-w-lg text-lg leading-relaxed text-stone-700">
-              Turn your Google Drive folders into professional client photo galleries — without re-uploading your photos.
-            </p>
-            <ul className="mt-6 space-y-2.5">
-              {HERO_BULLETS.map((b) => (
-                <li key={b} className="flex items-center gap-2.5 text-stone-800"><CheckCircle />{b}</li>
-              ))}
-            </ul>
-            <div className="mt-9">
-              <LpCta placement="hero" className="w-full sm:w-auto">{CTA_LABEL}</LpCta>
-              <p className="mt-3 text-sm text-stone-500">No credit card required.</p>
-            </div>
-          </div>
-          <DeviceHero />
-        </div>
-      </section>
+      <Hero />
 
       {/* HOW IT WORKS */}
       <section id="how" className="scroll-mt-20 border-t border-stone-100 px-5 py-16 sm:py-24">
