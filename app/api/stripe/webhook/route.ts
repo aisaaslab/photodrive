@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
-import { stripe } from "@/lib/stripe/server";
+import { stripe, isSessionSettled } from "@/lib/stripe/server";
 import { activateSubscription, resolveUidForSession } from "@/lib/stripe/activate";
 
 export async function POST(req: NextRequest) {
@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
     // 200, so Stripe would never retry and the user stayed unsubscribed).
     const uid = await resolveUidForSession(session);
 
-    if (uid && session.payment_status === "paid") {
+    if (uid && isSessionSettled(session)) {
       try {
         await activateSubscription({
           uid,

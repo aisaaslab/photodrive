@@ -14,6 +14,31 @@ type InboxMessage = {
   emailed?: boolean;
 };
 
+type TrackingForm = { gtmId: string; googleAdsId: string; metaPixelId: string };
+
+const TRACKING_FIELDS: { key: keyof TrackingForm; label: string; placeholder: string; hint: string }[] = [
+  {
+    key: "metaPixelId",
+    label: "Meta Pixel ID",
+    placeholder: "1234567890123456",
+    hint: "Loads the Meta Pixel on every page and fires Purchase on the Thank You page. Numbers only.",
+  },
+  {
+    key: "gtmId",
+    label: "Google Tag Manager ID",
+    placeholder: "GTM-XXXXXXX",
+    hint: "Loads your GTM container. Don't also fire the Meta Pixel from inside GTM, or purchases are counted twice.",
+  },
+  {
+    key: "googleAdsId",
+    label: "Google Ads tag ID",
+    placeholder: "AW-123456789",
+    hint: "Loads the Google Ads global site tag.",
+  },
+];
+
+const EMPTY_TRACKING: TrackingForm = { gtmId: "", googleAdsId: "", metaPixelId: "" };
+
 function formatDate(ts: number) {
   return new Date(ts).toLocaleString("en-GB", {
     day: "2-digit",
@@ -31,6 +56,10 @@ export default function AdminSettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [notice, setNotice] = useState<{ tone: "ok" | "err"; text: string } | null>(null);
+  const [tracking, setTracking] = useState<TrackingForm>(EMPTY_TRACKING);
+  const [savedTracking, setSavedTracking] = useState<TrackingForm>(EMPTY_TRACKING);
+  const [savingTracking, setSavingTracking] = useState(false);
+  const [trackingNotice, setTrackingNotice] = useState<{ tone: "ok" | "err"; text: string } | null>(null);
   const [messages, setMessages] = useState<InboxMessage[]>([]);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
@@ -53,6 +82,13 @@ export default function AdminSettingsPage() {
         const data = await settingsRes.json();
         setSupportEmail(data.supportEmail ?? "");
         setSavedEmail(data.supportEmail ?? "");
+        const t = {
+          gtmId: data.gtmId ?? "",
+          googleAdsId: data.googleAdsId ?? "",
+          metaPixelId: data.metaPixelId ?? "",
+        };
+        setTracking(t);
+        setSavedTracking(t);
       }
       if (messagesRes.ok) {
         setMessages((await messagesRes.json()).messages ?? []);
@@ -90,6 +126,34 @@ export default function AdminSettingsPage() {
     setSaving(false);
   }
 
+  async function saveTracking(e: React.FormEvent) {
+    e.preventDefault();
+    if (!user || savingTracking) return;
+    setSavingTracking(true);
+    setTrackingNotice(null);
+    try {
+      const headers = await authHeaders();
+      const res = await fetch("/api/admin/settings", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", ...headers },
+        body: JSON.stringify(tracking),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Could not save.");
+      const t = {
+        gtmId: data.gtmId ?? "",
+        googleAdsId: data.googleAdsId ?? "",
+        metaPixelId: data.metaPixelId ?? "",
+      };
+      setTracking(t);
+      setSavedTracking(t);
+      setTrackingNotice({ tone: "ok", text: "Tracking IDs saved. New page loads pick them up right away — no redeploy needed." });
+    } catch (err) {
+      setTrackingNotice({ tone: "err", text: (err as Error).message });
+    }
+    setSavingTracking(false);
+  }
+
   async function markRead(id: string, read: boolean) {
     if (!user) return;
     setBusyId(id);
@@ -125,6 +189,7 @@ export default function AdminSettingsPage() {
   }
 
   const unread = messages.filter((m) => !m.read).length;
+  const trackingDirty = TRACKING_FIELDS.some((f) => tracking[f.key].trim() !== savedTracking[f.key]);
   const dirty = supportEmail.trim().toLowerCase() !== savedEmail.trim().toLowerCase();
 
   return (
@@ -133,7 +198,7 @@ export default function AdminSettingsPage() {
         <h1 className="text-2xl font-bold text-white" style={{ fontFamily: "var(--font-brand), sans-serif" }}>
           Settings
         </h1>
-        <p className="text-sm text-stone-400 mt-1">Contact email and inbox.</p>
+        <p className="text-sm text-stone-400 mt-1">Contact email, tracking tags and inbox.</p>
       </div>
 
       {/* Support email */}
@@ -164,6 +229,48 @@ export default function AdminSettingsPage() {
         {notice && (
           <p className={`text-xs mt-3 leading-relaxed ${notice.tone === "ok" ? "text-emerald-400" : "text-red-400"}`}>
             {notice.text}
+          </p>
+        )}
+      </form>
+
+      {/* Tracking & analytics */}
+      <form onSubmit={saveTracking} className="border border-white/[0.06] rounded-2xl p-5 mb-6">
+        <h2 className="text-sm font-semibold text-white mb-1">Tracking &amp; analytics</h2>
+        <p className="text-xs text-stone-500 mb-4 leading-relaxed">
+          Enter only the ID — not a script. Leave a field empty to switch that tag off.
+          Changes apply to new page loads within seconds, no redeploy needed.
+        </p>
+        <div className="space-y-4">
+          {TRACKING_FIELDS.map((f) => (
+            <label key={f.key} className="block">
+              <span className="text-xs font-medium text-stone-300">{f.label}</span>
+              <input
+                type="text"
+                inputMode={f.key === "metaPixelId" ? "numeric" : "text"}
+                autoComplete="off"
+                spellCheck={false}
+                maxLength={32}
+                value={tracking[f.key]}
+                onChange={(e) => setTracking((prev) => ({ ...prev, [f.key]: e.target.value }))}
+                placeholder={f.placeholder}
+                className="mt-1.5 w-full bg-white/[0.04] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-stone-600 outline-none focus:border-white/30 transition-colors font-mono"
+              />
+              <span className="block text-[11px] text-stone-500 mt-1 leading-relaxed">{f.hint}</span>
+            </label>
+          ))}
+        </div>
+        <div className="flex items-center gap-3 mt-4">
+          <button
+            type="submit"
+            disabled={savingTracking || !trackingDirty}
+            className="px-5 py-2.5 rounded-xl text-sm font-semibold bg-white text-stone-900 hover:bg-stone-200 transition-colors disabled:opacity-40"
+          >
+            {savingTracking ? "Saving…" : "Save"}
+          </button>
+        </div>
+        {trackingNotice && (
+          <p className={`text-xs mt-3 leading-relaxed ${trackingNotice.tone === "ok" ? "text-emerald-400" : "text-red-400"}`}>
+            {trackingNotice.text}
           </p>
         )}
       </form>
