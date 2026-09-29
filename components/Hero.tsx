@@ -3,17 +3,28 @@ import { CheckCircle2 } from "lucide-react";
 import { LpCta } from "@/components/lp/LpCta";
 import { Folder, GoogleDriveIcon } from "@/components/lp/icons";
 
-const BULLETS = ["No re-uploading.", "No moving your photos.", "No complicated migration."];
-const FOLDERS = ["Wedding Photos", "Family Session", "Events", "Portraits"];
 const THUMBS = [1, 2, 3, 4, 5, 6];
 
-export function Hero() {
+export type HeroProps = {
+  /** Landing-page variant id, reported with CTA clicks. */
+  lp: string;
+  badge?: string;
+  title: React.ReactNode;
+  /** Override the headline size (default matches the v1 spec). */
+  titleClassName?: string;
+  description: string;
+  bullets: string[];
+  /** Drive card: list `folders`, or show a one-line `caption` under the title. */
+  driveCard: { folders?: string[]; caption?: string };
+};
+
+export function Hero(props: HeroProps) {
   return (
     <section className="relative isolate overflow-hidden">
       <HeroBackground />
       <div className="relative z-10 mx-auto grid max-w-[1200px] items-center gap-12 px-6 py-16 sm:py-24 lg:grid-cols-2">
-        <HeroContent />
-        <HeroDeviceCluster />
+        <HeroContent {...props} />
+        <HeroDeviceCluster driveCard={props.driveCard} />
       </div>
     </section>
   );
@@ -38,35 +49,31 @@ function CheckItem({ children }: { children: React.ReactNode }) {
   );
 }
 
-function HeroContent() {
+function HeroContent({ lp, badge, title, titleClassName = "text-4xl lg:text-5xl", description, bullets }: HeroProps) {
   return (
     <div>
-      <span className="inline-block rounded-full bg-badge-bg px-3 py-1 text-xs font-semibold text-badge-text">PIXIESET ALTERNATIVE</span>
-      <h1 className="mt-5 text-4xl font-extrabold leading-tight text-ink lg:text-5xl">
-        Looking for a Simpler
-        <br />
-        Pixieset Alternative?
-      </h1>
-      <p className="mt-5 max-w-md text-lg text-body">
-        Turn your Google Drive folders into professional client photo galleries — without re-uploading your photos.
-      </p>
+      {badge && (
+        <span className="mb-5 inline-block rounded-full bg-badge-bg px-3 py-1 text-xs font-semibold text-badge-text">{badge}</span>
+      )}
+      <h1 className={`font-extrabold leading-tight text-ink ${titleClassName}`}>{title}</h1>
+      <p className="mt-5 max-w-md text-lg text-body">{description}</p>
       <ul className="mt-6 space-y-2.5">
-        {BULLETS.map((b) => (
+        {bullets.map((b) => (
           <CheckItem key={b}>{b}</CheckItem>
         ))}
       </ul>
       <div className="mt-9">
-        <LpCta placement="hero" className="w-full sm:w-auto">Create Your Free Gallery</LpCta>
+        <LpCta lp={lp} placement="hero" className="w-full sm:w-auto">Create Your Free Gallery</LpCta>
         <p className="mt-3 text-sm text-body">No credit card required.</p>
       </div>
     </div>
   );
 }
 
-function HeroDeviceCluster() {
+function HeroDeviceCluster({ driveCard }: { driveCard: HeroProps["driveCard"] }) {
   return (
     <div className="relative mx-auto w-full max-w-[380px] lg:max-w-[520px]">
-      <DriveCard />
+      <DriveCard {...driveCard} />
       <LaptopMockup />
       <PhoneMockup />
     </div>
@@ -74,17 +81,20 @@ function HeroDeviceCluster() {
 }
 
 /* Real DOM, not a screenshot. Above the laptop on small screens, overlapping it on lg+. */
-function DriveCard() {
+function DriveCard({ folders, caption }: HeroProps["driveCard"]) {
   return (
     <div className="relative z-20 mx-auto mb-4 w-56 rounded-xl bg-white p-4 shadow-lg lg:absolute lg:-top-6 lg:right-8 lg:mb-0">
-      <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-ink">
-        <GoogleDriveIcon className="h-4 w-4" /> Google Drive
+      <div className="flex items-center gap-2 text-sm font-semibold text-ink">
+        <GoogleDriveIcon className="h-5 w-5" /> Google Drive
       </div>
-      <ul className="space-y-1 text-xs text-body">
-        {FOLDERS.map((f) => (
-          <li key={f} className="flex items-center gap-2"><Folder />{f}</li>
-        ))}
-      </ul>
+      {caption && <p className="mt-1 text-xs text-body">{caption}</p>}
+      {folders && (
+        <ul className="mt-2 space-y-1 text-xs text-body">
+          {folders.map((f) => (
+            <li key={f} className="flex items-center gap-2"><Folder />{f}</li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

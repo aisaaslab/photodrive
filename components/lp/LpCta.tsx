@@ -3,16 +3,16 @@
 import Link from "next/link";
 
 type Props = {
+  /** Landing-page variant id, reported with every click. */
+  lp: string;
   placement: "nav" | "hero" | "flow" | "mid" | "final";
   variant?: "primary" | "light";
   children: React.ReactNode;
   className?: string;
 };
 
-const VARIANT = "pixieset-alternative";
-
 /** CTA that always leads to the auth page and reports the click to GTM. */
-export function LpCta({ placement, variant = "primary", children, className = "" }: Props) {
+export function LpCta({ lp, placement, variant = "primary", children, className = "" }: Props) {
   const styles =
     variant === "light"
       ? "bg-white text-[#0f2447] hover:bg-blue-50"
@@ -23,7 +23,7 @@ export function LpCta({ placement, variant = "primary", children, className = ""
       data-cta={placement}
       onClick={() => {
         const w = window as Window & { dataLayer?: unknown[] };
-        (w.dataLayer = w.dataLayer || []).push({ event: "lp_cta_click", lp_variant: VARIANT, lp_placement: placement });
+        (w.dataLayer = w.dataLayer || []).push({ event: "lp_cta_click", lp_variant: lp, lp_placement: placement });
       }}
       className={`inline-flex items-center justify-center gap-2 rounded-lg px-6 py-3.5 text-sm font-semibold transition-colors ${styles} ${className}`}
     >

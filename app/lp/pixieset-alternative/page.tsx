@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import Link from "next/link";
 import { LpCta } from "@/components/lp/LpCta";
+import { LpFooter, LpNav } from "@/components/lp/LpChrome";
 import { Hero } from "@/components/Hero";
 import { BeforeAfter } from "@/components/lp/Mockups";
 import { Check, CheckCircle, Dash, GoogleDriveIcon } from "@/components/lp/icons";
@@ -18,6 +18,14 @@ export const metadata: Metadata = {
   openGraph: { type: "website", title, description, url: "/lp/pixieset-alternative" },
   twitter: { card: "summary_large_image", title, description },
 };
+
+const LP = "pixieset-alternative";
+const NAV = [
+  { label: "How It Works", href: "#how" },
+  { label: "Compare", href: "#compare" },
+  { label: "Pricing", href: "/#pricing" },
+  { label: "FAQ", href: "/faq" },
+];
 
 const CTA_LABEL = "Create Your Free Gallery";
 
@@ -70,29 +78,16 @@ const PERSONAS = [
 export default function PixiesetAlternativePage() {
   return (
     <main className="bg-white text-stone-900">
-      {/* NAV */}
-      <header className="sticky top-0 z-50 border-b border-stone-200 bg-white/90 backdrop-blur-xl">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5">
-          <Link href="/" aria-label={`${APP_NAME} home`}>
-            <Image src="/logo.png" alt={APP_NAME} width={240} height={56} className="h-10 w-auto" priority />
-          </Link>
-          <nav className="hidden items-center gap-8 text-sm text-stone-600 md:flex" aria-label="Page sections">
-            <a href="#how" className="hover:text-stone-900">How It Works</a>
-            <a href="#compare" className="hover:text-stone-900">Compare</a>
-            <Link href="/#pricing" className="hover:text-stone-900">Pricing</Link>
-            <Link href="/faq" className="hover:text-stone-900">FAQ</Link>
-          </nav>
-          <div className="flex items-center gap-4">
-            <Link href="/login" className="hidden text-sm font-medium text-stone-700 hover:text-stone-900 sm:block">Log In</Link>
-            <LpCta placement="nav" className="!px-4 !py-2.5">
-              <span className="sm:hidden">Start Free</span>
-              <span className="hidden sm:inline">{CTA_LABEL}</span>
-            </LpCta>
-          </div>
-        </div>
-      </header>
+      <LpNav lp={LP} links={NAV} />
 
-      <Hero />
+      <Hero
+        lp={LP}
+        badge="PIXIESET ALTERNATIVE"
+        title={<>Looking for a Simpler<br />Pixieset Alternative?</>}
+        description="Turn your Google Drive folders into professional client photo galleries — without re-uploading your photos."
+        bullets={["No re-uploading.", "No moving your photos.", "No complicated migration."]}
+        driveCard={{ folders: ["Wedding Photos", "Family Session", "Events", "Portraits"] }}
+      />
 
       {/* HOW IT WORKS */}
       <section id="how" className="scroll-mt-20 border-t border-stone-100 px-5 py-16 sm:py-24">
@@ -166,7 +161,7 @@ export default function PixiesetAlternativePage() {
                   <li key={s} className="flex items-center gap-2.5 text-stone-800"><CheckCircle />{s}</li>
                 ))}
               </ul>
-              <LpCta placement="mid" className="mt-8 w-full sm:w-auto">{CTA_LABEL}</LpCta>
+              <LpCta lp={LP} placement="mid" className="mt-8 w-full sm:w-auto">{CTA_LABEL}</LpCta>
             </div>
           </div>
         </div>
@@ -206,23 +201,13 @@ export default function PixiesetAlternativePage() {
             </p>
           </div>
           <div className="text-center">
-            <LpCta placement="final" variant="light">{CTA_LABEL}</LpCta>
+            <LpCta lp={LP} placement="final" variant="light">{CTA_LABEL}</LpCta>
             <p className="mt-2 text-xs text-blue-100/70">No credit card required.</p>
           </div>
         </div>
       </section>
 
-      <footer className="border-t border-stone-200 px-5 py-6 text-sm text-stone-500">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3">
-          <span>© {new Date().getFullYear()} {APP_NAME}</span>
-          <div className="flex gap-5">
-            <Link href="/faq" className="hover:text-stone-800">FAQ</Link>
-            <Link href="/terms" className="hover:text-stone-800">Terms</Link>
-            <Link href="/privacy" className="hover:text-stone-800">Privacy</Link>
-            <Link href="/contact" className="hover:text-stone-800">Contact</Link>
-          </div>
-        </div>
-      </footer>
+      <LpFooter />
     </main>
   );
 }
