@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAdminAuth } from "@/lib/firebase/admin";
-import { stripe } from "@/lib/stripe/server";
+import { stripe, isSessionSettled } from "@/lib/stripe/server";
 import { activateSubscription } from "@/lib/stripe/activate";
 
 /**
@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Session not found" }, { status: 404 });
   }
 
-  if (session.payment_status !== "paid") {
+  if (!isSessionSettled(session)) {
     return NextResponse.json(
       { paid: false, status: session.payment_status },
       { status: 200 }

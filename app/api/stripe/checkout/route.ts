@@ -114,7 +114,7 @@ export async function POST(req: NextRequest) {
       ...(plan ? { planId: plan.id, interval: plan.interval } : {}),
     },
     allow_promotion_codes: true,
-    success_url: `${appUrl}/subscribe/success?session_id={CHECKOUT_SESSION_ID}`,
+    success_url: `${appUrl}/thank-you?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${appUrl}/subscribe`,
     // "auto" lets Stripe follow the customer's own browser language. Pinning a
     // locale here would show every customer a checkout page in that language.

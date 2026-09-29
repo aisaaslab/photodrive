@@ -1,20 +1,34 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAdminDb } from "@/lib/firebase/admin";
 import { getUidFromRequest, isAdmin } from "@/lib/firebase/admin-guard";
+import { revalidateTag } from "next/cache";
 import {
   SITE_SETTINGS_DOC,
   getSiteSettings,
   validateSupportEmail,
 } from "@/lib/site-settings";
+import {
+  SITE_SETTINGS_TAG,
+  readTrackingIds,
+  validateTrackingId,
+  type TrackingField,
+} from "@/lib/tracking-settings";
 
-/** GET: current site settings (support email + last update info). */
+const TRACKING_FIELDS: TrackingField[] = ["gtmId", "googleAdsId", "metaPixelId"];
+
+/** GET: current site settings (support email, tracking IDs, last update info). */
 export async function GET(req: NextRequest) {
   const uid = await getUidFromRequest(req);
   if (!isAdmin(uid)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  return NextResponse.json(await getSiteSettings(uid));
+  const [settings, tracking] = await Promise.all([getSiteSettings(uid), readTrackingIds()]);
+  return NextResponse.json({ ...settings, ...tracking });
 }
 
-/** PATCH: update the support email (stored in Firestore, takes effect immediately). */
+/**
+ * PATCH: update any subset of { supportEmail, gtmId, googleAdsId, metaPixelId }.
+ * Stored in Firestore; takes effect within seconds, no redeploy. An empty
+ * tracking ID disables that tag.
+ */
 export async function PATCH(req: NextRequest) {
   const uid = await getUidFromRequest(req);
   if (!isAdmin(uid)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
@@ -26,16 +40,27 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: "Invalid body" }, { status: 400 });
   }
 
-  let supportEmail: string;
+  const update: Record<string, unknown> = {};
   try {
-    supportEmail = validateSupportEmail(body.supportEmail);
+    if ("supportEmail" in body) update.supportEmail = validateSupportEmail(body.supportEmail);
+    for (const field of TRACKING_FIELDS) {
+      if (field in body) update[field] = validateTrackingId(field, body[field]);
+    }
   } catch (err) {
     return NextResponse.json({ error: (err as Error).message }, { status: 400 });
   }
+  if (Object.keys(update).length === 0) {
+    return NextResponse.json({ error: "Nothing to update" }, { status: 400 });
+  }
 
   await getAdminDb().doc(SITE_SETTINGS_DOC).set(
-    { supportEmail, updatedAt: Date.now(), updatedBy: uid },
+    { ...update, updatedAt: Date.now(), updatedBy: uid },
     { merge: true }
   );
-  return NextResponse.json({ supportEmail });
+  // Expire immediately (not stale-while-revalidate) so the next page render
+  // already carries the new tags.
+  revalidateTag(SITE_SETTINGS_TAG, { expire: 0 });
+
+  const [settings, tracking] = await Promise.all([getSiteSettings(uid), readTrackingIds()]);
+  return NextResponse.json({ ...settings, ...tracking });
 }
