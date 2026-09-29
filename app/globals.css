@@ -1,5 +1,16 @@
 ﻿@import "tailwindcss";
 
+/* Landing-page design tokens (utilities: bg-primary, text-ink, text-body, ...) */
+@theme {
+  --color-primary: #2563eb;
+  --color-primary-dark: #1d4ed8;
+  --color-ink: #0f172a;
+  --color-body: #475569;
+  --color-success: #22c55e;
+  --color-badge-bg: #eff6ff;
+  --color-badge-text: #2563eb;
+}
+
 /*
  * Display font is loaded via next/font in app/layout.tsx.
  * Components reference it via `fontFamily: "var(--font-brand), sans-serif"`.
