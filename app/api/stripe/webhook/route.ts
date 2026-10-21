@@ -7,14 +7,34 @@ export async function POST(req: NextRequest) {
   const body = await req.text();
   const sig = req.headers.get("stripe-signature");
 
-  if (!sig) return NextResponse.json({ error: "No signature" }, { status: 400 });
+  if (!sig) {
+    console.error("[stripe webhook] rejected: request has no stripe-signature header");
+    return NextResponse.json({ error: "No signature" }, { status: 400 });
+  }
+
+  const secret = process.env.STRIPE_WEBHOOK_SECRET;
+  if (!secret) {
+    // Misconfiguration, not a bad request — 500 so it is not mistaken for a
+    // forged call, and so the cause is obvious in the logs.
+    console.error("[stripe webhook] STRIPE_WEBHOOK_SECRET is not set in this environment");
+    return NextResponse.json({ error: "Webhook not configured" }, { status: 500 });
+  }
 
   let event;
   try {
-    event = stripe.webhooks.constructEvent(body, sig, process.env.STRIPE_WEBHOOK_SECRET!);
-  } catch {
+    event = stripe.webhooks.constructEvent(body, sig, secret);
+  } catch (err) {
+    // Most common cause: the secret belongs to a different endpoint or mode
+    // (test vs live, or a `stripe listen` secret). Log the Stripe message only —
+    // never the secret or signature.
+    console.error(
+      "[stripe webhook] signature verification failed — check STRIPE_WEBHOOK_SECRET matches this endpoint's signing secret and mode:",
+      err instanceof Error ? err.message : err
+    );
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
   }
+
+  console.log("[stripe webhook] received", event.type, event.id, event.livemode ? "live" : "test");
 
   const isCompleted =
     event.type === "checkout.session.completed" ||
