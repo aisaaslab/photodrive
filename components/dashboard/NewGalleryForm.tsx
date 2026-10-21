@@ -4,6 +4,38 @@ import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { useLanguage } from "@/lib/i18n";
 
+type PublicPlan = {
+  id: string;
+  name: string;
+  description: string;
+  interval: "monthly" | "yearly";
+  priceCents: number;
+  currency: string;
+  features: string[];
+  highlight: boolean;
+};
+
+const PER_INTERVAL: Record<string, Record<"monthly" | "yearly", string>> = {
+  el: { monthly: "/ μήνα", yearly: "/ χρόνο" },
+  en: { monthly: "/ month", yearly: "/ year" },
+  nl: { monthly: "/ maand", yearly: "/ jaar" },
+  de: { monthly: "/ Monat", yearly: "/ Jahr" },
+  es: { monthly: "/ mes", yearly: "/ año" },
+  it: { monthly: "/ mese", yearly: "/ anno" },
+};
+
+function formatPlanPrice(cents: number, currency: string) {
+  try {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: currency.toUpperCase(),
+      minimumFractionDigits: cents % 100 === 0 ? 0 : 2,
+    }).format(cents / 100);
+  } catch {
+    return `$${(cents / 100).toFixed(cents % 100 === 0 ? 0 : 2)}`;
+  }
+}
+
 interface Props {
   onCreated: () => void;
   onCancel?: () => void;
@@ -54,7 +86,7 @@ const SOCIALS = [
 
 export function NewGalleryForm({ onCreated, onCancel, initialData, autoSubmit }: Props) {
   const { user } = useAuth();
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const f = t.newGalleryForm;
   const [name, setName] = useState(initialData?.name ?? "");
   const [driveUrl, setDriveUrl] = useState(initialData?.driveUrl ?? "");
@@ -78,6 +110,11 @@ export function NewGalleryForm({ onCreated, onCancel, initialData, autoSubmit }:
   const [error, setError] = useState("");
   const [showPayment, setShowPayment] = useState(false);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
+  // Public plans shown in the payment step (same source as /subscribe). Empty
+  // list = legacy single $99/year card.
+  const [plans, setPlans] = useState<PublicPlan[]>([]);
+  const [plansLoaded, setPlansLoaded] = useState(false);
+  const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
 
   const driveValid = driveUrl.length > 0 && isValidDriveUrl(driveUrl);
   const driveInvalid = driveUrl.length > 0 && !isValidDriveUrl(driveUrl);
@@ -202,6 +239,27 @@ export function NewGalleryForm({ onCreated, onCancel, initialData, autoSubmit }:
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoSubmit, user]);
 
+  useEffect(() => {
+    if (!showPayment || plansLoaded) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/plans");
+        const data = res.ok ? await res.json() : { plans: [] };
+        const list: PublicPlan[] = data.plans ?? [];
+        if (cancelled) return;
+        setPlans(list);
+        setSelectedPlanId(list.find((p) => p.highlight)?.id ?? list[0]?.id ?? null);
+      } catch {
+        // Fall back to the legacy single-plan card.
+      }
+      if (!cancelled) setPlansLoaded(true);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [showPayment, plansLoaded]);
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     await submitForm();
@@ -224,7 +282,8 @@ export function NewGalleryForm({ onCreated, onCancel, initialData, autoSubmit }:
       const token = await user.getIdToken();
       const res = await fetch("/api/stripe/checkout", {
         method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify(selectedPlan ? { planId: selectedPlan.id } : {}),
       });
       const data = await res.json();
       if (data.alreadyPaid) {
@@ -248,7 +307,12 @@ export function NewGalleryForm({ onCreated, onCancel, initialData, autoSubmit }:
     }
   }
 
-  const features = [f.f1, f.f2, f.f3, f.f4, f.f5, f.f6];
+  const selectedPlan = plans.find((p) => p.id === selectedPlanId) ?? null;
+  const perInterval = PER_INTERVAL[lang] ?? PER_INTERVAL.en;
+  const features =
+    selectedPlan && selectedPlan.features.length > 0
+      ? selectedPlan.features
+      : [f.f1, f.f2, f.f3, f.f4, f.f5, f.f6];
 
   if (showPayment) {
     return (
@@ -269,21 +333,64 @@ export function NewGalleryForm({ onCreated, onCancel, initialData, autoSubmit }:
         </div>
 
         <div className="p-6">
-          <div className="flex items-center justify-between mb-5">
-            <div>
-              <div className="flex items-center gap-2 mb-0.5">
-                <span className="text-3xl font-bold text-white">$99</span>
-                <span className="text-stone-500 text-sm">{f.perYear}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-stone-500 line-through text-sm">$199</span>
-                <span className="bg-[#17509e]/20 text-[#2dabe0] text-xs font-bold px-2 py-0.5 rounded-full border border-[#17509e]/20">-50%</span>
-              </div>
+          {!plansLoaded ? (
+            <div className="flex justify-center py-8">
+              <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
             </div>
-            <span className="bg-[#17509e]/20 text-[#2dabe0] text-xs font-semibold px-2.5 py-1 rounded-full border border-[#17509e]/20">
-              {f.offer}
-            </span>
-          </div>
+          ) : plans.length > 0 ? (
+            <div className="space-y-2 mb-5">
+              {plans.map((plan) => {
+                const selected = plan.id === selectedPlanId;
+                return (
+                  <button
+                    key={plan.id}
+                    type="button"
+                    onClick={() => setSelectedPlanId(plan.id)}
+                    aria-pressed={selected}
+                    className={`w-full text-left flex items-center gap-3 border rounded-xl px-4 py-3 transition-all ${
+                      selected
+                        ? "border-[#17509e] bg-[#17509e]/10 ring-1 ring-[#17509e]/40"
+                        : "border-white/[0.08] bg-white/[0.03] hover:border-white/20"
+                    }`}
+                  >
+                    <span
+                      className={`w-4 h-4 rounded-full border shrink-0 flex items-center justify-center ${
+                        selected ? "border-[#2dabe0]" : "border-white/30"
+                      }`}
+                    >
+                      {selected && <span className="w-2 h-2 rounded-full bg-[#2dabe0]" />}
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-sm font-semibold text-white truncate">{plan.name}</span>
+                      {plan.description && (
+                        <span className="block text-xs text-stone-500 truncate">{plan.description}</span>
+                      )}
+                    </span>
+                    <span className="text-right shrink-0">
+                      <span className="text-lg font-bold text-white">{formatPlanPrice(plan.priceCents, plan.currency)}</span>
+                      <span className="text-stone-500 text-xs ml-1">{perInterval[plan.interval]}</span>
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="flex items-center justify-between mb-5">
+              <div>
+                <div className="flex items-center gap-2 mb-0.5">
+                  <span className="text-3xl font-bold text-white">$99</span>
+                  <span className="text-stone-500 text-sm">{f.perYear}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-stone-500 line-through text-sm">$199</span>
+                  <span className="bg-[#17509e]/20 text-[#2dabe0] text-xs font-bold px-2 py-0.5 rounded-full border border-[#17509e]/20">-50%</span>
+                </div>
+              </div>
+              <span className="bg-[#17509e]/20 text-[#2dabe0] text-xs font-semibold px-2.5 py-1 rounded-full border border-[#17509e]/20">
+                {f.offer}
+              </span>
+            </div>
+          )}
 
           <ul className="space-y-2 mb-6">
             {features.map((feat) => (
@@ -298,7 +405,7 @@ export function NewGalleryForm({ onCreated, onCancel, initialData, autoSubmit }:
 
           <button
             onClick={handleCheckout}
-            disabled={checkoutLoading}
+            disabled={checkoutLoading || !plansLoaded}
             className="w-full bg-white text-stone-900 font-bold py-3 rounded-xl text-sm hover:bg-stone-100 transition-all disabled:opacity-60 flex items-center justify-center gap-2"
           >
             {checkoutLoading ? (
