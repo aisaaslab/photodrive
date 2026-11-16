@@ -16,6 +16,7 @@ import { HeroImage } from "@/components/gallery/HeroImage";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { APP_NAME } from "@/lib/branding";
 import { titleFontFamily, titleSizeClass, validTitleColor } from "@/lib/gallery/title-style";
+import { coverObjectPosition } from "@/lib/gallery/cover-position";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -61,6 +62,8 @@ export default async function GalleryPage({ params }: Props) {
     eventDate?: string;
     location?: string;
     coverFileId?: string | null;
+    coverPosX?: number | null;
+    coverPosY?: number | null;
     bookLink?: string;
     bookEnabled?: boolean;
     titleFont?: string | null;
@@ -164,6 +167,7 @@ export default async function GalleryPage({ params }: Props) {
           <HeroImage
             primaryUrl={driveImageUrl(coverPhoto, 2048)}
             fileId={gallery.coverFileId}
+            objectPosition={coverObjectPosition(gallery.coverPosX, gallery.coverPosY)}
           />
         ) : (
           <div className="absolute inset-0 bg-gradient-to-br from-[#17509e] via-[#0d2d5c] to-stone-900" />

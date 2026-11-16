@@ -20,9 +20,11 @@ interface Props {
   primaryUrl: string;
   fileId: string;
   alt?: string;
+  /** CSS object-position (the photographer's focal point). Defaults to center. */
+  objectPosition?: string;
 }
 
-export function HeroImage({ primaryUrl, fileId, alt = "" }: Props) {
+export function HeroImage({ primaryUrl, fileId, alt = "", objectPosition = "50% 50%" }: Props) {
   // 0 = primary CDN url, 1 = drive thumbnail, 2 = our proxy, 3 = failed
   const [stage, setStage] = useState(0);
 
@@ -45,6 +47,7 @@ export function HeroImage({ primaryUrl, fileId, alt = "" }: Props) {
       src={src}
       alt={alt}
       className="absolute inset-0 w-full h-full object-cover"
+      style={{ objectPosition }}
       fetchPriority="high"
       onError={() => setStage((s) => s + 1)}
     />

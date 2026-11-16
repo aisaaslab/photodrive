@@ -21,6 +21,11 @@ export interface GalleryDoc {
   // Optional Drive file id of a photo chosen by the photographer as the
   // gallery's cover/hero image. null/undefined => gradient fallback.
   coverFileId?: string | null;
+  // Focal point of the cover, in percent (0–100) on each axis, applied as CSS
+  // object-position so the photographer chooses which part of the photo stays
+  // visible in the banner crop. Unset => centered (50 / 50).
+  coverPosX?: number | null;
+  coverPosY?: number | null;
   // "Book this photographer" CTA: a URL the client can click to contact the
   // photographer (mailto:, https://wa.me/, https://m.me/, any URL). When
   // bookEnabled is false (or bookLink is empty), the CTA is hidden.
