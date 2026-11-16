@@ -8,6 +8,7 @@ import { APP_URL } from "@/lib/branding";
 import { driveFileThumbUrl } from "@/lib/drive/public-url";
 import { TITLE_COLORS, titleFontFamily } from "@/lib/gallery/title-style";
 import { CoverPickerModal } from "./CoverPickerModal";
+import { coverObjectPosition } from "@/lib/gallery/cover-position";
 
 interface Props {
   gallery: GalleryDoc;
@@ -525,6 +526,7 @@ export function GalleryCard({ gallery, onDelete, onUpdate }: Props) {
                     src={driveFileThumbUrl(gallery.coverFileId, 400)}
                     alt=""
                     className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    style={{ objectPosition: coverObjectPosition(gallery.coverPosX, gallery.coverPosY) }}
                     onError={(e) => {
                       // Fallback to our proxy if Google's thumbnail CDN fails.
                       const img = e.currentTarget;
@@ -776,8 +778,8 @@ export function GalleryCard({ gallery, onDelete, onUpdate }: Props) {
         <CoverPickerModal
           gallery={gallery}
           onClose={() => setShowCoverPicker(false)}
-          onSaved={(coverFileId) => {
-            onUpdate({ ...gallery, coverFileId });
+          onSaved={(cover) => {
+            onUpdate({ ...gallery, ...cover });
             setShowCoverPicker(false);
           }}
         />

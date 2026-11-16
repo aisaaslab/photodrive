@@ -3,6 +3,7 @@ import { getAdminAuth, getAdminDb } from "@/lib/firebase/admin";
 import { hashPassword } from "@/lib/gallery/password";
 import { extractFolderId } from "@/lib/drive/url-parser";
 import { validTitleFont, validTitleColor, validTitleSize } from "@/lib/gallery/title-style";
+import { validCoverPos } from "@/lib/gallery/cover-position";
 
 async function getUid(req: NextRequest): Promise<string | null> {
   const token = req.headers.get("authorization")?.replace("Bearer ", "");
@@ -67,6 +68,9 @@ export async function PATCH(
   // coverFileId: a Drive file id string, or null to clear the cover.
   if (body.coverFileId !== undefined)
     updates.coverFileId = typeof body.coverFileId === "string" ? body.coverFileId : null;
+  // Cover focal point (percent, 0–100). Clamped on write; non-numbers clear it.
+  if (body.coverPosX !== undefined) updates.coverPosX = validCoverPos(body.coverPosX);
+  if (body.coverPosY !== undefined) updates.coverPosY = validCoverPos(body.coverPosY);
   // "Book this photographer" CTA: a URL (mailto:, https://wa.me/, etc.) and a
   // toggle. When bookEnabled is false, the CTA is hidden on the public page.
   if (typeof body.bookLink === "string")

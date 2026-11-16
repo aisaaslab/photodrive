@@ -43,7 +43,15 @@ export async function GET(
     const { files } = await fetchDriveFolder(gallery.data.folderId);
     const photos = files
       .filter((f) => f.mimeType.startsWith("image/"))
-      .map((p) => ({ id: p.id, name: p.name, thumbnailLink: p.thumbnailLink ?? null }));
+      .map((p) => ({
+        id: p.id,
+        name: p.name,
+        thumbnailLink: p.thumbnailLink ?? null,
+        // Pixel size (when Drive reports it) lets the cover picker warn about
+        // photos too small or too tall for a sharp banner.
+        width: p.width ?? null,
+        height: p.height ?? null,
+      }));
     return NextResponse.json({ photos });
   } catch {
     return NextResponse.json({ error: "Failed to load photos" }, { status: 502 });
