@@ -10,7 +10,9 @@ import { MasonryGrid } from "@/components/gallery/MasonryGrid";
 import { PasswordGate } from "@/components/gallery/PasswordGate";
 import { GalleryStatus } from "@/components/gallery/GalleryStatus";
 import { GalleryActions } from "@/components/gallery/GalleryActions";
-import { FooterCredit } from "@/components/gallery/FooterCredit";
+import { FooterCredit, PoweredBy } from "@/components/gallery/FooterCredit";
+import { HeroMeta } from "@/components/gallery/HeroMeta";
+import { SocialLinks } from "@/components/gallery/SocialLinks";
 import { GalleryAvatar } from "@/components/gallery/GalleryAvatar";
 import { HeroImage } from "@/components/gallery/HeroImage";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
@@ -20,18 +22,6 @@ import { coverObjectPosition } from "@/lib/gallery/cover-position";
 
 interface Props {
   params: Promise<{ slug: string }>;
-}
-
-function formatEventDate(eventDate: string): string {
-  try {
-    return new Intl.DateTimeFormat("en-GB", {
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    }).format(new Date(eventDate));
-  } catch {
-    return eventDate;
-  }
 }
 
 export default async function GalleryPage({ params }: Props) {
@@ -117,19 +107,6 @@ export default async function GalleryPage({ params }: Props) {
 
   const totalPhotos = photos.filter((p) => p.mimeType.startsWith("image/")).length;
   const totalVideos = photos.length - totalPhotos;
-  const photoPart = `${totalPhotos} ${totalPhotos === 1 ? "photo" : "photos"}`;
-  const videoPart = `${totalVideos} ${totalVideos === 1 ? "video" : "videos"}`;
-  const countLabel =
-    totalVideos === 0 ? photoPart : totalPhotos === 0 ? videoPart : `${photoPart} · ${videoPart}`;
-
-  const formattedDate = gallery.eventDate ? formatEventDate(gallery.eventDate) : null;
-
-  const metaPieces = [
-    gallery.description,
-    formattedDate,
-    gallery.location,
-    photos.length > 0 ? countLabel : null,
-  ].filter((p): p is string => !!p && p.length > 0);
 
   // "Book this photographer" CTA: only show if bookEnabled is true AND bookLink
   // is set. Falls back to website if bookLink is empty but website is set
@@ -162,7 +139,7 @@ export default async function GalleryPage({ params }: Props) {
       </header>
 
       {/* Hero banner — starts below the sticky header, never overlaps it. */}
-      <section className="relative w-full h-[40vh] min-h-[260px] max-h-[440px] overflow-hidden">
+      <section className="relative w-full h-[40vh] min-h-[300px] sm:min-h-[260px] max-h-[440px] overflow-hidden">
         {coverPhoto && gallery.coverFileId ? (
           <HeroImage
             primaryUrl={driveImageUrl(coverPhoto, 2048)}
@@ -177,9 +154,9 @@ export default async function GalleryPage({ params }: Props) {
         {/* Gallery name overlaid on the hero. The large bottom padding keeps
             the title + meta clear of the photographer avatar, which pops out
             of the hero bottom (~48px overlap + breathing room). */}
-        <div className="absolute inset-x-0 bottom-0 px-4 sm:px-8 pb-24 pt-16 flex flex-col items-center text-center">
+        <div className="absolute inset-x-0 bottom-0 px-4 sm:px-8 pb-20 sm:pb-24 pt-12 sm:pt-16 flex flex-col items-center text-center">
           <h1
-            className={`${titleSizeClass(gallery.titleSize)} font-bold text-white drop-shadow-lg leading-tight`}
+            className={`${titleSizeClass(gallery.titleSize)} font-bold text-white drop-shadow-lg leading-tight break-words`}
             style={{
               // Photographer-picked font + color (curated set, validated on
               // write). Falls back to the brand font / white.
@@ -191,11 +168,13 @@ export default async function GalleryPage({ params }: Props) {
           >
             {gallery.name}
           </h1>
-          {metaPieces.length > 0 && (
-            <p className="mt-2 text-sm sm:text-base text-white/90 drop-shadow max-w-2xl">
-              {metaPieces.join(" · ")}
-            </p>
-          )}
+          <HeroMeta
+            description={gallery.description}
+            eventDate={gallery.eventDate}
+            location={gallery.location}
+            photoCount={totalPhotos}
+            videoCount={totalVideos}
+          />
         </div>
       </section>
 
@@ -227,28 +206,7 @@ export default async function GalleryPage({ params }: Props) {
           {/* Action row: Share + Book CTA + social links */}
           <div className="mt-3 flex items-center justify-center flex-wrap gap-2">
             <GalleryActions bookUrl={showBookCta ? bookUrl : null} />
-            {(gallery.website || gallery.instagram || gallery.facebook) && (
-              <>
-                {gallery.website && (
-                  <a href={gallery.website} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-xs font-medium text-stone-600 bg-white border border-stone-200 rounded-full px-3 py-1.5 hover:text-blue-700 hover:border-blue-600/50 hover:bg-blue-50 hover:shadow-sm transition-all">
-                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.7}><circle cx="12" cy="12" r="9" /><path strokeLinecap="round" d="M3.5 12h17M12 3c2.6 2.6 2.6 15.4 0 18M12 3c-2.6 2.6-2.6 15.4 0 18" /></svg>
-                    Website
-                  </a>
-                )}
-                {gallery.instagram && (
-                  <a href={gallery.instagram} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-xs font-medium text-stone-600 bg-white border border-stone-200 rounded-full px-3 py-1.5 hover:text-pink-600 hover:border-pink-500/50 hover:bg-pink-50 hover:shadow-sm transition-all">
-                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.7}><rect x="3" y="3" width="18" height="18" rx="5" /><circle cx="12" cy="12" r="3.8" /><circle cx="17.3" cy="6.7" r="1.1" fill="currentColor" stroke="none" /></svg>
-                    Instagram
-                  </a>
-                )}
-                {gallery.facebook && (
-                  <a href={gallery.facebook} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-xs font-medium text-stone-600 bg-white border border-stone-200 rounded-full px-3 py-1.5 hover:text-[#1877F2] hover:border-[#1877F2]/50 hover:bg-blue-50 hover:shadow-sm transition-all">
-                    <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M22 12a10 10 0 10-11.56 9.88v-6.99H7.9V12h2.54V9.8c0-2.5 1.49-3.89 3.78-3.89 1.09 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.77-1.63 1.56V12h2.78l-.44 2.89h-2.34v6.99A10 10 0 0022 12z" /></svg>
-                    Facebook
-                  </a>
-                )}
-              </>
-            )}
+            <SocialLinks website={gallery.website} instagram={gallery.instagram} facebook={gallery.facebook} />
           </div>
         </div>
       </div>
@@ -267,7 +225,7 @@ export default async function GalleryPage({ params }: Props) {
       {/* Footer */}
       <div className="border-t border-stone-200 py-6 text-center space-y-1">
         {photographer.name && <FooterCredit photographerName={photographer.name} />}
-        <p className="text-xs text-stone-400">Powered by {APP_NAME}</p>
+        <PoweredBy appName={APP_NAME} />
       </div>
     </div>
   );

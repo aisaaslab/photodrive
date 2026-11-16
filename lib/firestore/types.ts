@@ -38,6 +38,10 @@ export interface GalleryDoc {
   titleFont?: string | null;
   titleColor?: string | null;
   titleSize?: string | null;
+  // Read-only summary of the client's favorites, attached by GET /api/galleries
+  // from the gallery_selections collection (not stored on the gallery itself).
+  selectionCount?: number;
+  selectionUpdatedAt?: number;
   createdAt: number;
   updatedAt: number;
 }

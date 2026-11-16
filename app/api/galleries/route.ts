@@ -122,5 +122,21 @@ export async function GET(req: NextRequest) {
     id: d.id,
     ...(d.data() as Record<string, unknown>),
   })) as GalleryDoc[]).sort((a, b) => Number(b.createdAt ?? 0) - Number(a.createdAt ?? 0));
+
+  // Attach each gallery's client-selection summary (favorites count + last
+  // change) so the dashboard can badge cards without opening every selection.
+  // One batched read of gallery_selections/{galleryId}; missing docs = none.
+  const db = getAdminDb();
+  const CHUNK = 300;
+  for (let i = 0; i < galleries.length; i += CHUNK) {
+    const part = galleries.slice(i, i + CHUNK);
+    const snaps = await db.getAll(...part.map((g) => db.collection("gallery_selections").doc(g.id)));
+    snaps.forEach((s, idx) => {
+      if (!s.exists) return;
+      const d = s.data() ?? {};
+      part[idx].selectionCount = typeof d.count === "number" ? d.count : 0;
+      part[idx].selectionUpdatedAt = typeof d.updatedAt === "number" ? d.updatedAt : 0;
+    });
+  }
   return NextResponse.json({ galleries });
 }

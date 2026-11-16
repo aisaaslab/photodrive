@@ -9,6 +9,7 @@ import { useLanguage } from "@/lib/i18n";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { DeleteAccountButton } from "@/components/dashboard/DeleteAccountButton";
 import { AvatarEditor } from "@/components/dashboard/AvatarEditor";
+import { ToastProvider } from "@/components/ui/Toast";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -37,6 +38,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const displayName = profile?.name || user.displayName || user.email;
 
   return (
+    <ToastProvider>
     <div className="min-h-screen flex flex-col bg-[#080808] text-white">
       <div className="aurora-bg"><span /></div>
 
@@ -48,30 +50,32 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               alt="PhotoDrive"
               width={240}
               height={56}
-              className="h-12 w-auto"
+              className="h-9 sm:h-12 w-auto"
               priority
             />
           </Link>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3 sm:gap-4">
             <Link
               href="/dashboard/account"
-              className="hidden sm:flex items-center gap-1.5 text-sm text-stone-500 hover:text-stone-900 transition-colors"
+              className="flex items-center gap-1.5 text-sm text-stone-500 hover:text-stone-900 transition-colors"
               title={t.dashboardLayout.account}
+              aria-label={t.dashboardLayout.account}
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M17.982 18.725A7.488 7.488 0 0012 15.75a7.488 7.488 0 00-5.982 2.975m11.963 0a9 9 0 10-11.963 0m11.963 0A8.966 8.966 0 0112 21a8.966 8.966 0 01-5.982-2.275M15 9.75a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
-              <span>{t.dashboardLayout.account}</span>
+              <span className="hidden sm:inline">{t.dashboardLayout.account}</span>
             </Link>
 
             <LanguageSwitcher variant="light" />
 
-            <div className="hidden sm:flex items-center gap-3">
+            <div className="flex items-center gap-3">
               {/* Click avatar to edit — opens the AvatarEditor modal */}
               <button
                 onClick={() => setAvatarEditorOpen(true)}
                 title={t.gallery.avatar}
+                aria-label={t.gallery.avatar}
                 className="relative shrink-0"
               >
                 {avatarUrl ? (
@@ -87,13 +91,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   </div>
                 )}
               </button>
-              <span className="text-sm font-medium text-stone-700">{displayName}</span>
+              <span className="hidden sm:inline text-sm font-medium text-stone-700">{displayName}</span>
             </div>
 
             <div className="w-px h-4 bg-stone-200 hidden sm:block" />
 
             <button
               onClick={() => signOut(auth).then(() => router.push("/login"))}
+              aria-label={t.dashboardLayout.signOut}
+              title={t.dashboardLayout.signOut}
               className="flex items-center gap-1.5 text-sm text-stone-500 hover:text-stone-900 transition-colors"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -115,5 +121,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       {avatarEditorOpen && <AvatarEditor onClose={() => setAvatarEditorOpen(false)} />}
     </div>
+    </ToastProvider>
   );
 }

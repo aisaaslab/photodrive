@@ -13,10 +13,12 @@ interface Props {
   onClose: () => void;
   onNext: () => void;
   onPrev: () => void;
+  /** Jump straight to a photo (used by the thumbnail strip). */
+  onGoTo: (index: number) => void;
   onToggleFavorite: (photoId: string) => void;
 }
 
-export function Lightbox({ photos, activeIndex, favorites, allowDownload = true, onClose, onNext, onPrev, onToggleFavorite }: Props) {
+export function Lightbox({ photos, activeIndex, favorites, allowDownload = true, onClose, onNext, onPrev, onGoTo, onToggleFavorite }: Props) {
   const { t } = useLanguage();
   const g = t.gallery;
   const photo = photos[activeIndex];
@@ -30,6 +32,34 @@ export function Lightbox({ photos, activeIndex, favorites, allowDownload = true,
   // the last photo so a gallery doesn't loop forever in a forgotten tab.
   const [playing, setPlaying] = useState(false);
   const slideRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  // Touch gesture start (swipe left/right = next/prev, swipe down = close).
+  const touchStart = useRef<{ x: number; y: number } | null>(null);
+
+  // Dialog focus management: move focus into the viewer, give it back on close.
+  useEffect(() => {
+    const prev = document.activeElement as HTMLElement | null;
+    containerRef.current?.focus({ preventScroll: true });
+    return () => prev?.focus?.({ preventScroll: true });
+  }, []);
+
+  function onTouchStart(e: React.TouchEvent) {
+    // Ignore multi-finger gestures (pinch-zoom).
+    touchStart.current = e.touches.length === 1 ? { x: e.touches[0].clientX, y: e.touches[0].clientY } : null;
+  }
+
+  function onTouchEnd(e: React.TouchEvent) {
+    const start = touchStart.current;
+    touchStart.current = null;
+    if (!start || e.changedTouches.length !== 1) return;
+    const dx = e.changedTouches[0].clientX - start.x;
+    const dy = e.changedTouches[0].clientY - start.y;
+    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+      if (dx < 0) onNext();
+      else onPrev();
+    } else if (dy > 90 && dy > Math.abs(dx) * 1.5) {
+      onClose();
+    }
+  }
 
   useEffect(() => {
     setImgLoaded(false);
@@ -122,7 +152,14 @@ export function Lightbox({ photos, activeIndex, favorites, allowDownload = true,
   const isFavorited = favorites.has(photo.id);
 
   return (
-    <div ref={containerRef} className="fixed inset-0 z-50 bg-black/98 flex flex-col animate-fade-in">
+    <div
+      ref={containerRef}
+      role="dialog"
+      aria-modal="true"
+      aria-label={g.viewerLabel}
+      tabIndex={-1}
+      className="fixed inset-0 z-50 bg-black/98 flex flex-col animate-fade-in outline-none"
+    >
       {/* Top bar */}
       <div className="flex items-center justify-between px-5 py-4 shrink-0">
         {/* Counter */}
@@ -136,6 +173,7 @@ export function Lightbox({ photos, activeIndex, favorites, allowDownload = true,
           <button
             onClick={() => setPlaying((v) => !v)}
             title={g.slideshow}
+            aria-pressed={playing}
             className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-all ${
               playing
                 ? "bg-[#17509e] text-white"
@@ -157,6 +195,7 @@ export function Lightbox({ photos, activeIndex, favorites, allowDownload = true,
           {/* Favorite */}
           <button
             onClick={() => onToggleFavorite(photo.id)}
+            aria-pressed={isFavorited}
             className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-all ${
               isFavorited
                 ? "bg-[#17509e] text-white"
@@ -188,6 +227,7 @@ export function Lightbox({ photos, activeIndex, favorites, allowDownload = true,
           <button
             onClick={toggleFullscreen}
             title={g.fullscreen}
+            aria-label={g.fullscreen}
             className="w-8 h-8 flex items-center justify-center bg-white/10 hover:bg-white/20 text-white/70 hover:text-white rounded-full transition-all"
           >
             {isFullscreen ? (
@@ -204,6 +244,8 @@ export function Lightbox({ photos, activeIndex, favorites, allowDownload = true,
           {/* Close */}
           <button
             onClick={onClose}
+            aria-label={g.closeViewer}
+            title={g.closeViewer}
             className="w-8 h-8 flex items-center justify-center bg-white/10 hover:bg-white/20 text-white/70 hover:text-white rounded-full transition-all"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -217,12 +259,15 @@ export function Lightbox({ photos, activeIndex, favorites, allowDownload = true,
       <div
         className="flex-1 flex items-center justify-center relative px-2 sm:px-14 min-h-0"
         onClick={onClose}
+        onTouchStart={onTouchStart}
+        onTouchEnd={onTouchEnd}
       >
         {/* Prev */}
         {activeIndex > 0 && (
           <button
             className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center bg-white/10 hover:bg-white/20 text-white rounded-full transition-all z-10 hover:scale-110"
             onClick={(e) => { e.stopPropagation(); onPrev(); }}
+            aria-label={g.prevPhoto}
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
@@ -277,6 +322,7 @@ export function Lightbox({ photos, activeIndex, favorites, allowDownload = true,
           <button
             className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center bg-white/10 hover:bg-white/20 text-white rounded-full transition-all z-10 hover:scale-110"
             onClick={(e) => { e.stopPropagation(); onNext(); }}
+            aria-label={g.nextPhoto}
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
@@ -296,14 +342,10 @@ export function Lightbox({ photos, activeIndex, favorites, allowDownload = true,
             <button
               key={p.id}
               data-active={i === activeIndex ? "true" : "false"}
-              onClick={() => {
-                if (i < activeIndex) {
-                  for (let j = activeIndex; j > i; j--) onPrev();
-                } else {
-                  for (let j = activeIndex; j < i; j++) onNext();
-                }
-              }}
-              className={`shrink-0 w-14 h-14 rounded-lg overflow-hidden transition-all ${
+              onClick={() => onGoTo(i)}
+              aria-label={`${i + 1} / ${photos.length}`}
+              aria-current={i === activeIndex ? "true" : undefined}
+              className={`relative shrink-0 w-14 h-14 rounded-lg overflow-hidden transition-all ${
                 i === activeIndex
                   ? "ring-2 ring-white opacity-100 scale-105"
                   : "opacity-40 hover:opacity-70"

@@ -28,9 +28,10 @@ export function FavoriteButton({ photoId, isFavorited, onToggle }: Props) {
       className={`absolute top-2.5 right-2.5 w-8 h-8 flex items-center justify-center rounded-full transition-all duration-200 shadow-sm ${
         isFavorited
           ? "bg-[#17509e] text-white opacity-100 scale-100"
-          : "bg-black/30 backdrop-blur-sm text-white/60 hover:bg-black/60"
-      } ${animating ? "animate-heart-pop" : ""}`}
+          : "bg-black/40 backdrop-blur-sm text-white/90 hover:bg-black/60"
+      } ${animating ? "animate-heart-pop" : ""} focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white`}
       aria-label={isFavorited ? t.gallery.removeFavorite : t.gallery.addFavorite}
+      aria-pressed={isFavorited}
     >
       <svg
         className="w-4 h-4"

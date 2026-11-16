@@ -33,7 +33,12 @@ type Filter = "all" | "photos" | "videos" | "favorites";
 export function MasonryGrid({ photos, subfolders = [], galleryId, allowDownload = true }: Props) {
   const { t } = useLanguage();
   const g = t.gallery;
+  // The lightbox navigates the photos that were on screen when it opened (the
+  // filtered/sorted `displayed` list), not the whole gallery — so with the
+  // Favorites tab open, next/prev walks favorites only. It's a snapshot so
+  // un-favoriting a photo while viewing it doesn't pull it out from under you.
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const [lightboxPhotos, setLightboxPhotos] = useState<DriveFile[]>([]);
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [filter, setFilter] = useState<Filter>("all");
   const [activeFolder, setActiveFolder] = useState<string | null>(null);
@@ -231,9 +236,8 @@ export function MasonryGrid({ photos, subfolders = [], galleryId, allowDownload 
     shownVideos === 0 ? photoPart : shownPhotos === 0 ? videoPart : `${photoPart} · ${videoPart}`;
 
   function openPhoto(index: number) {
-    const photo = displayed[index];
-    const globalIndex = photos.findIndex((p) => p.id === photo.id);
-    setLightboxIndex(globalIndex);
+    setLightboxPhotos(displayed);
+    setLightboxIndex(index);
   }
 
   return (
@@ -492,7 +496,7 @@ export function MasonryGrid({ photos, subfolders = [], galleryId, allowDownload 
         return (
           <>
             {photoItems.length > 0 && (
-              <div className="masonry-grid">
+              <div className="photo-grid">
                 {photoItems.map((photo) => {
                   const index = displayed.indexOf(photo);
                   return (
@@ -540,13 +544,14 @@ export function MasonryGrid({ photos, subfolders = [], galleryId, allowDownload 
       {/* Lightbox */}
       {lightboxIndex !== null && (
         <Lightbox
-          photos={photos}
+          photos={lightboxPhotos}
           activeIndex={lightboxIndex}
           favorites={favorites}
           allowDownload={allowDownload}
           onClose={() => setLightboxIndex(null)}
-          onNext={() => setLightboxIndex((i) => Math.min((i ?? 0) + 1, photos.length - 1))}
+          onNext={() => setLightboxIndex((i) => Math.min((i ?? 0) + 1, lightboxPhotos.length - 1))}
           onPrev={() => setLightboxIndex((i) => Math.max((i ?? 0) - 1, 0))}
+          onGoTo={(i) => setLightboxIndex(Math.max(0, Math.min(i, lightboxPhotos.length - 1)))}
           onToggleFavorite={toggleFavorite}
         />
       )}
