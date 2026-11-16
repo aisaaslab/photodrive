@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { useLanguage } from "@/lib/i18n";
 import { GalleryDoc } from "@/lib/firestore/types";
@@ -8,11 +8,14 @@ import { APP_URL } from "@/lib/branding";
 import { driveFileThumbUrl } from "@/lib/drive/public-url";
 import { TITLE_COLORS, titleFontFamily } from "@/lib/gallery/title-style";
 import { CoverPickerModal } from "./CoverPickerModal";
+import { Modal } from "@/components/ui/Modal";
+import { useToast } from "@/components/ui/Toast";
+import { LOCALES } from "@/lib/i18n";
 import { coverObjectPosition } from "@/lib/gallery/cover-position";
 
 interface Props {
   gallery: GalleryDoc;
-  onDelete: (id: string) => void;
+  onDelete: (id: string) => void | boolean | Promise<void | boolean>;
   onUpdate: (updated: GalleryDoc) => void;
 }
 
@@ -29,6 +32,7 @@ export function GalleryCard({ gallery, onDelete, onUpdate }: Props) {
   const { user } = useAuth();
   const { t, lang } = useLanguage();
   const c = t.galleryCard;
+  const toast = useToast();
   const [copied, setCopied] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -54,6 +58,7 @@ export function GalleryCard({ gallery, onDelete, onUpdate }: Props) {
   const [editTitleFont, setEditTitleFont] = useState(gallery.titleFont ?? "classic");
   const [editTitleColor, setEditTitleColor] = useState(gallery.titleColor ?? "#ffffff");
   const [editTitleSize, setEditTitleSize] = useState(gallery.titleSize ?? "md");
+  const [editHeaderBranding, setEditHeaderBranding] = useState(gallery.headerBranding === "photographer");
   const [showCoverPicker, setShowCoverPicker] = useState(false);
   const [saving, setSaving] = useState(false);
   const [editError, setEditError] = useState("");
@@ -61,20 +66,61 @@ export function GalleryCard({ gallery, onDelete, onUpdate }: Props) {
   const [selLoading, setSelLoading] = useState(false);
   const [selPhotos, setSelPhotos] = useState<{ id: string; name: string; count?: number }[]>([]);
   const [selError, setSelError] = useState(false);
+  // The client's "Send selection" hand-off (name / email / note), owner-only.
+  const [selSubmission, setSelSubmission] = useState<{ name: string; email: string | null; note: string | null; count: number; submittedAt: number } | null>(null);
   const [selCopied, setSelCopied] = useState(false);
   const [selZipping, setSelZipping] = useState(false);
 
   const galleryUrl = `${APP_URL}/gallery/${gallery.slug}`;
 
+  // "More" menu (cover / edit / delete). Closes on outside click or Escape.
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!menuOpen) return;
+    function onDown(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpen(false);
+    }
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setMenuOpen(false);
+    }
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [menuOpen]);
+
+  // "New favorites" marker: remember (per browser) when the photographer last
+  // opened this gallery's selection, and badge the card if it changed since.
+  const seenKey = `pd_sel_seen_${gallery.id}`;
+  const [selSeenAt, setSelSeenAt] = useState<number>(() => {
+    if (typeof window === "undefined") return 0;
+    try { return Number(localStorage.getItem(seenKey)) || 0; } catch { return 0; }
+  });
+  function markSelectionSeen() {
+    const at = Math.max(gallery.selectionUpdatedAt ?? 0, gallery.selectionSubmittedAt ?? 0, Date.now());
+    setSelSeenAt(at);
+    try { localStorage.setItem(seenKey, String(at)); } catch { /* private mode */ }
+  }
+
   async function openSelections() {
     setShowSelections(true);
+    markSelectionSeen();
     setSelLoading(true);
     setSelError(false);
     try {
-      const res = await fetch(`/api/galleries/${gallery.id}/selection`);
+      // The token lets the server include the client's submission details,
+      // which are never returned to the public.
+      const token = await user?.getIdToken();
+      const res = await fetch(`/api/galleries/${gallery.id}/selection`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      });
       if (!res.ok) throw new Error();
       const data = await res.json();
       setSelPhotos(data.photos ?? []);
+      setSelSubmission(data.submission ?? null);
     } catch {
       setSelError(true);
     } finally {
@@ -123,15 +169,17 @@ export function GalleryCard({ gallery, onDelete, onUpdate }: Props) {
 
   function copyLink() {
     navigator.clipboard.writeText(galleryUrl);
+    toast(c.linkCopied);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   }
 
   async function confirmDelete() {
     setDeleting(true);
-    await onDelete(gallery.id);
+    const ok = await onDelete(gallery.id);
     setDeleting(false);
     setShowDeleteConfirm(false);
+    if (ok !== false) toast(c.deletedToast);
   }
 
   async function saveEdit() {
@@ -156,6 +204,7 @@ export function GalleryCard({ gallery, onDelete, onUpdate }: Props) {
       body.titleFont = editTitleFont;
       body.titleColor = editTitleColor;
       body.titleSize = editTitleSize;
+      body.headerBranding = editHeaderBranding ? "photographer" : null;
 
       const res = await fetch(`/api/galleries/${gallery.id}`, {
         method: "PATCH",
@@ -173,6 +222,7 @@ export function GalleryCard({ gallery, onDelete, onUpdate }: Props) {
       }
       const updated = await res.json();
       onUpdate({ ...gallery, ...updated });
+      toast(c.savedToast);
       setIsEditing(false);
       setEditDriveUrl("");
       setEditPassword("");
@@ -198,10 +248,10 @@ export function GalleryCard({ gallery, onDelete, onUpdate }: Props) {
     setEditTitleFont(gallery.titleFont ?? "classic");
     setEditTitleColor(gallery.titleColor ?? "#ffffff");
     setEditTitleSize(gallery.titleSize ?? "md");
+    setEditHeaderBranding(gallery.headerBranding === "photographer");
     setEditError("");
   }
 
-  const LOCALES: Record<import("@/lib/i18n").Lang, string> = { el: "el-GR", en: "en-GB", nl: "nl-NL", de: "de-DE", es: "es-ES", it: "it-IT" };
   const createdDate = gallery.createdAt
     ? new Date(gallery.createdAt).toLocaleDateString(LOCALES[lang], {
         day: "numeric", month: "short", year: "numeric",
@@ -230,288 +280,23 @@ export function GalleryCard({ gallery, onDelete, onUpdate }: Props) {
     }
   }
 
+  // Short label + size for the live title preview in the settings modal.
+  const PREVIEW_SIZES: Record<string, string> = { sm: "1.25rem", md: "1.6rem", lg: "2rem", xl: "2.4rem" };
+
+  const hasNewSelections =
+    ((gallery.selectionCount ?? 0) > 0 || !!gallery.selectionSubmittedAt) &&
+    Math.max(gallery.selectionUpdatedAt ?? 0, gallery.selectionSubmittedAt ?? 0) > selSeenAt;
+
+  const inputCls =
+    "w-full bg-[#1a1a1a] border border-white/10 rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-white/25 transition-all placeholder-stone-600";
+  const sectionHeading = "text-[11px] font-semibold uppercase tracking-wider text-white/40";
+
+  const menuItemCls =
+    "w-full flex items-center gap-2.5 px-3 py-2 text-xs text-left text-white/80 hover:bg-white/[0.07] hover:text-white transition-colors";
+
   return (
     <>
       <div className="bg-[#111111] border border-white/[0.08] rounded-2xl overflow-hidden hover:border-white/[0.18] transition-all duration-200 group animate-fade-up">
-          {isEditing ? (
-            <div className="p-4 space-y-3">
-              <div>
-                <label className="text-xs font-medium text-white/70 mb-1 block">{c.nameLabel}</label>
-                <input
-                  value={editName}
-                  onChange={(e) => setEditName(e.target.value)}
-                  className="w-full bg-[#1a1a1a] border border-white/10 rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-white/25 transition-all"
-                />
-              </div>
-
-              {/* Cover picker */}
-              <div>
-                <label className="text-xs font-medium text-white/70 mb-1 block">{c.chooseCover}</label>
-                <button
-                  onClick={() => setShowCoverPicker(true)}
-                  className="w-full flex items-center justify-center gap-1.5 bg-white/[0.03] border border-white/[0.08] rounded-lg px-3 py-2 text-xs text-white/70 hover:text-white hover:border-white/20 transition-all"
-                >
-                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.7}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
-                  </svg>
-                  {gallery.coverFileId ? c.coverCurrent : c.chooseCover}
-                </button>
-              </div>
-
-              {/* Optional metadata */}
-              <div>
-                <label className="text-xs font-medium text-white/70 mb-1 block">{c.descriptionLabel}</label>
-                <textarea
-                  value={editDescription}
-                  onChange={(e) => setEditDescription(e.target.value)}
-                  rows={2}
-                  placeholder={t.newGalleryForm.descriptionPlaceholder}
-                  className="w-full bg-[#1a1a1a] border border-white/10 rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-white/25 transition-all resize-none placeholder-stone-600"
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-xs font-medium text-white/70 mb-1 block">{c.eventDateLabel}</label>
-                  <input
-                    type="date"
-                    value={editEventDate}
-                    onChange={(e) => setEditEventDate(e.target.value)}
-                    className="w-full bg-[#1a1a1a] border border-white/10 rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-white/25 transition-all"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs font-medium text-white/70 mb-1 block">{c.locationLabel}</label>
-                  <input
-                    type="text"
-                    value={editLocation}
-                    onChange={(e) => setEditLocation(e.target.value)}
-                    placeholder={t.newGalleryForm.locationPlaceholder}
-                    className="w-full bg-[#1a1a1a] border border-white/10 rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-white/25 transition-all placeholder-stone-600"
-                  />
-                </div>
-              </div>
-
-              {/* Title style — pick a font + color for the gallery title.
-                  Each font button renders a live "Aa" sample in that font
-                  (the fonts are loaded globally via next/font, so previews
-                  are real). Colors are curated light swatches that stay
-                  readable over the hero image. */}
-              <div className="bg-[#1a1a1a] border border-white/10 rounded-lg p-3 space-y-3">
-                <label className="text-xs font-medium text-white/70 block">{c.titleFontLabel}</label>
-                <div className="grid grid-cols-5 gap-1.5">
-                  {(["classic", "serif", "script", "modern", "mono"] as const).map((fid) => (
-                    <button
-                      key={fid}
-                      type="button"
-                      onClick={() => setEditTitleFont(fid)}
-                      className={`flex flex-col items-center gap-1 rounded-lg border py-2 px-1 transition-all ${
-                        editTitleFont === fid
-                          ? "border-[#2dabe0] bg-[#2dabe0]/10"
-                          : "border-white/10 hover:border-white/25"
-                      }`}
-                    >
-                      <span
-                        className="text-white text-lg leading-none"
-                        style={{ fontFamily: titleFontFamily(fid) }}
-                      >
-                        Aa
-                      </span>
-                      <span className="text-[9px] text-white/50">{titleFontLabel(fid, c)}</span>
-                    </button>
-                  ))}
-                </div>
-
-                <label className="text-xs font-medium text-white/70 block">{c.titleColorLabel}</label>
-                <div className="flex flex-wrap gap-2">
-                  {TITLE_COLORS.map((color) => (
-                    <button
-                      key={color}
-                      type="button"
-                      title={color}
-                      onClick={() => setEditTitleColor(color)}
-                      className={`w-7 h-7 rounded-full border-2 transition-all ${
-                        editTitleColor === color
-                          ? "border-[#2dabe0] ring-2 ring-[#2dabe0]/30 scale-110"
-                          : "border-white/20 hover:border-white/50"
-                      }`}
-                      style={{ backgroundColor: color }}
-                    />
-                  ))}
-                </div>
-
-                {/* Title size — 4 steps, previewed with "Aa" at scaled sizes */}
-                <label className="text-xs font-medium text-white/70 block">{c.titleSizeLabel}</label>
-                <div className="grid grid-cols-4 gap-1.5">
-                  {(["sm", "md", "lg", "xl"] as const).map((sid, i) => (
-                    <button
-                      key={sid}
-                      type="button"
-                      onClick={() => setEditTitleSize(sid)}
-                      className={`flex flex-col items-center gap-1 rounded-lg border py-2 px-1 transition-all ${
-                        editTitleSize === sid
-                          ? "border-[#2dabe0] bg-[#2dabe0]/10"
-                          : "border-white/10 hover:border-white/25"
-                      }`}
-                    >
-                      <span
-                        className="text-white leading-none"
-                        // Preview scale roughly mirrors the real title sizes.
-                        style={{ fontSize: `${0.8 + i * 0.25}rem` }}
-                      >
-                        Aa
-                      </span>
-                      <span className="text-[9px] text-white/50">{titleSizeLabel(sid, c)}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* "Book this photographer" CTA — a link + on/off toggle.
-                  Accepts any URL: mailto:, https://wa.me/, https://m.me/,
-                  a booking page, etc. Quick-fill chips for common types. */}
-              <div className="bg-[#1a1a1a] border border-white/10 rounded-lg p-3 space-y-2.5">
-                <label className="flex items-center justify-between cursor-pointer">
-                  <span className="text-xs font-medium text-white/80">{c.bookCtaLabel}</span>
-                  <button
-                    type="button"
-                    onClick={() => setEditBookEnabled((v) => !v)}
-                    className={`relative w-9 h-5 rounded-full transition-colors ${editBookEnabled ? "bg-[#17509e]" : "bg-white/10"}`}
-                  >
-                    <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow-sm transition-transform ${editBookEnabled ? "translate-x-4" : "translate-x-0.5"}`} />
-                  </button>
-                </label>
-                {editBookEnabled && (
-                  <>
-                    <input
-                      type="text"
-                      value={editBookLink}
-                      onChange={(e) => setEditBookLink(e.target.value)}
-                      placeholder={c.bookLinkPlaceholder}
-                      className="w-full bg-[#111111] border border-white/10 rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-white/25 transition-all placeholder-stone-600"
-                    />
-                    {/* Quick-fill chips for common contact types */}
-                    <div className="flex flex-wrap gap-1.5">
-                      {[
-                        { label: "Email", prefix: "mailto:" },
-                        { label: "WhatsApp", prefix: "https://wa.me/" },
-                        { label: "Messenger", prefix: "https://m.me/" },
-                        { label: "Website", prefix: "https://" },
-                      ].map((chip) => (
-                        <button
-                          key={chip.label}
-                          type="button"
-                          onClick={() => setEditBookLink(chip.prefix)}
-                          className="text-[10px] font-medium text-white/60 bg-white/[0.06] border border-white/10 rounded-full px-2.5 py-1 hover:text-white hover:border-white/20 transition-all"
-                        >
-                          {chip.label}
-                        </button>
-                      ))}
-                    </div>
-                  </>
-                )}
-              </div>
-
-              <div>
-                <label className="text-xs font-medium text-white/40 mb-1 block">{c.driveFolderLabel}</label>
-                <div className="relative group/drive">
-                  <input
-                    value={editDriveUrl}
-                    readOnly
-                    className="w-full bg-white/[0.03] border border-white/[0.06] rounded-lg px-3 py-2 text-sm text-white/30 outline-none cursor-not-allowed pr-8"
-                  />
-                  <svg className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
-                  </svg>
-                  <div className="absolute left-0 -top-8 hidden group-hover/drive:flex bg-stone-800 border border-white/10 text-white/70 text-xs rounded-lg px-2.5 py-1.5 whitespace-nowrap shadow-lg z-10">
-                    {c.driveTooltip}
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <label className="text-xs font-medium text-white/70 mb-1 block">
-                  {gallery.passwordHash ? c.newPasswordLabel : c.passwordOptionalLabel}
-                </label>
-                <input
-                  type="text"
-                  value={editPassword}
-                  onChange={(e) => setEditPassword(e.target.value)}
-                  disabled={removePassword}
-                  placeholder={gallery.password ?? c.noPassword}
-                  className="w-full bg-[#1a1a1a] border border-white/10 rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-white/25 transition-all disabled:opacity-40 placeholder-stone-600"
-                />
-              </div>
-
-              {gallery.passwordHash && (
-                <label className="flex items-center gap-2 text-xs text-white/70 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={removePassword}
-                    onChange={(e) => {
-                      setRemovePassword(e.target.checked);
-                      if (e.target.checked) setEditPassword("");
-                    }}
-                    className="rounded border-white/20"
-                  />
-                  {c.removePassword}
-                </label>
-              )}
-
-              <div>
-                <label className="text-xs font-medium text-white/70 mb-1 block">{c.linksLabel}</label>
-                <div className="space-y-2">
-                  {SOCIAL_FIELDS.map((soc) => (
-                    <div key={soc.key} className="relative">
-                      <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-white/40">{soc.icon}</span>
-                      <input
-                        type="url"
-                        value={editSocial[soc.key]}
-                        onChange={(e) => setEditSocial((s) => ({ ...s, [soc.key]: e.target.value } as typeof s))}
-                        placeholder={soc.placeholder}
-                        className="w-full bg-[#1a1a1a] border border-white/10 rounded-lg pl-9 pr-3 py-2 text-sm text-white outline-none focus:border-white/25 transition-all placeholder-stone-600"
-                      />
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <label className="flex items-start gap-2.5 cursor-pointer bg-white/[0.03] border border-white/[0.06] rounded-lg px-3 py-2.5">
-                <input
-                  type="checkbox"
-                  checked={editAllowDownload}
-                  onChange={(e) => setEditAllowDownload(e.target.checked)}
-                  className="mt-0.5 rounded border-white/20"
-                />
-                <span>
-                  <span className="block text-xs font-medium text-white/80">{c.allowDownloadLabel}</span>
-                  <span className="block text-[11px] text-white/40 mt-0.5">{c.allowDownloadHint}</span>
-                </span>
-              </label>
-
-              {editError && <p className="text-xs text-red-500">{editError}</p>}
-
-              <div className="flex gap-2 pt-1">
-                <button
-                  onClick={saveEdit}
-                  disabled={saving || !editName.trim()}
-                  className="flex-1 bg-white text-stone-900 rounded-lg py-2 text-xs font-semibold hover:bg-stone-100 transition-colors disabled:opacity-50 flex items-center justify-center gap-1.5"
-                >
-                  {saving
-                    ? <div className="w-3.5 h-3.5 border-2 border-stone-400 border-t-stone-900 rounded-full animate-spin" />
-                    : c.save
-                  }
-                </button>
-                <button
-                  onClick={cancelEdit}
-                  disabled={saving}
-                  className="flex-1 border border-white/10 text-white/70 rounded-lg py-2 text-xs font-medium hover:bg-white/[0.05] transition-colors disabled:opacity-50"
-                >
-                  {c.cancel}
-                </button>
-              </div>
-            </div>
-          ) : (
-            <>
               {/* Cover banner — shows the chosen cover photo, or a branded
                   gradient if no cover is set. Clicking it opens the cover
                   picker directly (no need to enter edit mode first). */}
@@ -599,71 +384,432 @@ export function GalleryCard({ gallery, onDelete, onUpdate }: Props) {
                   )}
                 </button>
 
-                {/* Segmented icon toolbar — all secondary actions in one clean
-                    row with visual separators. Order: view → client data →
-                    gallery settings → danger. Delete is last with a red hover
-                    so destructive intent is unmistakable. */}
-                <div className="flex border border-white/10 rounded-lg overflow-hidden mt-2 bg-white/[0.02]">
-                  <a
-                    href={galleryUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    title={c.openGallery}
-                    className="flex-1 flex items-center justify-center py-2 text-white/60 hover:text-white hover:bg-white/[0.06] border-r border-white/10 transition-colors"
-                  >
-                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
-                    </svg>
-                  </a>
+        {/* Secondary actions. Two labeled buttons (icons alone aren't
+            discoverable on touch) + a "more" menu for the rarer ones. */}
+        <div className="mt-2 flex gap-2">
+          <a
+            href={galleryUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            title={c.openGallery}
+            className="flex-1 min-w-0 flex items-center justify-center gap-1.5 py-2 px-2 text-xs font-medium text-white/70 hover:text-white border border-white/10 hover:border-white/25 hover:bg-white/[0.05] rounded-lg transition-colors"
+          >
+            <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+            </svg>
+            <span className="truncate">{t.gallery.open}</span>
+          </a>
 
-                  <button
-                    onClick={openSelections}
-                    title={c.selections}
-                    className="flex-1 flex items-center justify-center py-2 text-white/60 hover:text-[#2dabe0] hover:bg-[#17509e]/15 border-r border-white/10 transition-colors"
-                  >
-                    <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
-                    </svg>
-                  </button>
+          <button
+            onClick={openSelections}
+            title={c.selections}
+            className="relative flex-1 min-w-0 flex items-center justify-center gap-1.5 py-2 px-2 text-xs font-medium text-white/70 hover:text-[#2dabe0] border border-white/10 hover:border-[#2dabe0]/40 hover:bg-[#17509e]/15 rounded-lg transition-colors"
+          >
+            <svg className="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill={(gallery.selectionCount ?? 0) > 0 ? "currentColor" : "none"} stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
+            </svg>
+            <span className="truncate">{t.gallery.filterFavorites}</span>
+            {(gallery.selectionCount ?? 0) > 0 && (
+              <span
+                className={`shrink-0 min-w-[1.25rem] h-5 px-1 rounded-full text-[10px] font-bold flex items-center justify-center ${
+                  hasNewSelections ? "bg-[#2dabe0] text-white" : "bg-white/10 text-white/70"
+                }`}
+              >
+                {gallery.selectionCount}
+                {gallery.selectionSubmittedAt && (
+                  <svg className="w-2.5 h-2.5 ml-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3} aria-label={c.selectionSent}>
+                    <title>{c.selectionSent}</title>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                  </svg>
+                )}
+              </span>
+            )}
+            {hasNewSelections && (
+              <span className="absolute -top-1.5 -right-1.5 bg-[#2dabe0] text-white text-[9px] font-bold leading-none rounded-full px-1.5 py-1 shadow">
+                {c.newBadge}
+              </span>
+            )}
+          </button>
 
-                  <button
-                    onClick={() => setShowCoverPicker(true)}
-                    title={c.chooseCover}
-                    className="flex-1 flex items-center justify-center py-2 text-white/60 hover:text-white hover:bg-white/[0.06] border-r border-white/10 transition-colors"
-                  >
-                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
-                    </svg>
-                  </button>
-
-                  <button
-                    onClick={() => setIsEditing(true)}
-                    title={c.edit}
-                    className="flex-1 flex items-center justify-center py-2 text-white/60 hover:text-white hover:bg-white/[0.06] border-r border-white/10 transition-colors"
-                  >
-                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
-                    </svg>
-                  </button>
-
-                  <button
-                    onClick={() => setShowDeleteConfirm(true)}
-                    title={c.delete}
-                    className="flex-1 flex items-center justify-center py-2 text-white/60 hover:text-red-400 hover:bg-red-500/10 transition-colors"
-                  >
-                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
-                    </svg>
-                  </button>
-                </div>
+          <div className="relative shrink-0" ref={menuRef}>
+            <button
+              onClick={() => setMenuOpen((v) => !v)}
+              aria-label={c.more}
+              aria-haspopup="menu"
+              aria-expanded={menuOpen}
+              className="h-full aspect-square min-w-9 flex items-center justify-center text-white/70 hover:text-white border border-white/10 hover:border-white/25 hover:bg-white/[0.05] rounded-lg transition-colors"
+            >
+              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                <circle cx="5" cy="12" r="1.8" /><circle cx="12" cy="12" r="1.8" /><circle cx="19" cy="12" r="1.8" />
+              </svg>
+            </button>
+            {menuOpen && (
+              <div
+                role="menu"
+                className="absolute right-0 bottom-full mb-1.5 z-20 w-44 bg-[#1a1a1a] border border-white/10 rounded-xl shadow-2xl py-1 animate-scale-in"
+              >
+                <button role="menuitem" className={menuItemCls} onClick={() => { setMenuOpen(false); setShowCoverPicker(true); }}>
+                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25z" />
+                  </svg>
+                  {c.chooseCover}
+                </button>
+                <button role="menuitem" className={menuItemCls} onClick={() => { setMenuOpen(false); setIsEditing(true); }}>
+                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+                  </svg>
+                  {c.edit}
+                </button>
+                <div className="my-1 h-px bg-white/10" />
+                <button
+                  role="menuitem"
+                  className={`${menuItemCls} hover:!bg-red-500/10 hover:!text-red-400`}
+                  onClick={() => { setMenuOpen(false); setShowDeleteConfirm(true); }}
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                  </svg>
+                  {c.delete}
+                </button>
               </div>
-            </>
-          )}
+            )}
+          </div>
+        </div>
+        </div>
       </div>
 
+      {/* Gallery settings — a proper dialog instead of cramming the form into
+          a card a third of the page wide. Grouped into sections. */}
+      {isEditing && (
+        <Modal
+          onClose={() => { if (!saving) cancelEdit(); }}
+          ariaLabel={c.settingsTitle}
+          className="bg-[#111111] border border-white/10 rounded-2xl shadow-2xl w-full max-w-xl max-h-[90vh] flex flex-col"
+        >
+          <div className="flex items-start justify-between p-5 border-b border-white/[0.08] shrink-0">
+            <div className="min-w-0">
+              <h3 className="font-semibold text-white">{c.settingsTitle}</h3>
+              <p className="text-xs text-white/50 mt-0.5 truncate max-w-[22rem]">{gallery.name}</p>
+            </div>
+            <button onClick={cancelEdit} disabled={saving} aria-label={c.cancel} className="text-white/50 hover:text-white transition-colors shrink-0">
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+          </div>
+
+          <div className="flex-1 overflow-y-auto p-5 space-y-7">
+            {/* ── Details ── */}
+            <section className="space-y-3">
+              <h4 className={sectionHeading}>{c.sectionDetails}</h4>
+              <div>
+                <label htmlFor={`name-${gallery.id}`} className="text-xs font-medium text-white/70 mb-1 block">{c.nameLabel}</label>
+                <input id={`name-${gallery.id}`} value={editName} onChange={(e) => setEditName(e.target.value)} className={inputCls} />
+              </div>
+              <div>
+                <label htmlFor={`desc-${gallery.id}`} className="text-xs font-medium text-white/70 mb-1 block">{c.descriptionLabel}</label>
+                <textarea
+                  id={`desc-${gallery.id}`}
+                  value={editDescription}
+                  onChange={(e) => setEditDescription(e.target.value)}
+                  rows={2}
+                  placeholder={t.newGalleryForm.descriptionPlaceholder}
+                  className={`${inputCls} resize-none`}
+                />
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label htmlFor={`date-${gallery.id}`} className="text-xs font-medium text-white/70 mb-1 block">{c.eventDateLabel}</label>
+                  <input id={`date-${gallery.id}`} type="date" value={editEventDate} onChange={(e) => setEditEventDate(e.target.value)} className={inputCls} />
+                </div>
+                <div>
+                  <label htmlFor={`loc-${gallery.id}`} className="text-xs font-medium text-white/70 mb-1 block">{c.locationLabel}</label>
+                  <input id={`loc-${gallery.id}`} type="text" value={editLocation} onChange={(e) => setEditLocation(e.target.value)} placeholder={t.newGalleryForm.locationPlaceholder} className={inputCls} />
+                </div>
+              </div>
+              <div>
+                <label className="text-xs font-medium text-white/40 mb-1 block">{c.driveFolderLabel}</label>
+                <div className="relative group/drive">
+                  <input
+                    value={editDriveUrl}
+                    readOnly
+                    className="w-full bg-white/[0.03] border border-white/[0.06] rounded-lg px-3 py-2 text-sm text-white/30 outline-none cursor-not-allowed pr-8"
+                  />
+                  <svg className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+                  </svg>
+                  <div className="absolute left-0 -top-8 hidden group-hover/drive:flex bg-stone-800 border border-white/10 text-white/70 text-xs rounded-lg px-2.5 py-1.5 whitespace-nowrap shadow-lg z-10">
+                    {c.driveTooltip}
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            {/* ── Appearance ── cover + title style, with a live preview */}
+            <section className="space-y-3">
+              <h4 className={sectionHeading}>{c.sectionAppearance}</h4>
+
+              {/* Live preview: the banner as clients see it, using the real
+                  cover + position and the title font / color / size being
+                  edited. */}
+              <div>
+                <p className="text-[11px] font-medium text-white/50 mb-1.5">{c.titlePreview}</p>
+                <div className="relative h-28 rounded-xl overflow-hidden border border-white/10 bg-gradient-to-br from-[#17509e] via-[#0d2d5c] to-stone-900">
+                  {gallery.coverFileId && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={driveFileThumbUrl(gallery.coverFileId, 800)}
+                      alt=""
+                      className="absolute inset-0 w-full h-full object-cover"
+                      style={{ objectPosition: coverObjectPosition(gallery.coverPosX, gallery.coverPosY) }}
+                    />
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/10" />
+                  <div className="absolute inset-x-0 bottom-0 px-4 pb-3 text-center">
+                    <p
+                      className="font-bold leading-tight drop-shadow-lg truncate"
+                      style={{
+                        fontFamily: titleFontFamily(editTitleFont),
+                        color: editTitleColor,
+                        fontSize: PREVIEW_SIZES[editTitleSize] ?? PREVIEW_SIZES.md,
+                      }}
+                    >
+                      {editName || gallery.name}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setShowCoverPicker(true)}
+                className="w-full flex items-center justify-center gap-1.5 bg-white/[0.03] border border-white/[0.08] rounded-lg px-3 py-2 text-xs text-white/70 hover:text-white hover:border-white/20 transition-all"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.7}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25z" />
+                </svg>
+                {gallery.coverFileId ? c.coverCurrent : c.chooseCover}
+              </button>
+
+              <div className="bg-[#1a1a1a] border border-white/10 rounded-lg p-3 space-y-3">
+                <p className="text-xs font-medium text-white/70">{c.titleFontLabel}</p>
+                <div className="grid grid-cols-5 gap-1.5">
+                  {(["classic", "serif", "script", "modern", "mono"] as const).map((fid) => (
+                    <button
+                      key={fid}
+                      type="button"
+                      aria-pressed={editTitleFont === fid}
+                      onClick={() => setEditTitleFont(fid)}
+                      className={`flex flex-col items-center gap-1 rounded-lg border py-2 px-1 transition-all ${
+                        editTitleFont === fid ? "border-[#2dabe0] bg-[#2dabe0]/10" : "border-white/10 hover:border-white/25"
+                      }`}
+                    >
+                      <span className="text-white text-lg leading-none" style={{ fontFamily: titleFontFamily(fid) }}>Aa</span>
+                      <span className="text-[9px] text-white/50">{titleFontLabel(fid, c)}</span>
+                    </button>
+                  ))}
+                </div>
+
+                <p className="text-xs font-medium text-white/70">{c.titleColorLabel}</p>
+                <div className="flex flex-wrap gap-2">
+                  {TITLE_COLORS.map((color) => (
+                    <button
+                      key={color}
+                      type="button"
+                      title={color}
+                      aria-label={color}
+                      aria-pressed={editTitleColor === color}
+                      onClick={() => setEditTitleColor(color)}
+                      className={`w-7 h-7 rounded-full border-2 transition-all ${
+                        editTitleColor === color ? "border-[#2dabe0] ring-2 ring-[#2dabe0]/30 scale-110" : "border-white/20 hover:border-white/50"
+                      }`}
+                      style={{ backgroundColor: color }}
+                    />
+                  ))}
+                </div>
+
+                <p className="text-xs font-medium text-white/70">{c.titleSizeLabel}</p>
+                <div className="grid grid-cols-4 gap-1.5">
+                  {(["sm", "md", "lg", "xl"] as const).map((sid, i) => (
+                    <button
+                      key={sid}
+                      type="button"
+                      aria-pressed={editTitleSize === sid}
+                      onClick={() => setEditTitleSize(sid)}
+                      className={`flex flex-col items-center gap-1 rounded-lg border py-2 px-1 transition-all ${
+                        editTitleSize === sid ? "border-[#2dabe0] bg-[#2dabe0]/10" : "border-white/10 hover:border-white/25"
+                      }`}
+                    >
+                      <span className="text-white leading-none" style={{ fontSize: `${0.8 + i * 0.25}rem` }}>Aa</span>
+                      <span className="text-[9px] text-white/50">{titleSizeLabel(sid, c)}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Header branding: swap the PhotoDrive logo at the top of the
+                  public gallery for the photographer's own avatar + name. */}
+              <div className="flex items-start justify-between gap-3 bg-white/[0.03] border border-white/[0.06] rounded-lg px-3 py-2.5">
+                <span>
+                  <span id={`brand-${gallery.id}`} className="block text-xs font-medium text-white/80">{c.headerBrandingLabel}</span>
+                  <span className="block text-[11px] text-white/40 mt-0.5">{c.headerBrandingHint}</span>
+                </span>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={editHeaderBranding}
+                  aria-labelledby={`brand-${gallery.id}`}
+                  onClick={() => setEditHeaderBranding((v) => !v)}
+                  className={`relative w-9 h-5 rounded-full transition-colors shrink-0 mt-0.5 ${editHeaderBranding ? "bg-[#17509e]" : "bg-white/10"}`}
+                >
+                  <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow-sm transition-transform ${editHeaderBranding ? "translate-x-4" : "translate-x-0.5"}`} />
+                </button>
+              </div>
+            </section>
+
+            {/* ── Privacy & downloads ── */}
+            <section className="space-y-3">
+              <h4 className={sectionHeading}>{c.sectionPrivacy}</h4>
+              <div>
+                <label htmlFor={`pw-${gallery.id}`} className="text-xs font-medium text-white/70 mb-1 block">
+                  {gallery.passwordHash ? c.newPasswordLabel : c.passwordOptionalLabel}
+                </label>
+                <input
+                  id={`pw-${gallery.id}`}
+                  type="text"
+                  value={editPassword}
+                  onChange={(e) => setEditPassword(e.target.value)}
+                  disabled={removePassword}
+                  placeholder={gallery.password ?? c.noPassword}
+                  className={`${inputCls} disabled:opacity-40`}
+                />
+              </div>
+              {gallery.passwordHash && (
+                <label className="flex items-center gap-2 text-xs text-white/70 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={removePassword}
+                    onChange={(e) => {
+                      setRemovePassword(e.target.checked);
+                      if (e.target.checked) setEditPassword("");
+                    }}
+                    className="rounded border-white/20"
+                  />
+                  {c.removePassword}
+                </label>
+              )}
+              <label className="flex items-start gap-2.5 cursor-pointer bg-white/[0.03] border border-white/[0.06] rounded-lg px-3 py-2.5">
+                <input
+                  type="checkbox"
+                  checked={editAllowDownload}
+                  onChange={(e) => setEditAllowDownload(e.target.checked)}
+                  className="mt-0.5 rounded border-white/20"
+                />
+                <span>
+                  <span className="block text-xs font-medium text-white/80">{c.allowDownloadLabel}</span>
+                  <span className="block text-[11px] text-white/40 mt-0.5">{c.allowDownloadHint}</span>
+                </span>
+              </label>
+            </section>
+
+            {/* ── Contact & links ── */}
+            <section className="space-y-3">
+              <h4 className={sectionHeading}>{c.sectionContact}</h4>
+              {/* "Book this photographer" CTA — a link + on/off toggle.
+                  Accepts any URL: mailto:, https://wa.me/, https://m.me/,
+                  a booking page, etc. Quick-fill chips for common types. */}
+              <div className="bg-[#1a1a1a] border border-white/10 rounded-lg p-3 space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <span id={`book-${gallery.id}`} className="text-xs font-medium text-white/80">{c.bookCtaLabel}</span>
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={editBookEnabled}
+                    aria-labelledby={`book-${gallery.id}`}
+                    onClick={() => setEditBookEnabled((v) => !v)}
+                    className={`relative w-9 h-5 rounded-full transition-colors ${editBookEnabled ? "bg-[#17509e]" : "bg-white/10"}`}
+                  >
+                    <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow-sm transition-transform ${editBookEnabled ? "translate-x-4" : "translate-x-0.5"}`} />
+                  </button>
+                </div>
+                {editBookEnabled && (
+                  <>
+                    <input
+                      type="text"
+                      value={editBookLink}
+                      onChange={(e) => setEditBookLink(e.target.value)}
+                      placeholder={c.bookLinkPlaceholder}
+                      aria-label={c.bookCtaLabel}
+                      className="w-full bg-[#111111] border border-white/10 rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-white/25 transition-all placeholder-stone-600"
+                    />
+                    <div className="flex flex-wrap gap-1.5">
+                      {[
+                        { label: "Email", prefix: "mailto:" },
+                        { label: "WhatsApp", prefix: "https://wa.me/" },
+                        { label: "Messenger", prefix: "https://m.me/" },
+                        { label: "Website", prefix: "https://" },
+                      ].map((chip) => (
+                        <button
+                          key={chip.label}
+                          type="button"
+                          onClick={() => setEditBookLink(chip.prefix)}
+                          className="text-[10px] font-medium text-white/60 bg-white/[0.06] border border-white/10 rounded-full px-2.5 py-1 hover:text-white hover:border-white/20 transition-all"
+                        >
+                          {chip.label}
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
+
+              <div>
+                <p className="text-xs font-medium text-white/70 mb-1">{c.linksLabel}</p>
+                <div className="space-y-2">
+                  {SOCIAL_FIELDS.map((soc) => (
+                    <div key={soc.key} className="relative">
+                      <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-white/40">{soc.icon}</span>
+                      <input
+                        type="url"
+                        value={editSocial[soc.key]}
+                        onChange={(e) => setEditSocial((s) => ({ ...s, [soc.key]: e.target.value } as typeof s))}
+                        placeholder={soc.placeholder}
+                        aria-label={soc.key}
+                        className="w-full bg-[#1a1a1a] border border-white/10 rounded-lg pl-9 pr-3 py-2 text-sm text-white outline-none focus:border-white/25 transition-all placeholder-stone-600"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </section>
+          </div>
+
+          <div className="p-4 border-t border-white/[0.08] shrink-0">
+            {editError && <p className="text-xs text-red-400 mb-2" role="alert">{editError}</p>}
+            <div className="flex gap-2">
+              <button
+                onClick={cancelEdit}
+                disabled={saving}
+                className="flex-1 border border-white/10 text-white/70 rounded-lg py-2.5 text-xs font-medium hover:bg-white/[0.05] transition-colors disabled:opacity-50"
+              >
+                {c.cancel}
+              </button>
+              <button
+                onClick={saveEdit}
+                disabled={saving || !editName.trim()}
+                className="flex-1 bg-white text-stone-900 rounded-lg py-2.5 text-xs font-semibold hover:bg-stone-100 transition-colors disabled:opacity-50 flex items-center justify-center gap-1.5"
+              >
+                {saving ? <div className="w-3.5 h-3.5 border-2 border-stone-400 border-t-stone-900 rounded-full animate-spin" /> : c.save}
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
+
       {showSelections && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in" onClick={() => setShowSelections(false)}>
-          <div className="bg-[#111111] border border-white/10 rounded-2xl shadow-2xl max-w-md w-full max-h-[80vh] flex flex-col animate-scale-in" onClick={(e) => e.stopPropagation()}>
+        <Modal
+          onClose={() => setShowSelections(false)}
+          ariaLabel={c.selectionsTitle}
+          className="bg-[#111111] border border-white/10 rounded-2xl shadow-2xl max-w-md w-full max-h-[80vh] flex flex-col"
+        >
             <div className="flex items-start justify-between p-5 border-b border-white/[0.08]">
               <div>
                 <h3 className="font-semibold text-white flex items-center gap-2">
@@ -672,12 +818,33 @@ export function GalleryCard({ gallery, onDelete, onUpdate }: Props) {
                 </h3>
                 <p className="text-xs text-white/50 mt-0.5 truncate max-w-[18rem]">{gallery.name}</p>
               </div>
-              <button onClick={() => setShowSelections(false)} className="text-white/50 hover:text-white transition-colors shrink-0">
+              <button onClick={() => setShowSelections(false)} aria-label={c.cancel} className="text-white/50 hover:text-white transition-colors shrink-0">
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
             </div>
 
             <div className="flex-1 overflow-y-auto p-5">
+              {/* The client's explicit "Send selection": who, when, and any note. */}
+              {selSubmission && !selLoading && !selError && (
+                <div className="mb-4 rounded-xl border border-[#2dabe0]/30 bg-[#2dabe0]/[0.08] p-3.5">
+                  <p className="text-[11px] font-semibold uppercase tracking-wider text-[#2dabe0]">{c.selectionSent}</p>
+                  <p className="text-sm text-white mt-1">
+                    <span className="text-white/60">{c.sentBy}</span>{" "}
+                    <span className="font-semibold">{selSubmission.name}</span>
+                  </p>
+                  <p className="text-xs text-white/50 mt-0.5">
+                    {new Date(selSubmission.submittedAt).toLocaleString(LOCALES[lang], { dateStyle: "medium", timeStyle: "short" })}
+                    {selSubmission.email && (
+                      <> · <a href={`mailto:${selSubmission.email}`} className="underline underline-offset-2 hover:text-white">{selSubmission.email}</a></>
+                    )}
+                  </p>
+                  {selSubmission.note && (
+                    <p className="mt-2 text-sm text-white/80 border-l-2 border-white/20 pl-3 whitespace-pre-wrap break-words">
+                      <span className="sr-only">{c.clientNote}: </span>{selSubmission.note}
+                    </p>
+                  )}
+                </div>
+              )}
               {selLoading ? (
                 <div className="flex justify-center py-10">
                   <div className="w-6 h-6 border-2 border-white/20 border-t-white rounded-full animate-spin" />
@@ -733,13 +900,16 @@ export function GalleryCard({ gallery, onDelete, onUpdate }: Props) {
                 </button>
               </div>
             )}
-          </div>
-        </div>
+        </Modal>
       )}
 
       {showDeleteConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in">
-          <div className="bg-[#111111] border border-white/10 rounded-2xl shadow-2xl max-w-sm w-full p-6 animate-scale-in">
+        <Modal
+          onClose={() => { if (!deleting) setShowDeleteConfirm(false); }}
+          ariaLabel={c.deleteTitle}
+          dismissOnBackdrop={false}
+          className="bg-[#111111] border border-white/10 rounded-2xl shadow-2xl max-w-sm w-full p-6"
+        >
             <div className="w-10 h-10 bg-red-500/10 border border-red-500/20 rounded-xl flex items-center justify-center mx-auto mb-4">
               <svg className="w-5 h-5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
@@ -770,8 +940,7 @@ export function GalleryCard({ gallery, onDelete, onUpdate }: Props) {
                 }
               </button>
             </div>
-          </div>
-        </div>
+        </Modal>
       )}
 
       {showCoverPicker && (
@@ -781,6 +950,7 @@ export function GalleryCard({ gallery, onDelete, onUpdate }: Props) {
           onSaved={(cover) => {
             onUpdate({ ...gallery, ...cover });
             setShowCoverPicker(false);
+            toast(c.coverSaved);
           }}
         />
       )}

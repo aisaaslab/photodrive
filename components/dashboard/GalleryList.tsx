@@ -6,7 +6,7 @@ import { useLanguage } from "@/lib/i18n";
 
 interface Props {
   galleries: GalleryDoc[];
-  onDelete: (id: string) => void;
+  onDelete: (id: string) => void | boolean | Promise<void | boolean>;
   onUpdate: (updated: GalleryDoc) => void;
 }
 

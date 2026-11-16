@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useRef, useEffect } from "react";
 import { DriveFile } from "@/lib/drive/types";
@@ -17,6 +17,9 @@ interface Props {
   onToggleFavorite: (photoId: string) => void;
   onToggleSelect?: (photoId: string) => void;
 }
+
+// Used when Drive doesn't report a photo's pixel size (rare): a typical 3:2.
+const FALLBACK_RATIO = 1.5;
 
 export function PhotoTile({
   photo, index, isFavorited, isSelected, selectionMode, allowDownload = true,
@@ -42,28 +45,31 @@ export function PhotoTile({
   }
 
   const isVideo = photo.mimeType.startsWith("video/");
-  // Reserve the exact tile height up-front from the known photo dimensions, so
-  // the masonry layout never reflows/jumps (no flicker) as images lazy-load.
-  const hasRatio = !isVideo && !!photo.width && !!photo.height;
+  // Every tile reserves its exact shape up-front from the known dimensions, so
+  // the grid never reflows as images lazy-load. `--r` feeds the justified-rows
+  // layout in globals.css (.photo-item).
+  const ratio =
+    photo.width && photo.height ? Math.min(4, Math.max(0.4, photo.width / photo.height)) : FALLBACK_RATIO;
 
   return (
     <div
-      className={`masonry-item relative group cursor-pointer overflow-hidden rounded-xl bg-stone-200 transition-all ${
+      className={`relative group overflow-hidden rounded-xl bg-stone-200 transition-all ${
         isSelected ? "ring-2 ring-[#17509e] ring-offset-2 ring-offset-stone-950" : ""
-      } ${isVideo ? "aspect-video" : ""}`}
-      style={hasRatio ? { aspectRatio: `${photo.width} / ${photo.height}` } : undefined}
-      onClick={handleClick}
+      } ${isVideo ? "aspect-video" : "photo-item"}`}
+      style={
+        isVideo
+          ? undefined
+          : ({ "--r": ratio, aspectRatio: String(ratio) } as React.CSSProperties)
+      }
     >
       {/* Shimmer while loading */}
-      {!loaded && (
-        <div className={`${isVideo || hasRatio ? "absolute inset-0" : ""} photo-shimmer opacity-30`} style={!isVideo && !hasRatio ? { minHeight: "160px" } : undefined} />
-      )}
+      {!loaded && <div className="absolute inset-0 photo-shimmer opacity-30" />}
 
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         ref={imgRef}
         src={isVideo && photo.thumbnailLink ? photo.thumbnailLink.replace(/=s\d+$/, "=s800") : driveImageUrl(photo, 800)}
-        alt={photo.name}
+        alt=""
         loading="lazy"
         onLoad={() => setLoaded(true)}
         onError={(e) => {
@@ -76,7 +82,7 @@ export function PhotoTile({
             setLoaded(true);
           }
         }}
-        className={`${isVideo || hasRatio ? "absolute inset-0 h-full" : ""} w-full object-cover transition-all duration-500 group-hover:scale-[1.03] ${
+        className={`absolute inset-0 w-full h-full object-cover transition-all duration-500 group-hover:scale-[1.03] ${
           loaded ? "opacity-100" : "opacity-0"
         }`}
       />
@@ -93,11 +99,22 @@ export function PhotoTile({
       )}
 
       {/* Hover overlay */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-300 rounded-xl pointer-events-none" />
+
+      {/* The tile's main control: a real button covering the whole tile, so it
+          is keyboard-focusable and announced properly. The favorite and
+          download controls below sit above it (later in DOM order). */}
+      <button
+        type="button"
+        onClick={handleClick}
+        aria-label={`${photo.name}`}
+        aria-pressed={selectionMode ? !!isSelected : undefined}
+        className="absolute inset-0 rounded-xl cursor-pointer focus-visible:outline-3 focus-visible:-outline-offset-3 focus-visible:outline-[#2dabe0]"
+      />
 
       {/* Selection checkbox */}
       {selectionMode && (
-        <div className={`absolute top-2.5 left-2.5 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
+        <div className={`absolute top-2.5 left-2.5 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all pointer-events-none ${
           isSelected
             ? "bg-[#17509e] border-[#17509e]"
             : "bg-black/40 border-white/60 backdrop-blur-sm"
@@ -119,9 +136,11 @@ export function PhotoTile({
         />
       )}
 
-      {/* Photo name (small pill, bottom-left) */}
-      <div className="absolute bottom-2 left-2 max-w-[60%] pointer-events-none">
-        <span className="block truncate bg-black/50 backdrop-blur-sm text-white/80 text-[11px] rounded-lg px-2 py-1">
+      {/* Photo name — only on hover/focus. Filenames like IMG_4821.jpg are
+          noise for clients, so they aren't shown permanently (and never on
+          touch screens, which have no hover). */}
+      <div className="absolute bottom-2 left-2 max-w-[60%] pointer-events-none opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-200">
+        <span className="block truncate bg-black/50 backdrop-blur-sm text-white/90 text-xs rounded-lg px-2 py-1">
           {photo.name}
         </span>
       </div>
@@ -133,7 +152,8 @@ export function PhotoTile({
             href={driveDownloadUrl(photo.id)}
             download={photo.name}
             onClick={(e) => e.stopPropagation()}
-            className="bg-black/50 backdrop-blur-sm text-white/80 hover:text-white text-xs rounded-lg px-2 py-1 flex items-center gap-1 transition-colors"
+            aria-label={`${t.gallery.download} ${photo.name}`}
+            className="bg-black/50 backdrop-blur-sm text-white/90 hover:text-white text-xs rounded-lg px-2 py-1 flex items-center gap-1 transition-colors focus-visible:outline-2 focus-visible:outline-white"
           >
             <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { Modal } from "@/components/ui/Modal";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { useLanguage } from "@/lib/i18n";
 import { driveImageUrl } from "@/lib/drive/public-url";
@@ -268,15 +269,19 @@ export function CoverPickerModal({ gallery, onClose, onSaved }: Props) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in" onClick={onClose}>
-      <div className="bg-[#111111] border border-white/10 rounded-2xl shadow-2xl max-w-4xl w-full max-h-[85vh] flex flex-col animate-scale-in" onClick={(e) => e.stopPropagation()}>
+    <Modal
+      onClose={onClose}
+      ariaLabel={c.coverModalTitle}
+      className="bg-[#111111] border border-white/10 rounded-2xl shadow-2xl max-w-4xl w-full max-h-[85vh] flex flex-col"
+    >
+      <>
         {/* Header */}
         <div className="flex items-start justify-between p-5 border-b border-white/[0.08] shrink-0">
           <div>
             <h3 className="font-semibold text-white">{c.coverModalTitle}</h3>
             <p className="text-xs text-white/50 mt-0.5 truncate max-w-[24rem]">{gallery.name}</p>
           </div>
-          <button onClick={onClose} className="text-white/50 hover:text-white transition-colors shrink-0">
+          <button onClick={onClose} aria-label={c.cancel} className="text-white/50 hover:text-white transition-colors shrink-0">
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
           </button>
         </div>
@@ -464,7 +469,7 @@ export function CoverPickerModal({ gallery, onClose, onSaved }: Props) {
             </button>
           </div>
         </div>
-      </div>
-    </div>
+      </>
+    </Modal>
   );
 }

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAdminAuth, getAdminDb } from "@/lib/firebase/admin";
 import { getUidFromRequest, isAdmin } from "@/lib/firebase/admin-guard";
 import type { GalleryDoc } from "@/lib/firestore/types";
+import { forOwner, migrateLegacyPassword } from "@/lib/gallery/password-vault";
 
 export async function GET(req: NextRequest) {
   const uid = await getUidFromRequest(req);
@@ -10,10 +11,14 @@ export async function GET(req: NextRequest) {
   const snap = await getAdminDb().collection("galleries").get();
   // Cast on the map result, not on the whole chain: .sort() runs on the
   // intermediate array, which TypeScript infers as { id: string } alone.
-  const galleries = (snap.docs.map((d) => ({
-    id: d.id,
-    ...(d.data() as Record<string, unknown>),
-  })) as GalleryDoc[]).sort((a, b) => Number(b.createdAt ?? 0) - Number(a.createdAt ?? 0));
+  // Passwords are stored sealed; decrypt for the admin view (and lazily seal
+  // any legacy plaintext copy the first time it's read).
+  const sealed = await Promise.all(
+    snap.docs.map(async (d) =>
+      forOwner(await migrateLegacyPassword(d.ref, { id: d.id, ...(d.data() as Record<string, unknown>) }))
+    )
+  );
+  const galleries = (sealed as unknown as GalleryDoc[]).sort((a, b) => Number(b.createdAt ?? 0) - Number(a.createdAt ?? 0));
 
   // Fetch user info for all unique photographer IDs. Firestore `name` wins
   // over Auth displayName — it's what the user can edit in Account settings.

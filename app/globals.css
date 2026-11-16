@@ -40,22 +40,37 @@ body {
 ::-webkit-scrollbar-thumb:hover { background: #a8a29e; }
 
 /* Masonry grid */
-.masonry-grid {
-  columns: 2;
-  column-gap: 0.625rem;
+/* Justified-rows photo grid.
+   Photos flow left-to-right, row by row, so the gallery reads in the same
+   order as the files (CSS columns ran top-to-bottom per column, which scrambled
+   chronological galleries). Each tile sets --r (its width/height ratio): flex
+   grow + basis proportional to --r make every tile in a row the same height,
+   and the rows fill the width. The ::after spacer soaks up the leftover space
+   so the last row isn't stretched. Pure CSS, so it is SSR-safe and has no
+   layout jump while images load. */
+.photo-grid {
+  --row-h: 120px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.625rem;
 }
 
 @media (min-width: 640px) {
-  .masonry-grid { columns: 3; }
+  .photo-grid { --row-h: 160px; }
 }
 
 @media (min-width: 1024px) {
-  .masonry-grid { columns: 4; }
+  .photo-grid { --row-h: 200px; }
 }
 
-.masonry-item {
-  break-inside: avoid;
-  margin-bottom: 0.625rem;
+.photo-grid::after {
+  content: "";
+  flex-grow: 999999;
+}
+
+.photo-item {
+  flex: var(--r) 1 calc(var(--r) * var(--row-h));
+  min-width: 0;
 }
 
 /* Animations */

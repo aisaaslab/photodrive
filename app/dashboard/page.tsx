@@ -1,12 +1,14 @@
 ﻿"use client";
 
 import { useState, useEffect, useMemo } from "react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { useLanguage } from "@/lib/i18n";
 import { NewGalleryForm } from "@/components/dashboard/NewGalleryForm";
 import { GalleryList } from "@/components/dashboard/GalleryList";
 import { GalleryDoc } from "@/lib/firestore/types";
+import { useToast } from "@/components/ui/Toast";
 
 type SortOption = "newest" | "oldest" | "name_asc" | "name_desc";
 
@@ -21,6 +23,19 @@ export default function DashboardPage() {
   const [showForm, setShowForm] = useState(false);
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<SortOption>("newest");
+  const toast = useToast();
+
+  // Remember the chosen sort order between visits.
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("dashboard_sort") as SortOption | null;
+      if (saved && ["newest", "oldest", "name_asc", "name_desc"].includes(saved)) setSort(saved);
+    } catch {}
+  }, []);
+  function changeSort(next: SortOption) {
+    setSort(next);
+    try { localStorage.setItem("dashboard_sort", next); } catch {}
+  }
   const [daysLeft, setDaysLeft] = useState<number | null>(null);
   const [pendingGallery, setPendingGallery] = useState<{ name: string; driveUrl: string; password: string } | null>(null);
   const [restoredFromPayment, setRestoredFromPayment] = useState(false);
@@ -81,14 +96,20 @@ export default function DashboardPage() {
     setGalleries((prev) => prev.map((g) => (g.id === updated.id ? updated : g)));
   }
 
-  async function handleDelete(id: string) {
-    if (!user) return;
+  async function handleDelete(id: string): Promise<boolean> {
+    if (!user) return false;
     const token = await user.getIdToken();
-    await fetch(`/api/galleries/${id}`, {
+    const res = await fetch(`/api/galleries/${id}`, {
       method: "DELETE",
       headers: { Authorization: `Bearer ${token}` },
     });
+    if (!res.ok) {
+      // Don't drop the card from the list if the server refused.
+      toast(t.dashboard.loadError, "error");
+      return false;
+    }
     setGalleries((prev) => prev.filter((g) => g.id !== id));
+    return true;
   }
 
   const filteredAndSorted = useMemo(() => {
@@ -149,6 +170,35 @@ export default function DashboardPage() {
         </button>
       </div>
 
+      {/* Subscription status — a visible nudge instead of tiny grey text, so an
+          expiring or expired plan is never a surprise. */}
+      {daysLeft !== null && daysLeft <= 30 && (
+        <div
+          role="status"
+          className={`flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl border px-4 py-3 ${
+            daysLeft === 0
+              ? "bg-red-500/10 border-red-500/25"
+              : "bg-[#2dabe0]/10 border-[#2dabe0]/25"
+          }`}
+        >
+          <div className="text-sm">
+            <p className={`font-semibold ${daysLeft === 0 ? "text-red-300" : "text-white"}`}>
+              {daysLeft === 0 ? t.dashboard.subExpired : t.dashboard.subExpiringSoon}
+              {daysLeft > 0 && (
+                <span className="font-normal text-white/60"> · {daysLeft} {t.dashboard.daysLeft}</span>
+              )}
+            </p>
+            <p className="text-white/60 text-xs mt-0.5">{t.dashboard.subRenewHint}</p>
+          </div>
+          <Link
+            href="/subscribe"
+            className="shrink-0 self-start sm:self-auto bg-white text-stone-900 rounded-lg px-4 py-2 text-xs font-semibold hover:bg-stone-100 transition-colors"
+          >
+            {t.dashboard.renew}
+          </Link>
+        </div>
+      )}
+
       {/* New gallery form */}
       {showForm && (
         <div className="animate-scale-in">
@@ -205,7 +255,8 @@ export default function DashboardPage() {
           {/* Sort */}
           <select
             value={sort}
-            onChange={(e) => setSort(e.target.value as SortOption)}
+            onChange={(e) => changeSort(e.target.value as SortOption)}
+            aria-label={t.dashboard.sortNewest}
             className="bg-[#111111] border border-white/[0.1] rounded-xl px-3 py-2.5 text-sm text-white outline-none focus:border-white/25 transition-all cursor-pointer"
           >
             <option value="newest">{t.dashboard.sortNewest}</option>
