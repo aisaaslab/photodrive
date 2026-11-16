@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAdminDb } from "@/lib/firebase/admin";
+import { getAdminAuth, getAdminDb } from "@/lib/firebase/admin";
 
 const COLLECTION = "gallery_selections";
 
@@ -11,16 +11,31 @@ type Item = { id: string; name: string };
  * photographer sees them too. No account needed.
  */
 
-// Public: return the gallery's shared favourites.
+// Public: return the gallery's shared favourites. When the caller is the
+// gallery's owner (Bearer token), the client's submission — name, email, note —
+// is included too; it is never exposed to the public.
 export async function GET(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const snap = await getAdminDb().collection(COLLECTION).doc(id).get();
+  const db = getAdminDb();
+  const snap = await db.collection(COLLECTION).doc(id).get();
   const items: Item[] = snap.exists ? (snap.data()?.items ?? []) : [];
   items.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
-  return NextResponse.json({ photos: items });
+
+  let submission: unknown = undefined;
+  const token = req.headers.get("authorization")?.replace("Bearer ", "");
+  if (token && snap.exists && snap.data()?.submission) {
+    try {
+      const uid = (await getAdminAuth().verifyIdToken(token)).uid;
+      const gal = await db.collection("galleries").doc(id).get();
+      if (gal.exists && gal.data()?.photographerId === uid) submission = snap.data()!.submission;
+    } catch {
+      // invalid token — treat as a public request
+    }
+  }
+  return NextResponse.json({ photos: items, ...(submission ? { submission } : {}) });
 }
 
 // Public: add or remove one photo from the shared favourites.
@@ -58,6 +73,7 @@ export async function POST(
     items = items.filter((i) => i.id !== item.id);
   }
 
-  await ref.set({ galleryId: id, items, count: items.length, updatedAt: Date.now() });
+  // merge: keep the client's submission (stored on the same doc) intact.
+  await ref.set({ galleryId: id, items, count: items.length, updatedAt: Date.now() }, { merge: true });
   return NextResponse.json({ ok: true, count: items.length });
 }

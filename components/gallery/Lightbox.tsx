@@ -32,8 +32,34 @@ export function Lightbox({ photos, activeIndex, favorites, allowDownload = true,
   // the last photo so a gallery doesn't loop forever in a forgotten tab.
   const [playing, setPlaying] = useState(false);
   const slideRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  // Touch gesture start (swipe left/right = next/prev, swipe down = close).
-  const touchStart = useRef<{ x: number; y: number } | null>(null);
+  // ── Zoom + gestures ────────────────────────────────────────────────────
+  // Pinch (two fingers), double-tap / double-click, Ctrl/⌘ + wheel, the
+  // top-bar button, and the + / − / 0 keys all drive one zoom state: scale `s`
+  // plus a pan offset (x, y) in px. It's keyed by photo id, so moving to
+  // another photo starts at 1× without an effect.
+  // When not zoomed, a one-finger swipe navigates: left/right = prev/next,
+  // down = close. When zoomed, one finger (or the mouse) pans instead.
+  const MAX_ZOOM = 4;
+  const DOUBLE_TAP_ZOOM = 2.5;
+  type Zoom = { id: string; s: number; x: number; y: number };
+  const pid = photo?.id ?? "";
+  const isVideo = !!photo?.mimeType.startsWith("video/");
+  const [zoomState, setZoomState] = useState<Zoom>({ id: "", s: 1, x: 0, y: 0 });
+  const zoom: Zoom = zoomState.id === pid ? zoomState : { id: pid, s: 1, x: 0, y: 0 };
+  const zoomRef = useRef(zoom);
+  const imgRef = useRef<HTMLImageElement>(null);
+  const areaRef = useRef<HTMLDivElement>(null);
+  const pointers = useRef(new Map<number, { x: number; y: number }>());
+  const gesture = useRef<{
+    kind: "swipe" | "pan" | "pinch";
+    sx: number; sy: number;
+    startPan: { x: number; y: number };
+    startDist: number; startScale: number;
+    moved: boolean;
+  } | null>(null);
+  const lastTap = useRef<{ t: number; x: number; y: number } | null>(null);
+  const suppressClick = useRef(false);
+  const [gesturing, setGesturing] = useState(false);
 
   // Dialog focus management: move focus into the viewer, give it back on close.
   useEffect(() => {
@@ -42,22 +68,153 @@ export function Lightbox({ photos, activeIndex, favorites, allowDownload = true,
     return () => prev?.focus?.({ preventScroll: true });
   }, []);
 
-  function onTouchStart(e: React.TouchEvent) {
-    // Ignore multi-finger gestures (pinch-zoom).
-    touchStart.current = e.touches.length === 1 ? { x: e.touches[0].clientX, y: e.touches[0].clientY } : null;
+  function setZoomTo(next: { s: number; x: number; y: number }) {
+    const v = { id: pid, ...next };
+    zoomRef.current = v;
+    setZoomState(v);
   }
 
-  function onTouchEnd(e: React.TouchEvent) {
-    const start = touchStart.current;
-    touchStart.current = null;
-    if (!start || e.changedTouches.length !== 1) return;
-    const dx = e.changedTouches[0].clientX - start.x;
-    const dy = e.changedTouches[0].clientY - start.y;
-    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) {
-      if (dx < 0) onNext();
-      else onPrev();
-    } else if (dy > 90 && dy > Math.abs(dx) * 1.5) {
-      onClose();
+  // Keep the pan inside the zoomed image's bounds (a little slack isn't needed:
+  // the image can't be dragged past its own edges).
+  function clampPan(s: number, x: number, y: number) {
+    const img = imgRef.current;
+    const mx = ((s - 1) * (img?.offsetWidth ?? 0)) / 2;
+    const my = ((s - 1) * (img?.offsetHeight ?? 0)) / 2;
+    return { x: Math.min(mx, Math.max(-mx, x)), y: Math.min(my, Math.max(-my, y)) };
+  }
+
+  function zoomStep(factor: number) {
+    const z = zoomRef.current;
+    const s = Math.min(MAX_ZOOM, Math.max(1, z.s * factor));
+    setZoomTo(s <= 1.02 ? { s: 1, x: 0, y: 0 } : { s, ...clampPan(s, z.x, z.y) });
+  }
+
+  function toggleZoom() {
+    setZoomTo(zoomRef.current.s > 1 ? { s: 1, x: 0, y: 0 } : { s: DOUBLE_TAP_ZOOM, x: 0, y: 0 });
+  }
+
+  // Latest-closure refs for the document-level key / wheel listeners below.
+  const zoomStepRef = useRef(zoomStep);
+  const isVideoRef = useRef(isVideo);
+  useEffect(() => {
+    zoomRef.current = zoom;
+    zoomStepRef.current = zoomStep;
+    isVideoRef.current = isVideo;
+  });
+
+  // Ctrl/⌘ + wheel (also what a trackpad pinch emits) zooms. Native listener
+  // because React's onWheel is passive and can't preventDefault the page zoom.
+  useEffect(() => {
+    const el = areaRef.current;
+    if (!el) return;
+    function onWheel(e: WheelEvent) {
+      if (!(e.ctrlKey || e.metaKey) || isVideoRef.current) return;
+      e.preventDefault();
+      zoomStepRef.current(Math.exp(-e.deltaY * 0.01));
+    }
+    el.addEventListener("wheel", onWheel, { passive: false });
+    return () => el.removeEventListener("wheel", onWheel);
+  }, []);
+
+  function onPointerDown(e: React.PointerEvent) {
+    if (isVideo) return;
+    pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    const z = zoomRef.current;
+    if (pointers.current.size === 2) {
+      const [a, b] = [...pointers.current.values()];
+      gesture.current = {
+        kind: "pinch", sx: 0, sy: 0, startPan: { x: z.x, y: z.y },
+        startDist: Math.hypot(a.x - b.x, a.y - b.y) || 1, startScale: z.s, moved: true,
+      };
+      setGesturing(true);
+    } else if (pointers.current.size === 1) {
+      gesture.current = {
+        kind: z.s > 1 ? "pan" : "swipe", sx: e.clientX, sy: e.clientY,
+        startPan: { x: z.x, y: z.y }, startDist: 0, startScale: z.s, moved: false,
+      };
+      if (z.s > 1) setGesturing(true);
+    }
+  }
+
+  function onPointerMove(e: React.PointerEvent) {
+    const g0 = gesture.current;
+    if (!g0 || !pointers.current.has(e.pointerId)) return;
+    pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (g0.kind === "pinch" && pointers.current.size >= 2) {
+      const [a, b] = [...pointers.current.values()];
+      const s = Math.min(MAX_ZOOM, Math.max(1, (g0.startScale * Math.hypot(a.x - b.x, a.y - b.y)) / g0.startDist));
+      setZoomTo(s <= 1 ? { s: 1, x: 0, y: 0 } : { s, ...clampPan(s, g0.startPan.x, g0.startPan.y) });
+      return;
+    }
+    const dx = e.clientX - g0.sx;
+    const dy = e.clientY - g0.sy;
+    if (Math.hypot(dx, dy) > 8) g0.moved = true;
+    if (g0.kind === "pan") {
+      const s = zoomRef.current.s;
+      setZoomTo({ s, ...clampPan(s, g0.startPan.x + dx, g0.startPan.y + dy) });
+    }
+  }
+
+  function onPointerUp(e: React.PointerEvent) {
+    const g0 = gesture.current;
+    if (!pointers.current.delete(e.pointerId) || !g0) return;
+
+    // A drag/pinch must not also count as a backdrop click (which would close).
+    if (g0.moved) {
+      suppressClick.current = true;
+      setTimeout(() => { suppressClick.current = false; }, 60);
+    }
+
+    if (g0.kind === "pinch") {
+      if (pointers.current.size === 0) {
+        gesture.current = null;
+        setGesturing(false);
+        if (zoomRef.current.s < 1.05) setZoomTo({ s: 1, x: 0, y: 0 });
+      } else {
+        // One finger still down: carry on as a pan from where it is.
+        const [p] = [...pointers.current.values()];
+        const z = zoomRef.current;
+        gesture.current = { kind: "pan", sx: p.x, sy: p.y, startPan: { x: z.x, y: z.y }, startDist: 0, startScale: z.s, moved: true };
+      }
+      return;
+    }
+
+    gesture.current = null;
+    setGesturing(false);
+    const dx = e.clientX - g0.sx;
+    const dy = e.clientY - g0.sy;
+
+    // Swipe navigation (touch / pen, only while not zoomed).
+    if (g0.kind === "swipe" && e.pointerType !== "mouse") {
+      if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+        if (dx < 0) onNext();
+        else onPrev();
+        return;
+      }
+      if (dy > 90 && dy > Math.abs(dx) * 1.5) {
+        onClose();
+        return;
+      }
+    }
+
+    // Double-tap / double-click on the photo toggles zoom.
+    if (!g0.moved && (e.target as HTMLElement).tagName === "IMG") {
+      const now = Date.now();
+      const lt = lastTap.current;
+      if (lt && now - lt.t < 300 && Math.hypot(e.clientX - lt.x, e.clientY - lt.y) < 30) {
+        lastTap.current = null;
+        toggleZoom();
+      } else {
+        lastTap.current = { t: now, x: e.clientX, y: e.clientY };
+      }
+    }
+  }
+
+  function onPointerCancel(e: React.PointerEvent) {
+    pointers.current.delete(e.pointerId);
+    if (pointers.current.size === 0) {
+      gesture.current = null;
+      setGesturing(false);
     }
   }
 
@@ -119,6 +276,11 @@ export function Lightbox({ photos, activeIndex, favorites, allowDownload = true,
       if (e.key === "ArrowRight") onNext();
       if (e.key === "ArrowLeft") onPrev();
       if (e.key === "f" || e.key === "F") toggleFullscreen();
+      if (!isVideoRef.current) {
+        if (e.key === "+" || e.key === "=") zoomStepRef.current(1.5);
+        if (e.key === "-" || e.key === "_") zoomStepRef.current(1 / 1.5);
+        if (e.key === "0") zoomStepRef.current(1 / MAX_ZOOM);
+      }
       // Spacebar toggles the slideshow. preventDefault stops the page from
       // scrolling (the lightbox already locks body overflow, but a button might
       // be focused and would otherwise get a click on space).
@@ -223,6 +385,24 @@ export function Lightbox({ photos, activeIndex, favorites, allowDownload = true,
             </a>
           )}
 
+          {/* Zoom (photos only): toggles 1× ↔ 2.5×. Pinch, double-tap and
+              + / − / 0 work too. */}
+          {!isVideo && (
+            <button
+              onClick={toggleZoom}
+              title={`${g.zoom} (+ / − / 0)`}
+              aria-label={g.zoom}
+              aria-pressed={zoom.s > 1}
+              className={`w-8 h-8 flex items-center justify-center rounded-full transition-all ${
+                zoom.s > 1 ? "bg-[#17509e] text-white" : "bg-white/10 hover:bg-white/20 text-white/70 hover:text-white"
+              }`}
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607zM10.5 7.5v6m3-3h-6" />
+              </svg>
+            </button>
+          )}
+
           {/* Fullscreen */}
           <button
             onClick={toggleFullscreen}
@@ -257,10 +437,13 @@ export function Lightbox({ photos, activeIndex, favorites, allowDownload = true,
 
       {/* Main image area */}
       <div
-        className="flex-1 flex items-center justify-center relative px-2 sm:px-14 min-h-0"
-        onClick={onClose}
-        onTouchStart={onTouchStart}
-        onTouchEnd={onTouchEnd}
+        ref={areaRef}
+        className="flex-1 flex items-center justify-center relative px-2 sm:px-14 min-h-0 touch-none"
+        onClick={() => { if (!suppressClick.current) onClose(); }}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+        onPointerCancel={onPointerCancel}
       >
         {/* Prev */}
         {activeIndex > 0 && (
@@ -294,9 +477,13 @@ export function Lightbox({ photos, activeIndex, favorites, allowDownload = true,
                   <div className="w-8 h-8 border-2 border-white/20 border-t-white/80 rounded-full animate-spin" />
                 </div>
               )}
+              {/* The wrapper owns the entrance animation: an animation with
+                  fill-mode `both` would otherwise override the zoom transform. */}
+              <div key={photo.id} className="max-w-full animate-scale-in">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                key={photo.id}
+                ref={imgRef}
+                draggable={false}
                 src={driveImageUrl(photo, 2048)}
                 alt={photo.name}
                 fetchPriority="high"
@@ -311,8 +498,14 @@ export function Lightbox({ photos, activeIndex, favorites, allowDownload = true,
                     setImgLoaded(true);
                   }
                 }}
-                className={`max-w-full max-h-[75vh] object-contain rounded-lg shadow-2xl animate-scale-in transition-opacity duration-300 ${imgLoaded ? "opacity-100" : "opacity-0"}`}
+                style={{
+                  transform: `translate(${zoom.x}px, ${zoom.y}px) scale(${zoom.s})`,
+                  transition: gesturing ? "none" : "transform 0.2s ease, opacity 0.3s",
+                  cursor: zoom.s > 1 ? (gesturing ? "grabbing" : "grab") : "zoom-in",
+                }}
+                className={`block max-w-full max-h-[75vh] object-contain rounded-lg shadow-2xl select-none ${imgLoaded ? "opacity-100" : "opacity-0"}`}
               />
+              </div>
             </>
           )}
         </div>

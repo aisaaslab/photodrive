@@ -59,6 +59,7 @@ export default async function GalleryPage({ params }: Props) {
     titleFont?: string | null;
     titleColor?: string | null;
     titleSize?: string | null;
+    headerBranding?: "photographer" | null;
   };
 
   if (gallery.passwordHash) {
@@ -119,21 +120,50 @@ export default async function GalleryPage({ params }: Props) {
       <div className="aurora-bg-light"><span /></div>
 
       {/* Sticky app header — sits ABOVE the hero, never overlapped.
-          Left: PhotoDrive logo (links home). Right: language switcher.
-          The photographer's identity lives below the hero (avatar + name) so
-          it doesn't crowd the header and gets more visual prominence. */}
+          Left: PhotoDrive logo (links home) — or, when the photographer opted
+          in (headerBranding), their own avatar + name instead. Right: language
+          switcher. The photographer's identity also lives below the hero
+          (avatar + name) where it gets more visual prominence. */}
       <header className="sticky top-0 z-40 border-b border-stone-200 bg-white/90 backdrop-blur-xl">
         <div className="max-w-6xl mx-auto px-4 sm:px-8 h-14 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2 shrink-0">
-            <Image
-              src="/logo.png"
-              alt={APP_NAME}
-              width={180}
-              height={44}
-              className="h-10 w-auto"
-              priority
-            />
-          </Link>
+          {gallery.headerBranding === "photographer" && photographer.name ? (
+            (() => {
+              const brand = (
+                <>
+                  <GalleryAvatar
+                    src={photographer.photoURL || undefined}
+                    name={photographer.name}
+                    fallbackLetter={gallery.name?.[0] || "P"}
+                    size={32}
+                  />
+                  <span
+                    className="text-sm sm:text-base font-semibold text-stone-900 truncate"
+                    style={{ fontFamily: "var(--font-brand), sans-serif" }}
+                  >
+                    {photographer.name}
+                  </span>
+                </>
+              );
+              return gallery.website ? (
+                <a href={gallery.website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2.5 min-w-0">
+                  {brand}
+                </a>
+              ) : (
+                <div className="flex items-center gap-2.5 min-w-0">{brand}</div>
+              );
+            })()
+          ) : (
+            <Link href="/" className="flex items-center gap-2 shrink-0">
+              <Image
+                src="/logo.png"
+                alt={APP_NAME}
+                width={180}
+                height={44}
+                className="h-10 w-auto"
+                priority
+              />
+            </Link>
+          )}
           <LanguageSwitcher variant="light" />
         </div>
       </header>

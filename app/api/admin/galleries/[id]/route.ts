@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAdminDb } from "@/lib/firebase/admin";
 import { getUidFromRequest, isAdmin } from "@/lib/firebase/admin-guard";
 import { hashPassword } from "@/lib/gallery/password";
+import { sealPassword, forOwner } from "@/lib/gallery/password-vault";
 import { extractFolderId } from "@/lib/drive/url-parser";
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -21,11 +22,13 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   }
   if (removePassword) {
     update.passwordHash = null;
+    update.passwordEnc = null;
     update.password = null;
     update.pwChangedAt = Date.now();
   } else if (password) {
     update.passwordHash = await hashPassword(password);
-    update.password = password;
+    update.passwordEnc = sealPassword(String(password));
+    update.password = null; // clear any legacy plaintext copy
     update.pwChangedAt = Date.now();
   }
 
@@ -41,7 +44,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
   await getAdminDb().collection("galleries").doc(id).update(update);
   const doc = await getAdminDb().collection("galleries").doc(id).get();
-  return NextResponse.json({ id: doc.id, ...doc.data() });
+  return NextResponse.json(forOwner({ id: doc.id, ...(doc.data() as Record<string, unknown>) }));
 }
 
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {

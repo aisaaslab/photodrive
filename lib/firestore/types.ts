@@ -42,6 +42,11 @@ export interface GalleryDoc {
   // from the gallery_selections collection (not stored on the gallery itself).
   selectionCount?: number;
   selectionUpdatedAt?: number;
+  // When the client last pressed "Send selection" (see gallery_selections).
+  selectionSubmittedAt?: number;
+  // Show the photographer's avatar + name in the public gallery header instead
+  // of the PhotoDrive logo. null/undefined => PhotoDrive logo.
+  headerBranding?: "photographer" | null;
   createdAt: number;
   updatedAt: number;
 }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAdminAuth, getAdminDb } from "@/lib/firebase/admin";
 import { hashPassword } from "@/lib/gallery/password";
+import { sealPassword, forOwner } from "@/lib/gallery/password-vault";
 import { extractFolderId } from "@/lib/drive/url-parser";
 import { validTitleFont, validTitleColor, validTitleSize } from "@/lib/gallery/title-style";
 import { validCoverPos } from "@/lib/gallery/cover-position";
@@ -47,11 +48,13 @@ export async function PATCH(
   }
   if (body.password) {
     updates.passwordHash = await hashPassword(body.password);
-    updates.password = body.password;
+    updates.passwordEnc = sealPassword(String(body.password));
+    updates.password = null; // clear any legacy plaintext copy
     updates.pwChangedAt = Date.now();
   }
   if (body.removePassword) {
     updates.passwordHash = null;
+    updates.passwordEnc = null;
     updates.password = null;
     updates.pwChangedAt = Date.now();
   }
@@ -76,6 +79,9 @@ export async function PATCH(
   if (typeof body.bookLink === "string")
     updates.bookLink = body.bookLink.trim() || null;
   if (typeof body.bookEnabled === "boolean") updates.bookEnabled = body.bookEnabled;
+  // Header branding: only "photographer" is a valid non-default value.
+  if (body.headerBranding !== undefined)
+    updates.headerBranding = body.headerBranding === "photographer" ? "photographer" : null;
   // Title styling: validated against the curated sets in lib/gallery/title-style.ts.
   // Unknown ids / malformed colors are dropped to null (back to defaults).
   if (body.titleFont !== undefined)
@@ -96,7 +102,7 @@ export async function PATCH(
   }
 
   await gallery.ref.update(updates);
-  return NextResponse.json({ ...gallery.data, ...updates });
+  return NextResponse.json(forOwner({ ...gallery.data, ...updates }));
 }
 
 export async function DELETE(

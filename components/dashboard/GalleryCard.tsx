@@ -58,6 +58,7 @@ export function GalleryCard({ gallery, onDelete, onUpdate }: Props) {
   const [editTitleFont, setEditTitleFont] = useState(gallery.titleFont ?? "classic");
   const [editTitleColor, setEditTitleColor] = useState(gallery.titleColor ?? "#ffffff");
   const [editTitleSize, setEditTitleSize] = useState(gallery.titleSize ?? "md");
+  const [editHeaderBranding, setEditHeaderBranding] = useState(gallery.headerBranding === "photographer");
   const [showCoverPicker, setShowCoverPicker] = useState(false);
   const [saving, setSaving] = useState(false);
   const [editError, setEditError] = useState("");
@@ -65,6 +66,8 @@ export function GalleryCard({ gallery, onDelete, onUpdate }: Props) {
   const [selLoading, setSelLoading] = useState(false);
   const [selPhotos, setSelPhotos] = useState<{ id: string; name: string; count?: number }[]>([]);
   const [selError, setSelError] = useState(false);
+  // The client's "Send selection" hand-off (name / email / note), owner-only.
+  const [selSubmission, setSelSubmission] = useState<{ name: string; email: string | null; note: string | null; count: number; submittedAt: number } | null>(null);
   const [selCopied, setSelCopied] = useState(false);
   const [selZipping, setSelZipping] = useState(false);
 
@@ -97,7 +100,7 @@ export function GalleryCard({ gallery, onDelete, onUpdate }: Props) {
     try { return Number(localStorage.getItem(seenKey)) || 0; } catch { return 0; }
   });
   function markSelectionSeen() {
-    const at = Math.max(gallery.selectionUpdatedAt ?? 0, Date.now());
+    const at = Math.max(gallery.selectionUpdatedAt ?? 0, gallery.selectionSubmittedAt ?? 0, Date.now());
     setSelSeenAt(at);
     try { localStorage.setItem(seenKey, String(at)); } catch { /* private mode */ }
   }
@@ -108,10 +111,16 @@ export function GalleryCard({ gallery, onDelete, onUpdate }: Props) {
     setSelLoading(true);
     setSelError(false);
     try {
-      const res = await fetch(`/api/galleries/${gallery.id}/selection`);
+      // The token lets the server include the client's submission details,
+      // which are never returned to the public.
+      const token = await user?.getIdToken();
+      const res = await fetch(`/api/galleries/${gallery.id}/selection`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      });
       if (!res.ok) throw new Error();
       const data = await res.json();
       setSelPhotos(data.photos ?? []);
+      setSelSubmission(data.submission ?? null);
     } catch {
       setSelError(true);
     } finally {
@@ -195,6 +204,7 @@ export function GalleryCard({ gallery, onDelete, onUpdate }: Props) {
       body.titleFont = editTitleFont;
       body.titleColor = editTitleColor;
       body.titleSize = editTitleSize;
+      body.headerBranding = editHeaderBranding ? "photographer" : null;
 
       const res = await fetch(`/api/galleries/${gallery.id}`, {
         method: "PATCH",
@@ -238,6 +248,7 @@ export function GalleryCard({ gallery, onDelete, onUpdate }: Props) {
     setEditTitleFont(gallery.titleFont ?? "classic");
     setEditTitleColor(gallery.titleColor ?? "#ffffff");
     setEditTitleSize(gallery.titleSize ?? "md");
+    setEditHeaderBranding(gallery.headerBranding === "photographer");
     setEditError("");
   }
 
@@ -273,7 +284,8 @@ export function GalleryCard({ gallery, onDelete, onUpdate }: Props) {
   const PREVIEW_SIZES: Record<string, string> = { sm: "1.25rem", md: "1.6rem", lg: "2rem", xl: "2.4rem" };
 
   const hasNewSelections =
-    (gallery.selectionCount ?? 0) > 0 && (gallery.selectionUpdatedAt ?? 0) > selSeenAt;
+    ((gallery.selectionCount ?? 0) > 0 || !!gallery.selectionSubmittedAt) &&
+    Math.max(gallery.selectionUpdatedAt ?? 0, gallery.selectionSubmittedAt ?? 0) > selSeenAt;
 
   const inputCls =
     "w-full bg-[#1a1a1a] border border-white/10 rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-white/25 transition-all placeholder-stone-600";
@@ -404,6 +416,12 @@ export function GalleryCard({ gallery, onDelete, onUpdate }: Props) {
                 }`}
               >
                 {gallery.selectionCount}
+                {gallery.selectionSubmittedAt && (
+                  <svg className="w-2.5 h-2.5 ml-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3} aria-label={c.selectionSent}>
+                    <title>{c.selectionSent}</title>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                  </svg>
+                )}
               </span>
             )}
             {hasNewSelections && (
@@ -626,6 +644,25 @@ export function GalleryCard({ gallery, onDelete, onUpdate }: Props) {
                   ))}
                 </div>
               </div>
+
+              {/* Header branding: swap the PhotoDrive logo at the top of the
+                  public gallery for the photographer's own avatar + name. */}
+              <div className="flex items-start justify-between gap-3 bg-white/[0.03] border border-white/[0.06] rounded-lg px-3 py-2.5">
+                <span>
+                  <span id={`brand-${gallery.id}`} className="block text-xs font-medium text-white/80">{c.headerBrandingLabel}</span>
+                  <span className="block text-[11px] text-white/40 mt-0.5">{c.headerBrandingHint}</span>
+                </span>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={editHeaderBranding}
+                  aria-labelledby={`brand-${gallery.id}`}
+                  onClick={() => setEditHeaderBranding((v) => !v)}
+                  className={`relative w-9 h-5 rounded-full transition-colors shrink-0 mt-0.5 ${editHeaderBranding ? "bg-[#17509e]" : "bg-white/10"}`}
+                >
+                  <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow-sm transition-transform ${editHeaderBranding ? "translate-x-4" : "translate-x-0.5"}`} />
+                </button>
+              </div>
             </section>
 
             {/* ── Privacy & downloads ── */}
@@ -787,6 +824,27 @@ export function GalleryCard({ gallery, onDelete, onUpdate }: Props) {
             </div>
 
             <div className="flex-1 overflow-y-auto p-5">
+              {/* The client's explicit "Send selection": who, when, and any note. */}
+              {selSubmission && !selLoading && !selError && (
+                <div className="mb-4 rounded-xl border border-[#2dabe0]/30 bg-[#2dabe0]/[0.08] p-3.5">
+                  <p className="text-[11px] font-semibold uppercase tracking-wider text-[#2dabe0]">{c.selectionSent}</p>
+                  <p className="text-sm text-white mt-1">
+                    <span className="text-white/60">{c.sentBy}</span>{" "}
+                    <span className="font-semibold">{selSubmission.name}</span>
+                  </p>
+                  <p className="text-xs text-white/50 mt-0.5">
+                    {new Date(selSubmission.submittedAt).toLocaleString(LOCALES[lang], { dateStyle: "medium", timeStyle: "short" })}
+                    {selSubmission.email && (
+                      <> · <a href={`mailto:${selSubmission.email}`} className="underline underline-offset-2 hover:text-white">{selSubmission.email}</a></>
+                    )}
+                  </p>
+                  {selSubmission.note && (
+                    <p className="mt-2 text-sm text-white/80 border-l-2 border-white/20 pl-3 whitespace-pre-wrap break-words">
+                      <span className="sr-only">{c.clientNote}: </span>{selSubmission.note}
+                    </p>
+                  )}
+                </div>
+              )}
               {selLoading ? (
                 <div className="flex justify-center py-10">
                   <div className="w-6 h-6 border-2 border-white/20 border-t-white rounded-full animate-spin" />
