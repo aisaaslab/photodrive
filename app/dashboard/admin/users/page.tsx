@@ -447,7 +447,7 @@ export default function AdminUsersPage() {
                         <span className="text-white font-medium">{SOURCE_LABEL[u.accessSource]}</span>
                         {u.accessSource === "free_code" && u.promoCode && <> · code <span className="font-mono text-amber-300">{u.promoCode}</span></>}
                         {u.accessSource !== "admin" && u.lastPaymentCents !== null && <> · charged {formatMoney(u.lastPaymentCents, u.lastPaymentCurrency)}</>}
-                        {u.planInterval && <> · {u.planInterval} plan ({u.planInterval === "monthly" ? "30 days" : "1 year"})</>}
+                        {u.planName && <> · {u.planName}{u.planInterval ? ` (${u.planInterval})` : ""}</>}
                         {u.subscriptionExpiresAt ? <> · {u.subscriptionExpiresAt > 4102444800000 ? "lifetime" : `ends ${formatDate(u.subscriptionExpiresAt)}`}</> : null}
                       </p>
                     )}
