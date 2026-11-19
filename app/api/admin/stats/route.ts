@@ -54,11 +54,15 @@ export async function GET(req: NextRequest) {
   // Mixed currencies are summed per currency; the USD total is reported.
   let revenueUsd = 0;
   let paymentCount = 0;
+  let freeCodeSignups = 0;
   for (const doc of paymentsSnap.docs) {
     const d = doc.data();
     const amount = (d.amountTotal as number | null | undefined) ?? null;
     const currency = (d.currency as string | undefined) ?? "usd";
-    if (amount !== null && currency === "usd") {
+    // $0 checkouts are free-code signups, not payments — counted separately.
+    if (amount === 0) {
+      freeCodeSignups += 1;
+    } else if (amount !== null && currency === "usd") {
       revenueUsd += amount / 100;
       paymentCount += 1;
     }
@@ -109,6 +113,7 @@ export async function GET(req: NextRequest) {
       monthlySubscriptions: monthlySubs,
       yearlySubscriptions: yearlySubs,
       compSubscriptions: activeSubs.filter((u) => u.compGranted).length,
+      freeCodeSignups,
       totalGalleries: galleriesSnap.size,
       newGalleries30d: galleriesSnap.docs.filter((d) => { const t = (d.data().createdAt as number | undefined) ?? 0; return t > 0 && now - t <= 30 * DAY; }).length,
       revenueUsd: Math.round(revenueUsd * 100) / 100,

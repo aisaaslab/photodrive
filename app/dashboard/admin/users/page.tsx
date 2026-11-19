@@ -17,6 +17,11 @@ type Photographer = {
   subscriptionActive: boolean;
   subscriptionExpiresAt: number | null;
   compGranted: boolean;
+  // How they got access: admin grant, a 100%-off Stripe code, or a real payment.
+  accessSource: "admin" | "free_code" | "paid" | null;
+  promoCode: string | null;
+  lastPaymentCents: number | null;
+  lastPaymentCurrency: string | null;
   planId: string | null;
   planName: string | null;
   planInterval: string | null;
@@ -39,6 +44,29 @@ type Gallery = {
 };
 
 type PlanLite = Pick<PlanDoc, "id" | "name" | "interval" | "priceCents" | "active" | "isPublic">;
+
+type SourceFilter = "all" | "free_code" | "paid" | "admin" | "none";
+
+const SOURCE_LABEL: Record<"admin" | "free_code" | "paid", string> = {
+  admin: "Admin grant",
+  free_code: "Free code",
+  paid: "Paid",
+};
+
+const SOURCE_STYLE: Record<"admin" | "free_code" | "paid", string> = {
+  admin: "bg-[#17509e]/10 text-[#2dabe0] border-[#17509e]/30",
+  free_code: "bg-amber-500/10 text-amber-300 border-amber-500/25",
+  paid: "bg-white/[0.05] text-stone-300 border-white/10",
+};
+
+function formatMoney(cents: number | null, currency: string | null) {
+  if (cents === null) return "—";
+  try {
+    return (cents / 100).toLocaleString("en-US", { style: "currency", currency: (currency || "usd").toUpperCase() });
+  } catch {
+    return `${(cents / 100).toFixed(2)} ${currency ?? ""}`.trim();
+  }
+}
 
 function formatDate(ts: number | string | null | undefined) {
   if (!ts) return "—";
@@ -76,6 +104,7 @@ export default function AdminUsersPage() {
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<"newest" | "oldest" | "name" | "lastSignIn">("newest");
   const [expandedUid, setExpandedUid] = useState<string | null>(null);
+  const [sourceFilter, setSourceFilter] = useState<SourceFilter>("all");
 
   // Modals
   const [createOpen, setCreateOpen] = useState(false);
@@ -230,10 +259,22 @@ export default function AdminUsersPage() {
 
   const galleriesFor = (uid: string) => galleries.filter((g) => g.photographerId === uid);
 
+  const sourceCounts = {
+    all: users.length,
+    free_code: users.filter((u) => u.accessSource === "free_code").length,
+    paid: users.filter((u) => u.accessSource === "paid").length,
+    admin: users.filter((u) => u.accessSource === "admin").length,
+    none: users.filter((u) => !u.accessSource).length,
+  };
+
   const filteredUsers = users.filter((u) => {
+    if (sourceFilter === "none" ? !!u.accessSource : sourceFilter !== "all" && u.accessSource !== sourceFilter) return false;
     if (!search) return true;
     const q = search.toLowerCase();
-    const userMatch = u.email.toLowerCase().includes(q) || u.displayName.toLowerCase().includes(q);
+    const userMatch =
+      u.email.toLowerCase().includes(q) ||
+      u.displayName.toLowerCase().includes(q) ||
+      (u.promoCode ?? "").toLowerCase().includes(q);
     const galleryMatch = galleriesFor(u.uid).some((g) => g.name.toLowerCase().includes(q));
     return userMatch || galleryMatch;
   });
@@ -288,7 +329,7 @@ export default function AdminUsersPage() {
           </svg>
           <input
             type="text"
-            placeholder="Search photographer, email, gallery..."
+            placeholder="Search photographer, email, gallery, promo code..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full bg-white/[0.05] border border-white/[0.08] rounded-xl pl-9 pr-4 py-2.5 text-sm text-white placeholder:text-stone-500 focus:outline-none focus:border-white/20"
@@ -304,6 +345,30 @@ export default function AdminUsersPage() {
           <option value="lastSignIn">Last sign-in</option>
           <option value="name">Name (A-Z)</option>
         </select>
+      </div>
+
+      {/* Filter by how people got access — e.g. everyone who used a free code */}
+      <div className="flex items-center gap-2 flex-wrap mb-6" role="group" aria-label="Filter by access type">
+        {([
+          ["all", "All"],
+          ["free_code", "Free code"],
+          ["paid", "Paid"],
+          ["admin", "Admin grant"],
+          ["none", "No plan"],
+        ] as [SourceFilter, string][]).map(([key, label]) => (
+          <button
+            key={key}
+            onClick={() => setSourceFilter(key)}
+            aria-pressed={sourceFilter === key}
+            className={`text-xs font-semibold px-3 py-1.5 rounded-full border transition-colors ${
+              sourceFilter === key
+                ? "bg-white text-stone-900 border-white"
+                : "bg-white/[0.03] text-stone-400 border-white/[0.08] hover:text-white hover:border-white/20"
+            }`}
+          >
+            {label} <span className={sourceFilter === key ? "text-stone-500" : "text-stone-600"}>{sourceCounts[key]}</span>
+          </button>
+        ))}
       </div>
 
       {/* Photographers list */}
@@ -345,6 +410,20 @@ export default function AdminUsersPage() {
                       No subscription
                     </span>
                   )}
+                  {u.accessSource && (
+                    <span
+                      title={
+                        u.accessSource === "free_code"
+                          ? `Signed up with a 100%-off code${u.promoCode ? ` (${u.promoCode})` : ""}`
+                          : u.accessSource === "paid"
+                            ? `Paid ${formatMoney(u.lastPaymentCents, u.lastPaymentCurrency)} via Stripe`
+                            : "Access granted by an admin"
+                      }
+                      className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${SOURCE_STYLE[u.accessSource]}`}
+                    >
+                      {SOURCE_LABEL[u.accessSource]}{u.accessSource === "free_code" && u.promoCode ? ` · ${u.promoCode}` : ""}
+                    </span>
+                  )}
                   <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${userGalleries.length > 0 ? "bg-[#17509e]/10 text-[#2dabe0] border border-[#17509e]/20" : "bg-white/[0.04] text-stone-500 border border-white/[0.06]"}`}>
                     {userGalleries.length} {userGalleries.length === 1 ? "gallery" : "galleries"}
                   </span>
@@ -362,6 +441,16 @@ export default function AdminUsersPage() {
                 <div className="border-t border-white/[0.06]">
                   {/* Subscription / access control */}
                   <div className="px-5 py-4 border-b border-white/[0.06]">
+                    {u.accessSource && (
+                      <p className="text-xs text-stone-400 mb-3">
+                        <span className="text-stone-500">How they got access:</span>{" "}
+                        <span className="text-white font-medium">{SOURCE_LABEL[u.accessSource]}</span>
+                        {u.accessSource === "free_code" && u.promoCode && <> · code <span className="font-mono text-amber-300">{u.promoCode}</span></>}
+                        {u.accessSource !== "admin" && u.lastPaymentCents !== null && <> · charged {formatMoney(u.lastPaymentCents, u.lastPaymentCurrency)}</>}
+                        {u.planInterval && <> · {u.planInterval} plan ({u.planInterval === "monthly" ? "30 days" : "1 year"})</>}
+                        {u.subscriptionExpiresAt ? <> · {u.subscriptionExpiresAt > 4102444800000 ? "lifetime" : `ends ${formatDate(u.subscriptionExpiresAt)}`}</> : null}
+                      </p>
+                    )}
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="text-xs text-stone-400 mr-1">Access / Subscription:</span>
                       <select

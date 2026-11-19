@@ -1,11 +1,33 @@
 import { getAdminAuth, getAdminDb } from "@/lib/firebase/admin";
 import type { PlanInterval } from "@/lib/firestore/types";
+import { stripe } from "@/lib/stripe/server";
 
 const MONTH_MS = 30 * 24 * 60 * 60 * 1000;
 const YEAR_MS = 365 * 24 * 60 * 60 * 1000;
 
 function periodMs(interval: PlanInterval | null | undefined): number {
   return interval === "monthly" ? MONTH_MS : YEAR_MS;
+}
+
+/**
+ * Best-effort: the promotion code (e.g. "FREEYEAR") a checkout session used,
+ * so the back office can show WHICH code someone signed up with. Never throws;
+ * returns null when Stripe can't be reached or no code was applied.
+ */
+async function lookupPromoCode(sessionId: string): Promise<string | null> {
+  try {
+    const s = await stripe.checkout.sessions.retrieve(sessionId, {
+      expand: ["total_details.breakdown.discounts.discount.promotion_code"],
+    });
+    const discount = s.total_details?.breakdown?.discounts?.[0]?.discount;
+    const promo = discount?.promotion_code;
+    if (promo && typeof promo === "object" && promo.code) return promo.code;
+    const coupon = discount?.source?.coupon;
+    if (coupon && typeof coupon === "object" && coupon.name) return coupon.name;
+    return null;
+  } catch {
+    return null;
+  }
 }
 
 /**
@@ -33,6 +55,16 @@ export async function activateSubscription(opts: {
 }) {
   const grantedMs = periodMs(opts.interval);
   const db = getAdminDb();
+
+  // A $0 checkout means a 100%-off code was used: remember that (and which
+  // code), because Stripe-side it is just another "paid" session. Looked up
+  // before the transaction so no network call happens inside it.
+  const isFree = opts.amountTotal === 0;
+  const promoCode = isFree && opts.sessionId ? await lookupPromoCode(opts.sessionId) : null;
+  const sourceFields = {
+    subscriptionSource: isFree ? "free_code" : "paid",
+    ...(promoCode ? { promoCode } : {}),
+  };
   const userRef = db.collection("users").doc(opts.uid);
 
   // Resolve plan details (name) for display; a deleted plan falls back to the
@@ -77,6 +109,9 @@ export async function activateSubscription(opts: {
           subscriptionStatus: "active",
           subscriptionExpiresAt: expiresAt,
           ...planFields,
+          // Only stamp the source when this delivery actually granted time —
+          // a replay while already active must not relabel the account.
+          ...(currentlyActive ? {} : sourceFields),
           ...(opts.stripeCustomerId ? { stripeCustomerId: opts.stripeCustomerId } : {}),
         },
         { merge: true }
@@ -88,6 +123,11 @@ export async function activateSubscription(opts: {
         currency: opts.currency ?? null,
         customerId: opts.stripeCustomerId ?? null,
         planId: opts.planId ?? null,
+        // Plan period actually granted ("monthly" = 30 days, else 365) — lets
+        // support see why an account got the length it did.
+        interval: opts.interval ?? null,
+        source: isFree ? "free_code" : "paid",
+        ...(promoCode ? { promoCode } : {}),
         activatedAt: now,
       });
     });
@@ -108,6 +148,7 @@ export async function activateSubscription(opts: {
         {
           subscriptionStatus: "active",
           subscriptionExpiresAt: now + grantedMs,
+          ...sourceFields,
           ...planFields,
           ...(opts.stripeCustomerId ? { stripeCustomerId: opts.stripeCustomerId } : {}),
         },
