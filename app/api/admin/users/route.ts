@@ -4,15 +4,18 @@ import { getUidFromRequest, isAdmin } from "@/lib/firebase/admin-guard";
 import { assignPlanToUser, getPlanById } from "@/lib/plans";
 import type { GalleryDoc } from "@/lib/firestore/types";
 import { forOwner, migrateLegacyPassword } from "@/lib/gallery/password-vault";
+import { accessSourceOf, latestPaymentByUid } from "@/lib/access-source";
 
 export async function GET(req: NextRequest) {
   const uid = await getUidFromRequest(req);
   if (!isAdmin(uid)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
-  const [listUsersResult, galleriesSnap] = await Promise.all([
+  const [listUsersResult, galleriesSnap, paymentsSnap] = await Promise.all([
     getAdminAuth().listUsers(1000),
     getAdminDb().collection("galleries").get(),
+    getAdminDb().collection("payments").get(),
   ]);
+  const latestPayment = latestPaymentByUid(paymentsSnap.docs);
 
   // Firestore returns untyped documents, so the shape is asserted rather than
   // inferred — spreading Record<string, unknown> yields just { id } to tsc.
@@ -40,13 +43,15 @@ export async function GET(req: NextRequest) {
   // `name` is also preferred for displayName — it's the source of truth the
   // user can edit in Account settings (Auth displayName is the Google name).
   const userDocs = await getAdminDb().collection("users").get();
-  const subMap: Record<string, { status: string; expiresAt: number; comp: boolean; name?: string; planId?: string; planName?: string; planInterval?: string }> = {};
+  const subMap: Record<string, { status: string; expiresAt: number; comp: boolean; source?: unknown; promoCode?: string; name?: string; planId?: string; planName?: string; planInterval?: string }> = {};
   for (const doc of userDocs.docs) {
     const d = doc.data();
     subMap[doc.id] = {
       status: d.subscriptionStatus ?? "none",
       expiresAt: d.subscriptionExpiresAt ?? 0,
       comp: d.compGranted === true,
+      source: d.subscriptionSource,
+      promoCode: typeof d.promoCode === "string" ? d.promoCode : undefined,
       name: typeof d.name === "string" && d.name ? d.name : undefined,
       planId: typeof d.planId === "string" ? d.planId : undefined,
       planName: typeof d.planName === "string" ? d.planName : undefined,
@@ -58,6 +63,7 @@ export async function GET(req: NextRequest) {
   const users = listUsersResult.users.map((u) => {
     const sub = subMap[u.uid];
     const isActive = sub?.status === "active" && sub?.expiresAt > now;
+    const latest = latestPayment.get(u.uid);
     return {
       uid: u.uid,
       email: u.email ?? "",
@@ -70,6 +76,13 @@ export async function GET(req: NextRequest) {
       subscriptionActive: isActive,
       subscriptionExpiresAt: sub?.expiresAt ?? null,
       compGranted: sub?.comp ?? false,
+      // How they got access: "admin" | "free_code" | "paid" | null (never had any).
+      accessSource: accessSourceOf({ compGranted: sub?.comp ?? false, subscriptionSource: sub?.source, latest }),
+      // The 100%-off code they used, when Stripe told us which one.
+      promoCode: sub?.promoCode ?? latest?.promoCode ?? null,
+      // Last Stripe payment (minor units), 0 for a free-code checkout.
+      lastPaymentCents: latest?.amountTotal ?? null,
+      lastPaymentCurrency: latest?.currency ?? null,
       planId: sub?.planId ?? null,
       planName: sub?.planName ?? null,
       planInterval: sub?.planInterval ?? null,

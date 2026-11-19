@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/components/auth/AuthProvider";
-import { useLanguage } from "@/lib/i18n";
+import { useLanguage, LOCALES } from "@/lib/i18n";
 import { NewGalleryForm } from "@/components/dashboard/NewGalleryForm";
 import { GalleryList } from "@/components/dashboard/GalleryList";
 import { GalleryDoc } from "@/lib/firestore/types";
@@ -14,7 +14,7 @@ type SortOption = "newest" | "oldest" | "name_asc" | "name_desc";
 
 export default function DashboardPage() {
   const { user, profile } = useAuth();
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [galleries, setGalleries] = useState<GalleryDoc[]>([]);
@@ -36,7 +36,19 @@ export default function DashboardPage() {
     setSort(next);
     try { localStorage.setItem("dashboard_sort", next); } catch {}
   }
-  const [daysLeft, setDaysLeft] = useState<number | null>(null);
+  // Subscription summary for the header + renewal banner.
+  const [sub, setSub] = useState<{ daysLeft: number; expiresAt: number; planName: string | null; interval: string | null } | null>(null);
+  const daysLeft = sub?.daysLeft ?? null;
+  const isLifetime = !!sub && sub.expiresAt > 4102444800000;
+  // A just-activated 30-day (monthly) plan is always "30 days left", so only
+  // nudge it in its last week; longer plans get the nudge in the last 30 days.
+  const nudgeWithinDays = sub?.interval === "monthly" ? 7 : 30;
+  const showRenewBanner = !!sub && !isLifetime && sub.daysLeft <= nudgeWithinDays;
+  const planLabel = sub?.planName
+    || (sub?.interval === "monthly" ? t.dashboard.planMonthly : sub?.interval === "yearly" ? t.dashboard.planYearly : null);
+  const expiresLabel = sub
+    ? new Date(sub.expiresAt).toLocaleDateString(LOCALES[lang], { day: "numeric", month: "short", year: "numeric" })
+    : "";
   const [pendingGallery, setPendingGallery] = useState<{ name: string; driveUrl: string; password: string } | null>(null);
   const [restoredFromPayment, setRestoredFromPayment] = useState(false);
 
@@ -85,7 +97,12 @@ export default function DashboardPage() {
           .then((data) => {
             if (data.expiresAt) {
               const days = Math.ceil((data.expiresAt - Date.now()) / (1000 * 60 * 60 * 24));
-              setDaysLeft(days > 0 ? days : 0);
+              setSub({
+                daysLeft: days > 0 ? days : 0,
+                expiresAt: data.expiresAt,
+                planName: typeof data.planName === "string" ? data.planName : null,
+                interval: typeof data.planInterval === "string" ? data.planInterval : null,
+              });
             }
           })
       );
@@ -152,9 +169,13 @@ export default function DashboardPage() {
               ? t.dashboard.firstGallery
               : `${galleries.length} ${galleries.length === 1 ? t.dashboard.gallery : t.dashboard.galleries}`}
           </p>
-          {daysLeft !== null && (
+          {sub && (
             <p className="text-xs text-white/40 mt-1">
-              {t.dashboard.subscription} <span className={daysLeft <= 30 ? "text-[#2dabe0]" : "text-white/60"}>{daysLeft} {t.dashboard.daysLeft}</span>
+              {t.dashboard.subscription}{" "}
+              <span className={showRenewBanner ? "text-[#2dabe0]" : "text-white/60"}>
+                {planLabel ? `${planLabel} · ` : ""}
+                {isLifetime ? t.dashboard.lifetime : `${t.dashboard.activeUntil} ${expiresLabel} (${sub.daysLeft} ${t.dashboard.daysLeft})`}
+              </span>
             </p>
           )}
         </div>
@@ -172,7 +193,7 @@ export default function DashboardPage() {
 
       {/* Subscription status — a visible nudge instead of tiny grey text, so an
           expiring or expired plan is never a surprise. */}
-      {daysLeft !== null && daysLeft <= 30 && (
+      {showRenewBanner && daysLeft !== null && (
         <div
           role="status"
           className={`flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl border px-4 py-3 ${
