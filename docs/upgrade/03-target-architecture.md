@@ -148,7 +148,7 @@ Read-only first, applied only with explicit approval.
 
 - **Report A (replay):** for each user, replay `payments` ordered by `activatedAt` with the *new*
   stacking rule; compare the resulting expiry with `users.subscriptionExpiresAt`. Skip comped/lifetime
-  accounts; flag differences > 1 day. Columns: uid, email, payments replayed, expected expiry, current expiry, delta days, plan.
+  accounts; flag differences > 1 day. Columns: uid, email, payments replayed, expected expiry, current expiry, delta days, plan. The report adds `category` (`under_extended` | `over_extended`), `bothExpired` and `note`; over-extended accounts are review-only, the apply step never reduces access.
 - **Report B (missing):** paid Stripe sessions (last 13 months) with no `payments` doc.
 - Output CSV to `scripts/backfill/out/` (git-ignored). The owner marks rows approved in a copy;
   `--apply --approved approved.csv` is idempotent, transactional, writes an `audit_log` entry per

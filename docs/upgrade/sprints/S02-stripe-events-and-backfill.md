@@ -27,7 +27,7 @@
   - Files: `lib/shared/money.ts`, `app/subscribe/page.tsx`, `app/dashboard/account/page.tsx`, `app/dashboard/admin/plans/page.tsx`, `app/dashboard/admin/users/page.tsx`, `components/admin/CreateUserModal.tsx`
   - Done when: no `$${` price formatting remains outside the landing page.
   - Refs: PAY-6
-- [ ] **S2-06** · M · Back-fill **report** scripts (read-only): Report A (replay payments with the stacking rule vs current expiry) and Report B (paid Stripe sessions with no `payments` doc) → CSV in `scripts/backfill/out/` (git-ignored).
+- [x] **S2-06** · M · Back-fill **report** scripts (read-only): Report A (replay payments with the stacking rule vs current expiry) and Report B (paid Stripe sessions with no `payments` doc) → CSV in `scripts/backfill/out/` (git-ignored).
   - Files: `scripts/backfill/report.ts`
   - Done when: runs against staging fixtures; columns match `03-target-architecture.md`.
   - Refs: PAY-7

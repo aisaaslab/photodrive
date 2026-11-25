@@ -56,3 +56,6 @@ firebase-service-account*.json
 firebase-debug.log*
 firestore-debug.log*
 ui-debug.log*
+
+# back-fill reports contain customer e-mail addresses: never commit them
+scripts/backfill/out/
