@@ -91,9 +91,15 @@ function ThankYouContent() {
             },
             body: JSON.stringify({ sessionId }),
           });
-          if (res.ok && (await res.json()).activated) {
-            if (!cancelled) setActivation("ready");
-            return;
+          if (res.ok) {
+            // `state` is "paid" | "pending" | "failed" (BILLING_FULFIL_V2); older
+            // responses only carry `activated`. Anything but "paid" falls through
+            // to polling, which ends in the pending screen with support guidance.
+            const data = await res.json();
+            if (data.state === "paid" || data.activated) {
+              if (!cancelled) setActivation("ready");
+              return;
+            }
           }
         } catch {}
       }

@@ -23,7 +23,7 @@
   - Depends: S1-03
   - Files: `app/api/stripe/webhook/route.ts`
   - Done when: signed-fixture route tests pass with the flag on and off.
-- [ ] **S1-05** · M · `/api/stripe/verify` uses `fulfilCheckoutSession`; ownership check kept; returns explicit state (`paid` / `pending` / `failed`) and the new `expiresAt`; thank-you page polling updated.
+- [x] **S1-05** · M · `/api/stripe/verify` uses `fulfilCheckoutSession`; ownership check kept; returns explicit state (`paid` / `pending` / `failed`) and the new `expiresAt`; thank-you page polling updated.
   - Depends: S1-03
   - Files: `app/api/stripe/verify/route.ts`, `app/thank-you/page.tsx`
   - Done when: verify + webhook racing on one session results in exactly one fulfilment.
