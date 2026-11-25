@@ -18,7 +18,8 @@ Existing variables are in `.env.example`. Add (all server-side unless noted):
 | Variable | Purpose | Sprint |
 |---|---|---|
 | `SENTRY_DSN`, `NEXT_PUBLIC_SENTRY_DSN`, `SENTRY_AUTH_TOKEN` | error monitoring, source maps | S0 |
-| `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` | shared rate limiter | S3 |
+| `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` | shared rate limiter (REST API, no extra package); unset = in-memory, per instance | S3 |
+| `RATE_LIMIT_SALT` (optional) | salt for hashing IPs into rate-limit keys | S3 |
 | `ADMIN_ALERT_EMAIL` | where operator alerts (payments needing review) are e-mailed; unset = log only | S2 |
 | `CONTACT_SMTP_HOST`, `_PORT`, `_USER`, `_PASS`, `_SECURE`, `CONTACT_FROM_EMAIL` | SMTP settings used by `sendEmail` for every e-mail (contact form, operator alerts, customer notices); **leave `RESEND_API_KEY` unset** so SMTP is the only provider (D17); verify with `npx tsx --env-file=.env.local scripts/ops/send-test-email.ts` | S2 |
 | `CRON_SECRET` | authorises `/api/cron/*` calls from Vercel Cron | S2 |

@@ -8,7 +8,7 @@
 
 ## Tasks
 
-- [ ] **S3-01** · M · Shared rate limiter `lib/server/rate-limit.ts` (Upstash Redis in staging/production, in-memory fallback for dev/tests); hashed IP keys; unit tests for window and lockout logic.
+- [x] **S3-01** · M · Shared rate limiter `lib/server/rate-limit.ts` (Upstash Redis in staging/production, in-memory fallback for dev/tests); hashed IP keys; unit tests for window and lockout logic.
   - Files: `lib/server/rate-limit.ts`, `package.json`, `.env.example`
   - Done when: limits hold across two simulated instances in a test; env vars documented.
   - Refs: SEC-2
