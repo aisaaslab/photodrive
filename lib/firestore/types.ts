@@ -102,3 +102,33 @@ export interface FavoriteDoc {
   sessionId: string;
   createdAt: number;
 }
+
+/** Where a fulfilment was triggered from. */
+export type FulfilSource = "webhook" | "verify" | "reconcile" | "admin" | "backfill";
+
+/**
+ * `payments/{checkoutSessionId}`. Its existence is the idempotency key for
+ * fulfilment. Documents written before S1-03 have none of the optional fields
+ * and no `status`; they count as fulfilled.
+ */
+export interface PaymentDoc {
+  uid: string;
+  sessionId: string;
+  amountTotal: number | null;
+  currency: string | null;
+  customerId: string | null;
+  planId: string | null;
+  interval: PlanInterval | null;
+  source: "paid" | "free_code";
+  promoCode?: string;
+  accessDays?: number;
+  accessDaysSource?: "back_office" | "stripe";
+  activatedAt: number;
+  // Added by fulfilCheckoutSession (S1-03)
+  status?: "fulfilled" | "refunded" | "partially_refunded" | "disputed";
+  grantedMs?: number;
+  expiresAtAfter?: number;
+  paymentIntentId?: string | null;
+  fulfilledBy?: FulfilSource;
+  livemode?: boolean | null;
+}
