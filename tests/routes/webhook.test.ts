@@ -136,7 +136,7 @@ describe("POST /api/stripe/webhook (BILLING_FULFIL_V2 on)", () => {
   });
 
   it("ignores other event types", async () => {
-    expect((await call(signedWebhookRequest(eventFixture("charge.refunded", {})))).status).toBe(200);
+    expect((await call(signedWebhookRequest(eventFixture("customer.created", {})))).status).toBe(200);
     expect(fulfilCheckoutSession).not.toHaveBeenCalled();
   });
 });

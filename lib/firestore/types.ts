@@ -125,13 +125,29 @@ export interface PaymentDoc {
   accessDaysSource?: "back_office" | "stripe";
   activatedAt: number;
   // Added by fulfilCheckoutSession (S1-03)
-  status?: "fulfilled" | "refunded" | "partially_refunded" | "disputed";
+  status?: PaymentStatus;
   grantedMs?: number;
   expiresAtAfter?: number;
   paymentIntentId?: string | null;
   fulfilledBy?: FulfilSource;
   livemode?: boolean | null;
+  // Added by refund / dispute handling (S2-02)
+  chargeId?: string | null;
+  refundedAmount?: number;
+  /** Access time actually taken back when the grant was revoked (so a won dispute can give it back). */
+  revokedMs?: number;
+  revokedAt?: number;
+  disputeId?: string;
+  /** An operator should look at this payment (partial refund, open dispute, legacy payment revoked). */
+  needsReview?: boolean;
+  reviewNote?: string;
 }
+
+/**
+ * fulfilled / partially_refunded: the grant is in effect.
+ * refunded / disputed / dispute_lost: the grant has been taken back (disputed may be restored if won).
+ */
+export type PaymentStatus = "fulfilled" | "refunded" | "partially_refunded" | "disputed" | "dispute_lost";
 
 export type StripeEventStatus = "processing" | "processed" | "ignored" | "needs_review" | "failed";
 

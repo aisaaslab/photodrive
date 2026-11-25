@@ -47,3 +47,13 @@ export function signedWebhookRequest(
   const signature = Stripe.webhooks.generateTestHeaderString({ payload, secret });
   return new Request(url, { method: "POST", body: payload, headers: { "stripe-signature": signature } });
 }
+
+/** A Charge as sent in `charge.refunded` events. */
+export function chargeFixture(over: Record<string, unknown> = {}) {
+  return { id: "ch_test_1", object: "charge", payment_intent: "pi_test_1", amount: 9900, amount_refunded: 9900, refunded: true, currency: "usd", ...over };
+}
+
+/** A Dispute as sent in `charge.dispute.*` events. */
+export function disputeFixture(over: Record<string, unknown> = {}) {
+  return { id: "dp_test_1", object: "dispute", charge: "ch_test_1", payment_intent: "pi_test_1", amount: 9900, currency: "usd", status: "needs_response", ...over };
+}

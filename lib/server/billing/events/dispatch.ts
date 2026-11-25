@@ -2,6 +2,8 @@ import type Stripe from "stripe";
 import { getAdminDb } from "@/lib/firebase/admin";
 import { claimEvent, markEvent } from "@/lib/server/repos/stripeEvents";
 import { fulfilCheckoutSession, UnmatchedPayment } from "@/lib/server/billing/fulfil";
+import { getStripe } from "@/lib/server/billing/stripe";
+import { onChargeRefunded, onDisputeClosed, onDisputeCreated, onSessionNotPaid, type Outcome } from "./handlers";
 import type { Logger } from "@/lib/server/log";
 
 /** An unmatched payment is retried by Stripe (we answer 500) for this long, then flagged for review. */
@@ -40,6 +42,15 @@ export async function handleStripeEvent(
       // event fires when funds clear.
       case "checkout.session.async_payment_succeeded":
         return await onCheckoutSettled(event, log, now);
+      case "charge.refunded":
+        return await record(event, await onChargeRefunded(event, { db, stripe: getStripe(), now: now() }), log, now);
+      case "charge.dispute.created":
+        return await record(event, await onDisputeCreated(event, { db, stripe: getStripe(), now: now() }), log, now);
+      case "charge.dispute.closed":
+        return await record(event, await onDisputeClosed(event, { db, stripe: getStripe(), now: now() }), log, now);
+      case "checkout.session.async_payment_failed":
+      case "checkout.session.expired":
+        return await record(event, onSessionNotPaid(event), log, now);
       default:
         await markEvent(db, event.id, "ignored", {}, now());
         return ok;
@@ -50,6 +61,17 @@ export async function handleStripeEvent(
     await markEvent(db, event.id, "failed", { error: message }, now()).catch(() => {});
     return { status: 500, body: { error: "Event handling failed" } };
   }
+}
+
+/** Store a handler's decision on the event; payments that need a human are logged loudly. */
+async function record(event: Stripe.Event, o: Outcome, log: Logger, now: () => number): Promise<DispatchResult> {
+  if (o.status === "needs_review") {
+    log.error("event needs manual review", { eventId: event.id, type: event.type, outcome: o.outcome, sessionId: o.sessionId });
+  } else {
+    log.info("event handled", { eventId: event.id, type: event.type, outcome: o.outcome });
+  }
+  await markEvent(getAdminDb(), event.id, o.status, { sessionId: o.sessionId, uid: o.uid, outcome: o.outcome, error: o.error }, now());
+  return ok;
 }
 
 async function onCheckoutSettled(event: Stripe.Event, log: Logger, now: () => number): Promise<DispatchResult> {
