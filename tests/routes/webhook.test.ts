@@ -11,6 +11,13 @@ const fulfilCheckoutSession = vi.fn();
 class UnmatchedPayment extends Error {}
 vi.mock("@/lib/server/billing/fulfil", () => ({ fulfilCheckoutSession, UnmatchedPayment }));
 
+// The dispatcher records events in Firestore; here it is replaced by spies (the emulator tests
+// in tests/billing/ exercise the real thing).
+const claimEvent = vi.fn();
+const markEvent = vi.fn();
+vi.mock("@/lib/server/repos/stripeEvents", () => ({ claimEvent, markEvent }));
+vi.mock("@/lib/firebase/admin", () => ({ getAdminDb: () => ({}), getAdminAuth: () => ({}) }));
+
 const { POST } = await import("@/app/api/stripe/webhook/route");
 const call = (req: Request) => POST(new NextRequest(req));
 
@@ -18,6 +25,8 @@ beforeEach(() => {
   vi.unstubAllEnvs();
   vi.stubEnv("STRIPE_WEBHOOK_SECRET", TEST_WEBHOOK_SECRET);
   activateSubscription.mockReset().mockResolvedValue(undefined);
+  claimEvent.mockReset().mockResolvedValue({ claimed: true, attempts: 1 });
+  markEvent.mockReset().mockResolvedValue(undefined);
   fulfilCheckoutSession.mockReset().mockResolvedValue({ state: "fulfilled" });
   resolveUidForSession.mockReset().mockImplementation(async (s) => s.metadata?.uid ?? null);
   vi.spyOn(console, "log").mockImplementation(() => {});
@@ -79,7 +88,7 @@ describe("POST /api/stripe/webhook (BILLING_FULFIL_V2 on)", () => {
       expect((await call(signedWebhookRequest(completed(type)))).status).toBe(200);
     }
     expect(fulfilCheckoutSession).toHaveBeenCalledTimes(2);
-    expect(fulfilCheckoutSession).toHaveBeenCalledWith(expect.objectContaining({ id: "cs_test_paid" }), { source: "webhook" });
+    expect(fulfilCheckoutSession).toHaveBeenCalledWith(expect.objectContaining({ id: "cs_test_paid" }), expect.objectContaining({ source: "webhook" }));
     expect(activateSubscription).not.toHaveBeenCalled();
   });
 
@@ -101,6 +110,23 @@ describe("POST /api/stripe/webhook (BILLING_FULFIL_V2 on)", () => {
     const twoDaysAgo = Math.floor(Date.now() / 1000) - 48 * 3600;
     expect((await call(signedWebhookRequest(completed("checkout.session.completed", hourAgo)))).status).toBe(500);
     expect((await call(signedWebhookRequest(completed("checkout.session.completed", twoDaysAgo)))).status).toBe(200);
+  });
+
+  it("records the outcome of each event, and skips duplicates", async () => {
+    await call(signedWebhookRequest(completed()));
+    expect(claimEvent).toHaveBeenCalledWith({}, expect.objectContaining({ id: "evt_test_1", type: "checkout.session.completed" }), expect.any(Number));
+    expect(markEvent).toHaveBeenCalledWith({}, "evt_test_1", "processed", expect.objectContaining({ sessionId: "cs_test_paid" }), expect.any(Number));
+
+    fulfilCheckoutSession.mockClear();
+    claimEvent.mockResolvedValue({ claimed: false, reason: "duplicate", status: "processed" });
+    expect((await call(signedWebhookRequest(completed()))).status).toBe(200);
+    expect(fulfilCheckoutSession).not.toHaveBeenCalled();
+  });
+
+  it("answers 409 (so Stripe retries) while another delivery is processing the same event", async () => {
+    claimEvent.mockResolvedValue({ claimed: false, reason: "in_flight" });
+    expect((await call(signedWebhookRequest(completed()))).status).toBe(409);
+    expect(fulfilCheckoutSession).not.toHaveBeenCalled();
   });
 
   it("signature handling is unchanged", async () => {

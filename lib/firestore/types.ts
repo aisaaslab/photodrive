@@ -132,3 +132,21 @@ export interface PaymentDoc {
   fulfilledBy?: FulfilSource;
   livemode?: boolean | null;
 }
+
+export type StripeEventStatus = "processing" | "processed" | "ignored" | "needs_review" | "failed";
+
+/** `stripe_events/{eventId}`: one document per Stripe event we have received (S2-01). */
+export interface StripeEventDoc {
+  type: string;
+  livemode: boolean;
+  receivedAt: number;
+  /** Set when a delivery last started processing; used to detect a crashed attempt. */
+  lastAttemptAt: number;
+  attempts: number;
+  status: StripeEventStatus;
+  processedAt?: number;
+  sessionId?: string;
+  uid?: string;
+  outcome?: string;
+  error?: string;
+}

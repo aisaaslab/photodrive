@@ -8,7 +8,7 @@
 
 ## Tasks
 
-- [ ] **S2-01** · M · `stripe_events` collection and repo: create-if-absent on receipt, statuses (`processed`, `ignored`, `needs_review`, `failed`), skip already-processed events.
+- [x] **S2-01** · M · `stripe_events` collection and repo: create-if-absent on receipt, statuses (`processed`, `ignored`, `needs_review`, `failed`), skip already-processed events.
   - Files: `lib/server/repos/stripeEvents.ts`, `app/api/stripe/webhook/route.ts`
   - Done when: replaying the same event id is a no-op and visible in the collection.
 - [ ] **S2-02** · L · Event handlers per D5: `charge.refunded` (full → `revokeGrant`; partial → flag), `charge.dispute.created/closed`, `checkout.session.async_payment_failed`, `checkout.session.expired`; update `payments.status`.
