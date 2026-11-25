@@ -3,6 +3,12 @@ import Stripe from "stripe";
 import { stripe, isSessionSettled } from "@/lib/stripe/server";
 import { activateSubscription, resolveUidForSession } from "@/lib/stripe/activate";
 import { requestLogger } from "@/lib/server/log";
+import { billingFulfilV2 } from "@/lib/server/billing/flags";
+import { fulfilCheckoutSession, UnmatchedPayment } from "@/lib/server/billing/fulfil";
+
+// An unmatched payment is retried by Stripe (we answer 500) for this long, then left to the
+// reconciliation / "needs attention" flow (S2) so Stripe stops retrying.
+const UNMATCHED_RETRY_WINDOW_MS = 24 * 60 * 60 * 1000;
 
 export async function POST(req: NextRequest) {
   const log = requestLogger(req, "stripe.webhook");
@@ -47,6 +53,34 @@ export async function POST(req: NextRequest) {
     // Both event types carry a Checkout Session payload, but the union of all
     // event types can't be narrowed automatically — cast to the Session type.
     const session = event.data.object as Stripe.Checkout.Session;
+
+    if (billingFulfilV2()) {
+      try {
+        const result = await fulfilCheckoutSession(session, { source: "webhook" });
+        log.info("fulfilment", { sessionId: session.id, state: result.state });
+        return NextResponse.json({ received: true });
+      } catch (err) {
+        if (err instanceof UnmatchedPayment) {
+          const ageMs = Date.now() - event.created * 1000;
+          if (ageMs < UNMATCHED_RETRY_WINDOW_MS) {
+            // Return 500 so Stripe retries: the user may still be created or e-mail-matched.
+            log.error("settled payment could not be matched to a user, will be retried", {
+              sessionId: session.id,
+              eventId: event.id,
+            });
+            return NextResponse.json({ error: "Unmatched payment" }, { status: 500 });
+          }
+          log.error("settled payment still unmatched after retry window, needs manual review", {
+            sessionId: session.id,
+            eventId: event.id,
+          });
+          return NextResponse.json({ received: true });
+        }
+        log.error("fulfilment failed", { sessionId: session.id, err });
+        return NextResponse.json({ error: "Activation failed" }, { status: 500 });
+      }
+    }
+
     // Fall back to the session email when metadata.uid is missing so a paid
     // customer is never silently dropped (previously this logged + returned
     // 200, so Stripe would never retry and the user stayed unsubscribed).

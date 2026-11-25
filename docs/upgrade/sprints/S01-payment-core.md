@@ -19,7 +19,7 @@
   - Files: `lib/server/billing/fulfil.ts`, `lib/stripe/activate.ts` (to retire), `lib/firestore/types.ts`
   - Done when: emulator tests cover new, renewal, upgrade, replay, concurrent calls, free code, unresolvable user.
   - Refs: PAY-2, PAY-3
-- [ ] **S1-04** · M · Webhook uses `fulfilCheckoutSession` for `checkout.session.completed` and `async_payment_succeeded`, behind `BILLING_FULFIL_V2`; signature handling unchanged.
+- [x] **S1-04** · M · Webhook uses `fulfilCheckoutSession` for `checkout.session.completed` and `async_payment_succeeded`, behind `BILLING_FULFIL_V2`; signature handling unchanged.
   - Depends: S1-03
   - Files: `app/api/stripe/webhook/route.ts`
   - Done when: signed-fixture route tests pass with the flag on and off.
