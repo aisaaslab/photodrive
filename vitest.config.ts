@@ -6,7 +6,7 @@ export default defineConfig({
   test: {
     environment: "node",
     include: ["tests/**/*.test.ts"],
-    // Emulator-backed suites live in tests/emu and run via `npm run test:emu`.
-    exclude: ["tests/emu/**", "node_modules/**"],
+    // Emulator-backed suites (tests/emu/** or *.emu.test.ts) run via `npm run test:emu`.
+    exclude: ["tests/emu/**", "tests/**/*.emu.test.ts", "node_modules/**"],
   },
 });

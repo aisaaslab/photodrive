@@ -57,6 +57,10 @@ revokeGrant({ now, currentExpiresAt, grantedMs }) =>
   : max(now, currentExpiresAt - grantedMs)
 ```
 
+Implemented in `lib/server/billing/access.ts` with two small refinements (both unit-tested): a zero/invalid
+grant changes nothing, and `revokeGrant` never moves an already-expired account forward to `now`
+(it returns the current expiry unchanged).
+
 Monthly = 30 days, yearly = 365 days (unchanged). Free-code grants use `accessDays`
 (existing `resolveAccessDays`). The admin "assign plan" and "grant year" actions call the same
 `computeExpiry`.
