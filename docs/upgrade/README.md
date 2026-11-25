@@ -82,7 +82,7 @@ node docs/upgrade/tools/status.mjs               # just refresh the table
 | **D12** | Create staging environments: Firebase staging project, Stripe test keys, Sentry project, Vercel preview vars | **S0 (everything)** |
 | **D3** | What happens to galleries when a plan lapses (and the landing page currently promises "link stays live / no automatic charges") | S9, landing copy |
 | **D11** | Produce 390 px mobile frames in Figma before building the landing page | S6 |
-| **D17** | Payment notifications: the operator alert address (`ADMIN_ALERT_EMAIL`), whether to add Slack, and wording review of customer e-mails | S2-14 … S2-16 (S2-03 ships with a safe default) |
+| **D17** | Payment notifications (all by e-mail through SMTP, decided): still needed are the operator alert address `ADMIN_ALERT_EMAIL`, the SMTP credentials in the environment, and wording review of customer e-mails | S2-14 … S2-16 (S2-03 ships with a safe default) |
 | **D15** | Photo delivery model; the Drive folder is public by design, so the proxy alone cannot deliver the PDF's promise | S3 |
 
 All other decisions have a recommended default in the decision log and can proceed on it.

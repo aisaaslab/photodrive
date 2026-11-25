@@ -47,6 +47,11 @@ export async function sendEmail(opts: {
         port: Number(process.env.CONTACT_SMTP_PORT || 587),
         secure: process.env.CONTACT_SMTP_SECURE === "true",
         auth: { user, pass },
+        // Callers (e.g. the Stripe webhook sending an operator alert) are waiting on this:
+        // fail fast instead of nodemailer's default of about two minutes.
+        connectionTimeout: 10_000,
+        greetingTimeout: 10_000,
+        socketTimeout: 15_000,
       });
       await transporter.sendMail({
         from: process.env.CONTACT_FROM_EMAIL || `PhotoDrive <${user}>`,

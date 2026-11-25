@@ -4,7 +4,7 @@
 **Goal:** Every Stripe event is handled and logged, missed payments are caught automatically, money is shown in the right currency in the app, and customers who paid but were not extended are identified and corrected with the owner's approval.
 **Entry:** S1 done.
 **Exit (done when):** Refunds remove access in test mode; customers are told about refunds, disputes and failed payments, and operators are alerted to anything that needs a human; an unmatched payment is retried then surfaced; the reconcile job heals a deliberately dropped webhook; the back-fill report exists and has been reviewed; production rollout (gate R1) is complete and monitored.
-**Decisions needed:** D5 (refund/dispute policy), D7 (cron), D17 (notification channels, recipient and wording).
+**Decisions needed:** D5 (decided), D7 (cron, default Vercel Cron), D17 (channels and SMTP decided; recipient address and wording outstanding).
 
 ## Tasks
 
@@ -20,7 +20,7 @@
   - Depends: S2-01
   - Done when: tests cover both branches and the alert fires once.
   - Scope note (D17): the alert is an immediate e-mail to `ADMIN_ALERT_EMAIL` (plus a log line) sent once when *any* event ends in `needs_review` (unmatched payment, partial refund, dispute, payment not found, legacy payment revoked). Sentry and the daily digest are S2-16; customer-facing messages are S2-14 / S2-15.
-- [ ] **S2-04** · M · Reconciliation cron `/api/cron/reconcile-payments` (Vercel Cron, `CRON_SECRET`): fulfil paid sessions from the last 48 h that have no `payments` doc; alert if repeatedly > 0.
+- [~] **S2-04** · M · Reconciliation cron `/api/cron/reconcile-payments` (Vercel Cron, `CRON_SECRET`): fulfil paid sessions from the last 48 h that have no `payments` doc; alert if repeatedly > 0.
   - Files: `app/api/cron/reconcile-payments/route.ts`, `vercel.json`
   - Done when: dropping a webhook in staging is healed within one run.
 - [ ] **S2-05** · M · `lib/shared/money.ts` (`formatMoney`, minor units, locale) and replace every hard-coded `$` in subscribe, Account, admin plans, admin user plan picker and `CreateUserModal`; tests including zero-decimal currencies. (Landing handled in S6-07, admin revenue in S7-04.)
@@ -70,6 +70,6 @@
 
 ## Risks and notes
 
-- Refund policy (D5) must be confirmed before S2-02 is merged: it changes customers' access.
+- Refund policy (D5) was confirmed by the owner on 2026-11-25 (default policy); it changes customers' access, so it stays behind `BILLING_FULFIL_V2` until R1.
 - The back-fill never writes anything until the owner approves specific rows.
 - Subscribing to more event types changes webhook volume; confirm the Stripe dashboard endpoint settings during R1.
