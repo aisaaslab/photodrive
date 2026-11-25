@@ -9,7 +9,7 @@ vi.mock("@/lib/firebase/admin", async () => {
   return { getAdminDb: db.testDb, getAdminAuth: db.testAuth };
 });
 
-const { stripe } = await import("@/lib/stripe/server");
+const { getStripe } = await import("@/lib/server/billing/stripe");
 const { POST: checkout } = await import("@/app/api/stripe/checkout/route");
 
 const DAY = 24 * 60 * 60 * 1000;
@@ -28,12 +28,13 @@ let list: MockInstance;
 beforeEach(async () => {
   await clearEmulators();
   vi.restoreAllMocks();
+  vi.unstubAllEnvs();
   vi.stubEnv("BILLING_FULFIL_V2", "1");
   vi.stubEnv("APP_ENV", "staging");
   for (const m of ["log", "warn", "error"] as const) vi.spyOn(console, m).mockImplementation(() => {});
-  create = vi.spyOn(stripe.checkout.sessions, "create") as unknown as MockInstance;
+  create = vi.spyOn(getStripe().checkout.sessions, "create") as unknown as MockInstance;
   create.mockResolvedValue({ url: "https://checkout.stripe.test/s" });
-  list = vi.spyOn(stripe.checkout.sessions, "list") as unknown as MockInstance;
+  list = vi.spyOn(getStripe().checkout.sessions, "list") as unknown as MockInstance;
   vi.spyOn(testAuth(), "verifyIdToken").mockResolvedValue({ uid: "u1", email: "u1@example.com" } as never);
   await seedPlan("m", { name: "Monthly", interval: "monthly", priceCents: 900, currency: "usd" });
 });
@@ -97,6 +98,19 @@ describe("checkout (BILLING_FULFIL_V2=1)", () => {
     expect((await post({ planId: "nope" })).status).toBe(400);
     await seedPlan("off", { name: "Off", active: false });
     expect((await post({ planId: "off" })).status).toBe(400);
+    expect(create).not.toHaveBeenCalled();
+  });
+});
+
+describe("checkout misconfiguration (S1-10)", () => {
+  it("answers 500 'Payments are not configured' when the Stripe key is missing or live outside production", async () => {
+    await seedUser("u1");
+    vi.stubEnv("STRIPE_SECRET_KEY", "");
+    const res = await post({ planId: "m" });
+    expect(res.status).toBe(500);
+    expect(await res.json()).toEqual({ error: "Payments are not configured" });
+    vi.stubEnv("STRIPE_SECRET_KEY", "sk_live_abc");
+    expect((await post({ planId: "m" })).status).toBe(500);
     expect(create).not.toHaveBeenCalled();
   });
 });

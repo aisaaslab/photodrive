@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { stripe, isSessionSettled, fromMinorUnits } from "@/lib/stripe/server";
+import { getStripe, isSessionSettled, fromMinorUnits, StripeConfigError } from "@/lib/server/billing/stripe";
+import { requestLogger } from "@/lib/server/log";
 
 /**
  * Public purchase summary for the Thank You page's conversion tracking.
@@ -15,6 +16,15 @@ export async function GET(req: NextRequest) {
   const sessionId = req.nextUrl.searchParams.get("session_id") ?? "";
   if (!/^cs_(test|live)_[A-Za-z0-9]{10,200}$/.test(sessionId)) {
     return NextResponse.json({ error: "Invalid session" }, { status: 400 });
+  }
+
+  let stripe;
+  try {
+    stripe = getStripe();
+  } catch (err) {
+    if (!(err instanceof StripeConfigError)) throw err;
+    requestLogger(req, "stripe.order").error(err.message);
+    return NextResponse.json({ error: "Payments are not configured" }, { status: 500 });
   }
 
   let session;

@@ -1,7 +1,7 @@
 import type Stripe from "stripe";
 import { FieldValue } from "firebase-admin/firestore";
 import { getAdminAuth, getAdminDb } from "@/lib/firebase/admin";
-import { stripe, isSessionSettled } from "@/lib/stripe/server";
+import { getStripe, isSessionSettled } from "@/lib/server/billing/stripe";
 import { resolveAccessDays } from "@/lib/promo-codes";
 import type { FulfilSource, PaymentDoc, PlanInterval } from "@/lib/firestore/types";
 import { DAY_MS, computeExpiry, periodMs } from "./access";
@@ -34,7 +34,7 @@ export type FulfilOptions = {
  */
 async function lookupPromo(sessionId: string): Promise<{ code: string | null; metaDays: unknown }> {
   try {
-    const s = await stripe.checkout.sessions.retrieve(sessionId, {
+    const s = await getStripe().checkout.sessions.retrieve(sessionId, {
       expand: ["total_details.breakdown.discounts.discount.promotion_code"],
     });
     const discount = s.total_details?.breakdown?.discounts?.[0]?.discount;
@@ -85,7 +85,7 @@ export async function fulfilCheckoutSession(
   { source, now = Date.now }: FulfilOptions,
 ): Promise<FulfilResult> {
   const session =
-    typeof sessionOrId === "string" ? await stripe.checkout.sessions.retrieve(sessionOrId) : sessionOrId;
+    typeof sessionOrId === "string" ? await getStripe().checkout.sessions.retrieve(sessionOrId) : sessionOrId;
 
   if (!isSessionSettled(session)) return { state: "pending", sessionId: session.id };
 

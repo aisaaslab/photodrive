@@ -2,7 +2,7 @@ import { requestLogger } from "@/lib/server/log";
 import { appEnv, billingFulfilV2 } from "@/lib/server/billing/flags";
 import { NextRequest, NextResponse } from "next/server";
 import { getAdminAuth } from "@/lib/firebase/admin";
-import { stripe } from "@/lib/stripe/server";
+import { getStripe, StripeConfigError } from "@/lib/server/billing/stripe";
 import { activateSubscription } from "@/lib/stripe/activate";
 import { getPlanById } from "@/lib/plans";
 import { APP_NAME } from "@/lib/branding";
@@ -21,6 +21,15 @@ async function getDecoded(req: NextRequest) {
 export async function POST(req: NextRequest) {
   const decoded = await getDecoded(req);
   if (!decoded) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  let stripe;
+  try {
+    stripe = getStripe();
+  } catch (err) {
+    if (!(err instanceof StripeConfigError)) throw err;
+    requestLogger(req, "stripe.checkout").error(err.message);
+    return NextResponse.json({ error: "Payments are not configured" }, { status: 500 });
+  }
 
   // A plan is required: the old hard-coded "$99 annual" path was replaced by a seeded
   // default plan (see scripts/migrations/seed-default-plan.ts).

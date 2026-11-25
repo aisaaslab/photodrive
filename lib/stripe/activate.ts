@@ -1,6 +1,6 @@
 import { getAdminAuth, getAdminDb } from "@/lib/firebase/admin";
 import type { PlanInterval } from "@/lib/firestore/types";
-import { stripe } from "@/lib/stripe/server";
+import { getStripe } from "@/lib/server/billing/stripe";
 import { resolveAccessDays } from "@/lib/promo-codes";
 
 const MONTH_MS = 30 * 24 * 60 * 60 * 1000;
@@ -19,7 +19,7 @@ function periodMs(interval: PlanInterval | null | undefined): number {
  */
 async function lookupPromo(sessionId: string): Promise<{ code: string | null; metaDays: unknown }> {
   try {
-    const s = await stripe.checkout.sessions.retrieve(sessionId, {
+    const s = await getStripe().checkout.sessions.retrieve(sessionId, {
       expand: ["total_details.breakdown.discounts.discount.promotion_code"],
     });
     const discount = s.total_details?.breakdown?.discounts?.[0]?.discount;

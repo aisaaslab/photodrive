@@ -11,7 +11,7 @@ vi.mock("@/lib/firebase/admin", async () => {
   return { getAdminDb: db.testDb, getAdminAuth: db.testAuth };
 });
 
-const { stripe } = await import("@/lib/stripe/server");
+const { getStripe } = await import("@/lib/server/billing/stripe");
 const { POST: verify } = await import("@/app/api/stripe/verify/route");
 const { POST: webhook } = await import("@/app/api/stripe/webhook/route");
 
@@ -30,6 +30,7 @@ const user = () => testDb().collection("users").doc("u1").get().then((s) => s.da
 beforeEach(async () => {
   await clearEmulators();
   vi.restoreAllMocks();
+  vi.unstubAllEnvs();
   vi.stubEnv("STRIPE_WEBHOOK_SECRET", TEST_WEBHOOK_SECRET);
   vi.stubEnv("BILLING_FULFIL_V2", "1");
   for (const m of ["log", "warn", "error"] as const) vi.spyOn(console, m).mockImplementation(() => {});
@@ -38,7 +39,7 @@ beforeEach(async () => {
 });
 
 const stripeReturns = (session: unknown) =>
-  vi.spyOn(stripe.checkout.sessions, "retrieve").mockResolvedValue(session as never);
+  vi.spyOn(getStripe().checkout.sessions, "retrieve").mockResolvedValue(session as never);
 
 describe("verify (BILLING_FULFIL_V2=1)", () => {
   it("fulfils a paid session and reports state, expiry and active status", async () => {
@@ -85,6 +86,15 @@ describe("verify (BILLING_FULFIL_V2=1)", () => {
     stripeReturns(paid("cs_x", { metadata: {}, customer_email: "u1@example.com" }));
     vi.spyOn(testAuth(), "getUserByEmail").mockRejectedValue(new Error("not found"));
     expect((await callVerify("cs_x")).status).toBe(500);
+  });
+});
+
+describe("verify misconfiguration (S1-10)", () => {
+  it("answers 500 'Payments are not configured' when the Stripe key is missing", async () => {
+    vi.stubEnv("STRIPE_SECRET_KEY", "");
+    const res = await callVerify("cs_cfg");
+    expect(res.status).toBe(500);
+    expect(await res.json()).toEqual({ error: "Payments are not configured" });
   });
 });
 

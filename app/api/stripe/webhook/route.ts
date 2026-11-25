@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
-import { stripe, isSessionSettled } from "@/lib/stripe/server";
+import { getStripe, getWebhookSecret, isSessionSettled, StripeConfigError } from "@/lib/server/billing/stripe";
 import { activateSubscription, resolveUidForSession } from "@/lib/stripe/activate";
 import { requestLogger } from "@/lib/server/log";
 import { billingFulfilV2 } from "@/lib/server/billing/flags";
@@ -20,11 +20,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "No signature" }, { status: 400 });
   }
 
-  const secret = process.env.STRIPE_WEBHOOK_SECRET;
-  if (!secret) {
-    // Misconfiguration, not a bad request — 500 so it is not mistaken for a
-    // forged call, and so the cause is obvious in the logs.
-    log.error("STRIPE_WEBHOOK_SECRET is not set in this environment");
+  let stripe, secret;
+  try {
+    stripe = getStripe();
+    secret = getWebhookSecret();
+  } catch (err) {
+    if (!(err instanceof StripeConfigError)) throw err;
+    // Misconfiguration, not a bad request: 500 so it is not mistaken for a forged call,
+    // and so the cause is obvious in the logs.
+    log.error(err.message);
     return NextResponse.json({ error: "Webhook not configured" }, { status: 500 });
   }
 

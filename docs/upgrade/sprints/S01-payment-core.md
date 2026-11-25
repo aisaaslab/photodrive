@@ -43,7 +43,7 @@
   - Depends: S1-02
   - Files: `lib/plans.ts`, `app/api/admin/subscription/route.ts`
   - Done when: customer path and admin path give identical results for the same inputs.
-- [ ] **S1-10** · S · `getStripe()` throws a clear error at request time when `STRIPE_SECRET_KEY` or `STRIPE_WEBHOOK_SECRET` is missing; refuse a live key when `APP_ENV` is not `production`; build still succeeds without keys.
+- [x] **S1-10** · S · `getStripe()` throws a clear error at request time when `STRIPE_SECRET_KEY` or `STRIPE_WEBHOOK_SECRET` is missing; refuse a live key when `APP_ENV` is not `production`; build still succeeds without keys.
   - Files: `lib/server/billing/stripe.ts` (replaces `lib/stripe/server.ts`)
   - Done when: route tests prove the failure mode; `next build` passes with no Stripe env.
   - Refs: PAY-5

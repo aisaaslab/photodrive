@@ -10,9 +10,9 @@ vi.mock("@/lib/firebase/admin", async () => {
 });
 
 const retrieve = vi.fn();
-vi.mock("@/lib/stripe/server", async (orig) => ({
-  ...(await orig<typeof import("@/lib/stripe/server")>()),
-  stripe: { checkout: { sessions: { retrieve } } },
+vi.mock("@/lib/server/billing/stripe", async (orig) => ({
+  ...(await orig<typeof import("@/lib/server/billing/stripe")>()),
+  getStripe: () => ({ checkout: { sessions: { retrieve } } }),
 }));
 
 const { fulfilCheckoutSession, UnmatchedPayment } = await import("@/lib/server/billing/fulfil");

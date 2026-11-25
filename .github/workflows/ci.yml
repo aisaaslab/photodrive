@@ -28,7 +28,5 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run test:emu
+      # No Stripe or Firebase secrets here on purpose: the build must not need them (S1-10).
       - run: npm run build
-        env:
-          # Placeholders so `next build` succeeds; no real services are called.
-          STRIPE_SECRET_KEY: sk_test_placeholder

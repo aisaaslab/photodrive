@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { fromMinorUnits, isSessionSettled } from "@/lib/stripe/server";
+import { fromMinorUnits, isSessionSettled } from "@/lib/server/billing/stripe";
 
 describe("smoke: @/ alias and pure Stripe helpers", () => {
   it("converts minor units, including zero-decimal currencies", () => {

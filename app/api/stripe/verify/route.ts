@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import type Stripe from "stripe";
 import { getAdminAuth } from "@/lib/firebase/admin";
-import { stripe, isSessionSettled } from "@/lib/stripe/server";
+import { getStripe, isSessionSettled, StripeConfigError } from "@/lib/server/billing/stripe";
 import { activateSubscription } from "@/lib/stripe/activate";
 import { requestLogger } from "@/lib/server/log";
 import { billingFulfilV2 } from "@/lib/server/billing/flags";
@@ -35,6 +35,15 @@ export async function POST(req: NextRequest) {
   }
   if (!sessionId || typeof sessionId !== "string") {
     return NextResponse.json({ error: "sessionId required" }, { status: 400 });
+  }
+
+  let stripe;
+  try {
+    stripe = getStripe();
+  } catch (err) {
+    if (!(err instanceof StripeConfigError)) throw err;
+    requestLogger(req, "stripe.verify").error(err.message);
+    return NextResponse.json({ error: "Payments are not configured" }, { status: 500 });
   }
 
   let session;

@@ -5,6 +5,8 @@ export default defineConfig({
   resolve: { alias: { "@": path.resolve(__dirname) } },
   test: {
     environment: "node",
+    // Test-mode placeholder so Stripe-backed code can construct a client; no network calls are made.
+    env: { STRIPE_SECRET_KEY: "sk_test_unit_tests", APP_ENV: "local" },
     include: ["tests/emu/**/*.test.ts", "tests/**/*.emu.test.ts"],
     fileParallelism: false, // suites share one emulator instance
     // Contending transactions retry with back-off in the emulator; the concurrency tests

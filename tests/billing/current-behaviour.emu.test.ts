@@ -29,9 +29,9 @@ vi.mock("@/lib/firebase/admin", async () => {
 
 const sessionsList = vi.fn();
 const sessionsCreate = vi.fn();
-vi.mock("@/lib/stripe/server", async (orig) => ({
-  ...(await orig<typeof import("@/lib/stripe/server")>()),
-  stripe: { checkout: { sessions: { list: sessionsList, create: sessionsCreate, retrieve: vi.fn() } } },
+vi.mock("@/lib/server/billing/stripe", async (orig) => ({
+  ...(await orig<typeof import("@/lib/server/billing/stripe")>()),
+  getStripe: () => ({ checkout: { sessions: { list: sessionsList, create: sessionsCreate, retrieve: vi.fn() } } }),
 }));
 
 const { activateSubscription } = await import("@/lib/stripe/activate");
