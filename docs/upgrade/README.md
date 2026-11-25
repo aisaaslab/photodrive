@@ -9,13 +9,13 @@ tasks. Selected landing direction: **Concept B "Cinematic Dark"**.
 ## Status
 
 <!-- STATUS:START -->
-**Overall: 14/109 tasks (13 %)** · est. 18.5/157.5 ideal dev-days · current focus: S0 · next up: S0-01, S0-05, S0-06
+**Overall: 15/113 tasks (13 %)** · est. 20/163 ideal dev-days · current focus: S0 · next up: S0-01, S0-05, S0-06
 
 | Sprint | Goal | Phase | Tasks | Est. effort | Status |
 |---|---|---|---|---|---|
 | [S0](sprints/S00-environments-and-safety-net.md) | Environments and safety net | Payments and safety net | 4/8 | ~9 d | In progress |
 | [S1](sprints/S01-payment-core.md) | Payment core | Payments and safety net | 9/12 | ~15.5 d | In progress |
-| [S2](sprints/S02-stripe-events-and-backfill.md) | Stripe events, reconciliation and back-fill | Payments and safety net | 1/12 | ~16.5 d | In progress |
+| [S2](sprints/S02-stripe-events-and-backfill.md) | Stripe events, reconciliation and back-fill | Payments and safety net | 2/16 | ~22 d | In progress |
 | [S3](sprints/S03-protected-delivery-and-abuse-protection.md) | Protected photo delivery and abuse protection | Security | 0/12 | ~16 d | Not started |
 | [S4](sprints/S04-data-hygiene-and-stripe-setup.md) | Data hygiene and Stripe setup | Security | 0/9 | ~13 d | Not started |
 | [S5](sprints/S05-foundation-and-design-system.md) | Foundation: shared code layer and design system | Redesign and foundation | 0/12 | ~19 d | Not started |
@@ -82,6 +82,7 @@ node docs/upgrade/tools/status.mjs               # just refresh the table
 | **D12** | Create staging environments: Firebase staging project, Stripe test keys, Sentry project, Vercel preview vars | **S0 (everything)** |
 | **D3** | What happens to galleries when a plan lapses (and the landing page currently promises "link stays live / no automatic charges") | S9, landing copy |
 | **D11** | Produce 390 px mobile frames in Figma before building the landing page | S6 |
+| **D17** | Payment notifications: the operator alert address (`ADMIN_ALERT_EMAIL`), whether to add Slack, and wording review of customer e-mails | S2-14 … S2-16 (S2-03 ships with a safe default) |
 | **D15** | Photo delivery model; the Drive folder is public by design, so the proxy alone cannot deliver the PDF's promise | S3 |
 
 All other decisions have a recommended default in the decision log and can proceed on it.

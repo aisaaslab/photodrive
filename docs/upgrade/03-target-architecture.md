@@ -97,11 +97,24 @@ processed. Already-processed events return 200. Handler errors return 500 so Str
 | Event | Action |
 |---|---|
 | `checkout.session.completed`, `…async_payment_succeeded` | `fulfilCheckoutSession` |
-| `checkout.session.async_payment_failed`, `…expired` | record; notify if user known; no access change |
+| `checkout.session.async_payment_failed`, `…expired` | record; no access change; failed async payment → customer e-mail (S2-14); expired = abandoned cart, no e-mail |
 | `charge.refunded` | full refund → `revokeGrant` for that payment's `grantedMs`, `payments.status="refunded"`; partial → `partially_refunded`, flag `needs_review` (D5) |
 | `charge.dispute.created` | suspend that payment's grant (`status="disputed"`), flag `needs_review` |
 | `charge.dispute.closed` | won → restore grant; lost → revoke permanently (D5) |
 | anything else | recorded as `ignored` |
+
+### Notifications (D17)
+
+| Who | Channel | When | Task |
+|---|---|---|---|
+| Operator | immediate e-mail to `ADMIN_ALERT_EMAIL` + log line | once, when an event ends in `needs_review` | S2-03 |
+| Operator | Sentry alert; daily digest of open items; Overview counts | same triggers / daily | S2-16, S8-04 |
+| Customer | e-mail in their stored language | refund (full/partial), dispute opened/won/lost, async payment failed | S2-14 (needs S2-13: `users.language`) |
+| Customer | Account page status + dashboard banner | whenever a payment is refunded/disputed | S2-15 |
+
+All notifications are best-effort side effects: a failure is logged and never changes the webhook response; each is sent
+once per event (dedupe marker on the event / payment document); content never includes card data or other users' data.
+Stripe's own refund receipt e-mails stay on; ours explain the effect on access.
 
 **Unmatched payments:** if the user cannot be resolved and the event is < 24 h old, return 500
 (Stripe retries with back-off); after 24 h store `needs_review`, return 200, alert in Sentry and

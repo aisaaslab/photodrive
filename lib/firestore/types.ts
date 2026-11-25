@@ -165,4 +165,6 @@ export interface StripeEventDoc {
   uid?: string;
   outcome?: string;
   error?: string;
+  /** When the operator alert for this event was sent (so it is sent once). */
+  alertedAt?: number;
 }

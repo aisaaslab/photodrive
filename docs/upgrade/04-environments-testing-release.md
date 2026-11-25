@@ -19,6 +19,7 @@ Existing variables are in `.env.example`. Add (all server-side unless noted):
 |---|---|---|
 | `SENTRY_DSN`, `NEXT_PUBLIC_SENTRY_DSN`, `SENTRY_AUTH_TOKEN` | error monitoring, source maps | S0 |
 | `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` | shared rate limiter | S3 |
+| `ADMIN_ALERT_EMAIL` | where operator alerts (payments needing review) are e-mailed; unset = log only | S2 |
 | `CRON_SECRET` | authorises `/api/cron/*` calls from Vercel Cron | S2 |
 | `MEDIA_SIGNING_SECRET` (optional; else derived from `GALLERY_JWT_SECRET` via HKDF) | signs photo URLs | S3 |
 | `APP_ENV` (`local`, `staging` or `production`) | tags Stripe metadata; refuses live Stripe keys outside production | S1 |

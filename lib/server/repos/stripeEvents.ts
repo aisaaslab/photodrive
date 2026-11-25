@@ -55,6 +55,11 @@ export async function claimEvent(
   });
 }
 
+/** Remember that the operator alert for this event went out, so it is never sent twice. */
+export async function markAlerted(db: Firestore, eventId: string, now: number = Date.now()): Promise<void> {
+  await ref(db, eventId).set({ alertedAt: now }, { merge: true });
+}
+
 export async function markEvent(
   db: Firestore,
   eventId: string,

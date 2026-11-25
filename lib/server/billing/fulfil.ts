@@ -51,10 +51,21 @@ async function lookupPromo(sessionId: string): Promise<{ code: string | null; me
   }
 }
 
-/** metadata.uid → client_reference_id → the customer's e-mail address. */
+/**
+ * metadata.uid → client_reference_id → the user who already has this Stripe customer id →
+ * the customer's e-mail address. A customer id shared by several users is ambiguous and is
+ * never guessed.
+ */
 async function resolveUid(session: Stripe.Checkout.Session): Promise<string | null> {
   const direct = session.metadata?.uid || session.client_reference_id;
   if (direct) return direct;
+
+  const customerId = idOf(session.customer);
+  if (customerId) {
+    const byCustomer = await getAdminDb().collection("users").where("stripeCustomerId", "==", customerId).limit(2).get();
+    if (byCustomer.size === 1) return byCustomer.docs[0].id;
+  }
+
   const email = session.customer_details?.email ?? session.customer_email;
   if (!email) return null;
   try {

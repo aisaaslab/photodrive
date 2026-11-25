@@ -1,6 +1,7 @@
 import type Stripe from "stripe";
 import { getAdminDb } from "@/lib/firebase/admin";
-import { claimEvent, markEvent } from "@/lib/server/repos/stripeEvents";
+import { claimEvent, markAlerted, markEvent } from "@/lib/server/repos/stripeEvents";
+import { notifyAdmin } from "@/lib/server/notify/admin";
 import { fulfilCheckoutSession, UnmatchedPayment } from "@/lib/server/billing/fulfil";
 import { getStripe } from "@/lib/server/billing/stripe";
 import { onChargeRefunded, onDisputeClosed, onDisputeCreated, onSessionNotPaid, type Outcome } from "./handlers";
@@ -71,7 +72,37 @@ async function record(event: Stripe.Event, o: Outcome, log: Logger, now: () => n
     log.info("event handled", { eventId: event.id, type: event.type, outcome: o.outcome });
   }
   await markEvent(getAdminDb(), event.id, o.status, { sessionId: o.sessionId, uid: o.uid, outcome: o.outcome, error: o.error }, now());
+  if (o.status === "needs_review") await alertOps(event, o, log, now);
   return ok;
+}
+
+/**
+ * D17: tell the operator, once, that something needs a human. Runs only when an event reaches
+ * `needs_review` (a duplicate delivery is skipped before any handler, so it cannot alert again).
+ * Never throws and never affects the response.
+ */
+async function alertOps(event: Stripe.Event, o: Outcome, log: Logger, now: () => number): Promise<void> {
+  try {
+    const link = `https://dashboard.stripe.com/${event.livemode ? "" : "test/"}events/${event.id}`;
+    const result = await notifyAdmin(
+      {
+        subject: `Payment needs review: ${o.outcome}`,
+        lines: [
+          `Event: ${event.type} (${event.id}, ${event.livemode ? "live" : "test"} mode)`,
+          `Outcome: ${o.outcome}`,
+          ...(o.sessionId ? [`Checkout session: ${o.sessionId}`] : []),
+          ...(o.uid ? [`User id: ${o.uid}`] : []),
+          ...(o.error ? [`Detail: ${o.error}`] : []),
+          "Open Admin > Users to see the payment, or the Stripe event below.",
+        ],
+        link,
+      },
+      log,
+    );
+    if (result === "sent") await markAlerted(getAdminDb(), event.id, now());
+  } catch (err) {
+    log.error("operator alert failed", { eventId: event.id, err });
+  }
 }
 
 async function onCheckoutSettled(event: Stripe.Event, log: Logger, now: () => number): Promise<DispatchResult> {
@@ -104,7 +135,11 @@ async function onCheckoutSettled(event: Stripe.Event, log: Logger, now: () => nu
       sessionId: session.id,
       eventId: event.id,
     });
-    await markEvent(db, event.id, "needs_review", { sessionId: session.id, error: "unmatched payment" }, now());
-    return ok;
+    return record(
+      event,
+      { status: "needs_review", outcome: "unmatched_payment", sessionId: session.id, error: "no user could be matched after 24 h" },
+      log,
+      now,
+    );
   }
 }

@@ -70,6 +70,7 @@ owner before the sprint they affect.
 | G12 | **Refund/dispute semantics** are not defined in the PDF ("update access automatically"). | Needed to write the handlers. | **D5**, S2-02 |
 | G13 | **Tax/VAT** is not mentioned; invoices are. | EU buyers may need VAT handling. | **D10** |
 | G14 | **Housekeeping found during planning**: rules `locked()` gap, legacy plaintext-password migration, `server-only` guards, BOM/mojibake, cron infra. | Small but real. | SEC-7/8/9 → S4-03, S4-04, S4-08, S5-11, D7 |
+| G16 | **Nobody is told when a refund, dispute or failed payment happens.** The PDF says "update access automatically" but is silent on telling customers (their access may shrink or pause) or operators (payments that need a human). | Silent access changes cause support load and distrust; unmatched/flagged payments go unseen. | **D17**, S2-03, S2-13 … S2-16 |
 | G15 | **Release and cutover** are one line in the PDF. | Payment changes need a rehearsed rollout. | S2-11, S4-09, S8-06, S11 |
 
 ## 3 · Decision log
@@ -95,10 +96,12 @@ reference the decision ID in commit messages.
 | **D13** | Existing `/lp/*` pages and `components/Hero.tsx` | restyle to new tokens (keep URLs/content) · retire | **Restyle**, keep URLs for ads/SEO | S6-13 | Default |
 | **D14** | Keep DemoForm, tutorial video, TrustSection, compare slider | keep all, restyled · drop some | **Keep DemoForm + video + trust content**, restyled; slider optional | S6-00 | Default |
 | **D15** | Photo delivery model | (A) tiered: public galleries keep Google CDN delivery; **password-protected or download-disabled galleries** get opaque photo tokens and signed proxy delivery, no Drive ids/URLs in the client payload · (B) everything through the proxy · (C) harden proxy only | **(A)**; measure bandwidth in S3-11 before enabling for all protected galleries. State plainly in docs that the Drive folder itself stays public by design | S3-02 | **Open** |
+| **D17** | Notifications for payment events (refund, partial refund, dispute opened/won/lost, failed async payment, unmatched or flagged payment) | Channels: (a) customer e-mail · (b) customer in-app notice · (c) immediate admin e-mail alert · (d) Sentry alert · (e) daily admin digest · (f) Slack/Telegram webhook | **a–e**; (f) only if the team uses it. Keep Stripe's own refund receipt e-mails switched on (they are the receipt); ours explain the effect on access. Customer e-mails in the user's stored language, sent once per payment event, best-effort (never fail the webhook) | S2-03, S2-13 … S2-16 | **Open**: the `ADMIN_ALERT_EMAIL` address, whether to add Slack, and wording review of the customer copy |
 | **D16** | Language routing for a server-rendered landing page | cookie + dynamic SSR (keep URLs) · `/[lang]` static routes + redirect | **Cookie + dynamic SSR**; revisit `/[lang]` for SEO later | S5-06 | Default |
 
 ### Open decisions that block work
 
 - **D12** blocks Sprint 0 (nothing can be proven without a test environment).
 - **D3** blocks S9 (and requires a copy change on the landing page before S6 ships).
+- **D17** blocks the *wording and recipients* of S2-14 / S2-15 / S2-16 (the immediate admin alert in S2-03 ships with an env-configured address and a safe default: log only).
 - **D11 / D15** should be settled before S6 / S3 respectively; both have defaults.

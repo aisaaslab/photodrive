@@ -145,7 +145,8 @@ describe("not settled / unresolvable", () => {
     await seedUser("u2", {}, "buyer@example.com");
     await fulfil(sessionFixture("paid", { id: "cs_ref", metadata: {}, client_reference_id: "u1" }));
     expect((await user("u1")).subscriptionExpiresAt).toBe(NOW + YEAR_MS);
-    await fulfil(sessionFixture("paid", { id: "cs_mail", metadata: {}, customer_email: "buyer@example.com" }));
+    // a different (here: no) Stripe customer, so the customer-id lookup cannot match u1
+    await fulfil(sessionFixture("paid", { id: "cs_mail", metadata: {}, customer: null, customer_email: "buyer@example.com" }));
     expect((await user("u2")).subscriptionExpiresAt).toBe(NOW + YEAR_MS);
   });
 
