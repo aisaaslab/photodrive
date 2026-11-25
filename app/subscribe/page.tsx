@@ -2,11 +2,12 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/components/auth/AuthProvider";
-import { useLanguage } from "@/lib/i18n";
+import { LOCALES, useLanguage } from "@/lib/i18n";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { APP_NAME } from "@/lib/branding";
+import { computeExpiry, isLifetime, periodMs } from "@/lib/server/billing/access";
 
 type PublicPlan = {
   id: string;
@@ -42,6 +43,9 @@ export default function SubscribePage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [checking, setChecking] = useState(true);
+  // Current subscription, for the "renewing extends your access to …" note. Only set
+  // when the user may buy while active (server flag canRenewEarly) or has lapsed.
+  const [sub, setSub] = useState<{ isActive: boolean; expiresAt: number } | null>(null);
 
   // Plans (public listing, or a single plan by ?plan= — allows private plan
   // links the admin shares with a specific client).
@@ -100,8 +104,9 @@ export default function SubscribePage() {
       if (data.url) {
         window.location.href = data.url;
       } else if (data.alreadyPaid) {
-        // A paid session already exists — the route activated it, so go to
-        // the account page instead of charging again.
+        // Legacy response (BILLING_FULFIL_V2 off only): a paid session already exists
+        // and the route activated it. The new checkout never returns this; remove
+        // together with the old path.
         router.replace("/dashboard/account");
       } else {
         setError(s.error);
@@ -123,8 +128,16 @@ export default function SubscribePage() {
         .then((r) => r.json())
         .then((data) => {
           if (cancelled) return;
-          if (data?.isActive) router.replace("/dashboard");
-          else setChecking(false);
+          // Active users go straight to the dashboard unless the server lets them renew early.
+          // Admins and lifetime accounts have nothing to buy.
+          const expiresAt = typeof data?.expiresAt === "number" ? data.expiresAt : 0;
+          const nothingToBuy = data?.status === "admin" || isLifetime(expiresAt);
+          if (data?.isActive && (nothingToBuy || !data?.canRenewEarly)) {
+            router.replace("/dashboard");
+            return;
+          }
+          if (expiresAt > 0) setSub({ isActive: !!data?.isActive, expiresAt });
+          setChecking(false);
         })
         .catch(() => { if (!cancelled) setChecking(false); })
     );
@@ -149,6 +162,11 @@ export default function SubscribePage() {
       </main>
     );
   }
+
+  const fmtDate = (ms: number) =>
+    new Date(ms).toLocaleDateString(LOCALES[lang], { year: "numeric", month: "long", day: "numeric" });
+  const withDate = (text: string, ms: number) => text.replace("{date}", fmtDate(ms));
+  const buyLabel = sub?.isActive ? s.renewBtn : s.buyBtn;
 
   function formatPrice(cents: number) {
     const v = cents / 100;
@@ -175,6 +193,26 @@ export default function SubscribePage() {
             </h1>
             <p className="text-stone-400 text-sm">{s.subtitle}</p>
           </div>
+
+          {sub && (
+            <div className="mb-6 rounded-xl border border-white/[0.08] bg-white/[0.04] px-4 py-3 text-center text-sm">
+              <p className={sub.isActive ? "text-stone-300" : "text-amber-300"}>
+                {withDate(sub.isActive ? s.currentAccess : s.expiredAccess, sub.expiresAt)}
+              </p>
+              {selectedPlan && (
+                <p className="mt-1 text-white font-medium">
+                  {withDate(
+                    s.renewExtends,
+                    computeExpiry({
+                      now: Date.now(),
+                      currentExpiresAt: sub.expiresAt,
+                      grantedMs: periodMs(selectedPlan.interval),
+                    }),
+                  )}
+                </p>
+              )}
+            </div>
+          )}
 
           {!plansLoaded ? (
             <div className="flex justify-center py-16">
@@ -256,7 +294,7 @@ export default function SubscribePage() {
                     {s.loading}
                   </>
                 ) : (
-                  s.buyBtn
+                  buyLabel
                 )}
               </button>
             </div>

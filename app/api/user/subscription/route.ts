@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAdminAuth, getAdminDb } from "@/lib/firebase/admin";
 import { isAdmin } from "@/lib/firebase/admin-guard";
+import { billingFulfilV2 } from "@/lib/server/billing/flags";
 
 export async function GET(req: NextRequest) {
   const token = req.headers.get("authorization")?.replace("Bearer ", "");
@@ -25,6 +26,9 @@ export async function GET(req: NextRequest) {
       isActive,
       status,
       expiresAt,
+      // True once purchases made while active extend the subscription (BILLING_FULFIL_V2).
+      // Until then the subscribe page keeps sending active users to the dashboard.
+      canRenewEarly: billingFulfilV2(),
       planName: typeof data?.planName === "string" ? data.planName : null,
       planInterval: typeof data?.planInterval === "string" ? data.planInterval : null,
     });

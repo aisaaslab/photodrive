@@ -35,7 +35,7 @@
 - [x] **S1-07** · S · Remove the hard-coded legacy `$99` path: seed a default "Annual" plan (script), require `planId`, make the landing fallback card read the seeded plan.
   - Files: `app/api/stripe/checkout/route.ts`, `scripts/migrations/seed-default-plan.ts`, `app/subscribe/page.tsx`, `app/page.tsx` (fallback)
   - Done when: no `9900` literal remains; subscribe works with the seeded plan.
-- [ ] **S1-08** · M · Subscribe page for active users: show current expiry and "Renewing extends your access to <date>"; replace the `alreadyPaid` redirect; clear error and pending states.
+- [~] **S1-08** · M · Subscribe page for active users: show current expiry and "Renewing extends your access to <date>"; replace the `alreadyPaid` redirect; clear error and pending states.
   - Depends: S1-06
   - Files: `app/subscribe/page.tsx`, `lib/i18n` (6 languages)
   - Done when: copy reviewed in all six languages; renewal flow works end to end in staging.
