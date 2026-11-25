@@ -23,7 +23,7 @@
 - [~] **S2-04** · M · Reconciliation cron `/api/cron/reconcile-payments` (Vercel Cron, `CRON_SECRET`): fulfil paid sessions from the last 48 h that have no `payments` doc; alert if repeatedly > 0.
   - Files: `app/api/cron/reconcile-payments/route.ts`, `vercel.json`
   - Done when: dropping a webhook in staging is healed within one run.
-- [ ] **S2-05** · M · `lib/shared/money.ts` (`formatMoney`, minor units, locale) and replace every hard-coded `$` in subscribe, Account, admin plans, admin user plan picker and `CreateUserModal`; tests including zero-decimal currencies. (Landing handled in S6-07, admin revenue in S7-04.)
+- [x] **S2-05** · M · `lib/shared/money.ts` (`formatMoney`, minor units, locale) and replace every hard-coded `$` in subscribe, Account, admin plans, admin user plan picker and `CreateUserModal`; tests including zero-decimal currencies. (Landing handled in S6-07, admin revenue in S7-04.)
   - Files: `lib/shared/money.ts`, `app/subscribe/page.tsx`, `app/dashboard/account/page.tsx`, `app/dashboard/admin/plans/page.tsx`, `app/dashboard/admin/users/page.tsx`, `components/admin/CreateUserModal.tsx`
   - Done when: no `$${` price formatting remains outside the landing page.
   - Refs: PAY-6
@@ -67,6 +67,10 @@
 - [ ] **S2-12** · S · One week after R1: delete the old activation path and the `BILLING_FULFIL_V2` flag.
   - Depends: S2-11
   - Done when: no flag references remain.
+
+## Parking lot
+
+- Plans store `priceCents` as price x 100 and the admin plan form always creates USD plans. Before any zero-decimal plan (e.g. JPY) is created (D4 option B), the plan editor must take the currency and convert with `minorUnitDigits` (`lib/shared/money.ts`), otherwise Stripe would charge 100x the displayed price. Display is already correct for any currency.
 
 ## Risks and notes
 

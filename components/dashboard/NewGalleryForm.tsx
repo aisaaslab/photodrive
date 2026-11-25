@@ -2,7 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/components/auth/AuthProvider";
-import { useLanguage } from "@/lib/i18n";
+import { LOCALES, useLanguage } from "@/lib/i18n";
+import { formatMoney } from "@/lib/shared/money";
 
 type PublicPlan = {
   id: string;
@@ -24,17 +25,6 @@ const PER_INTERVAL: Record<string, Record<"monthly" | "yearly", string>> = {
   it: { monthly: "/ mese", yearly: "/ anno" },
 };
 
-function formatPlanPrice(cents: number, currency: string) {
-  try {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: currency.toUpperCase(),
-      minimumFractionDigits: cents % 100 === 0 ? 0 : 2,
-    }).format(cents / 100);
-  } catch {
-    return `$${(cents / 100).toFixed(cents % 100 === 0 ? 0 : 2)}`;
-  }
-}
 
 interface Props {
   onCreated: () => void;
@@ -366,7 +356,7 @@ export function NewGalleryForm({ onCreated, onCancel, initialData, autoSubmit }:
                       )}
                     </span>
                     <span className="text-right shrink-0">
-                      <span className="text-lg font-bold text-white">{formatPlanPrice(plan.priceCents, plan.currency)}</span>
+                      <span className="text-lg font-bold text-white">{formatMoney(plan.priceCents, plan.currency, LOCALES[lang], { trimWholeNumbers: true })}</span>
                       <span className="text-stone-500 text-xs ml-1">{perInterval[plan.interval]}</span>
                     </span>
                   </button>

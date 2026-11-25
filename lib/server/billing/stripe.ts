@@ -46,11 +46,5 @@ export function isSessionSettled(session: Pick<Stripe.Checkout.Session, "payment
   return session.payment_status === "paid" || session.payment_status === "no_payment_required";
 }
 
-const ZERO_DECIMAL = new Set([
-  "bif", "clp", "djf", "gnf", "jpy", "kmf", "krw", "mga", "pyg", "rwf", "ugx", "vnd", "vuv", "xaf", "xof", "xpf",
-]);
-
-/** Stripe minor units → major units (e.g. 1250 usd → 12.5, 500 jpy → 500). */
-export function fromMinorUnits(amount: number, currency: string): number {
-  return ZERO_DECIMAL.has(currency.toLowerCase()) ? amount : amount / 100;
-}
+// Minor-unit conversion lives in lib/shared/money.ts so client code can use it too.
+export { fromMinorUnits } from "@/lib/shared/money";

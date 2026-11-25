@@ -5,7 +5,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { updateProfile } from "firebase/auth";
 import { useAuth, updateUserProfile } from "@/components/auth/AuthProvider";
-import { useLanguage } from "@/lib/i18n";
+import { LOCALES, useLanguage } from "@/lib/i18n";
+import { formatMoney } from "@/lib/shared/money";
 import { AvatarEditor } from "@/components/dashboard/AvatarEditor";
 
 type Payment = {
@@ -15,7 +16,7 @@ type Payment = {
   activatedAt: number | null;
 };
 
-const usd = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" });
+// (amounts are formatted with formatMoney, in the viewer's language)
 
 function formatDate(ms: number): string {
   return new Date(ms).toLocaleDateString(undefined, {
@@ -25,15 +26,14 @@ function formatDate(ms: number): string {
   });
 }
 
-function formatAmount(p: Payment): string {
+function formatAmount(p: Payment, locale: string): string {
   if (p.amountTotal === null) return "—";
-  if (p.currency === "usd") return usd.format(p.amountTotal / 100);
-  return `${(p.amountTotal / 100).toFixed(2)} ${(p.currency ?? "").toUpperCase()}`.trim();
+  return formatMoney(p.amountTotal, p.currency ?? "usd", locale);
 }
 
 export default function AccountPage() {
   const { user, loading, profile, refreshProfile } = useAuth();
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const router = useRouter();
   const a = t.account;
 
@@ -203,7 +203,7 @@ export default function AccountPage() {
                   </p>
                 </div>
                 <div className="flex items-center gap-2.5 shrink-0">
-                  <span className="text-sm text-white font-semibold">{formatAmount(p)}</span>
+                  <span className="text-sm text-white font-semibold">{formatAmount(p, LOCALES[lang])}</span>
                   <span className="inline-flex items-center gap-1 bg-emerald-500/10 text-emerald-400 text-xs font-semibold px-2 py-0.5 rounded-full border border-emerald-500/20">
                     <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />

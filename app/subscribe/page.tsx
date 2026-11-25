@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { APP_NAME } from "@/lib/branding";
 import { computeExpiry, isLifetime, periodMs } from "@/lib/server/billing/access";
+import { formatMoney } from "@/lib/shared/money";
 
 type PublicPlan = {
   id: string;
@@ -15,6 +16,7 @@ type PublicPlan = {
   description: string;
   interval: "monthly" | "yearly";
   priceCents: number;
+  currency: string;
   features: string[];
   highlight: boolean;
 };
@@ -168,10 +170,9 @@ export default function SubscribePage() {
   const withDate = (text: string, ms: number) => text.replace("{date}", fmtDate(ms));
   const buyLabel = sub?.isActive ? s.renewBtn : s.buyBtn;
 
-  function formatPrice(cents: number) {
-    const v = cents / 100;
-    return `$${v % 1 === 0 ? v.toFixed(0) : v.toFixed(2)}`;
-  }
+  // Each plan is shown in its own currency, formatted for the visitor's language (D4).
+  const formatPrice = (plan: Pick<PublicPlan, "priceCents" | "currency">) =>
+    formatMoney(plan.priceCents, plan.currency, LOCALES[lang], { trimWholeNumbers: true });
 
   return (
     <main className="min-h-screen bg-[#080808] text-white flex flex-col">
@@ -245,7 +246,7 @@ export default function SubscribePage() {
                     </div>
                     {plan.description && <p className="text-xs text-stone-400 mb-3">{plan.description}</p>}
                     <div className="flex items-end gap-1 mb-4">
-                      <span className="text-3xl font-bold text-white">{formatPrice(plan.priceCents)}</span>
+                      <span className="text-3xl font-bold text-white">{formatPrice(plan)}</span>
                       <span className="text-stone-400 text-xs mb-1">{perInterval[plan.interval]}</span>
                     </div>
                     <ul className="space-y-2">
@@ -272,7 +273,7 @@ export default function SubscribePage() {
             <div className="mt-6 bg-white/[0.04] border border-white/[0.08] rounded-2xl p-6">
               <div className="text-center mb-5">
                 <div className="flex items-end justify-center gap-1">
-                  <span className="text-4xl font-bold text-white">{formatPrice(selectedPlan.priceCents)}</span>
+                  <span className="text-4xl font-bold text-white">{formatPrice(selectedPlan)}</span>
                   <span className="text-stone-400 text-sm mb-1.5">{perInterval[selectedPlan.interval]}</span>
                 </div>
                 <p className="text-white text-base font-medium mt-1">{selectedPlan.interval === "yearly" ? t.pricing.vatNote : t.pricing.vatNoteMonthly}</p>

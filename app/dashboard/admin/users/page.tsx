@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { CreateUserModal, CreatedUserPanel, type CreatedUser } from "@/components/admin/CreateUserModal";
 import type { PlanDoc } from "@/lib/firestore/types";
+import { formatMoney } from "@/lib/shared/money";
 
 type Photographer = {
   uid: string;
@@ -43,7 +44,7 @@ type Gallery = {
   photographer: { email: string; displayName: string; photoURL?: string } | null;
 };
 
-type PlanLite = Pick<PlanDoc, "id" | "name" | "interval" | "priceCents" | "active" | "isPublic">;
+type PlanLite = Pick<PlanDoc, "id" | "name" | "interval" | "priceCents" | "currency" | "active" | "isPublic">;
 
 type SourceFilter = "all" | "free_code" | "paid" | "admin" | "none";
 
@@ -59,13 +60,8 @@ const SOURCE_STYLE: Record<"admin" | "free_code" | "paid", string> = {
   paid: "bg-white/[0.05] text-stone-300 border-white/10",
 };
 
-function formatMoney(cents: number | null, currency: string | null) {
-  if (cents === null) return "—";
-  try {
-    return (cents / 100).toLocaleString("en-US", { style: "currency", currency: (currency || "usd").toUpperCase() });
-  } catch {
-    return `${(cents / 100).toFixed(2)} ${currency ?? ""}`.trim();
-  }
+function formatPaid(cents: number | null, currency: string | null) {
+  return cents === null ? "—" : formatMoney(cents, currency ?? "usd", "en-US");
 }
 
 function formatDate(ts: number | string | null | undefined) {
@@ -416,7 +412,7 @@ export default function AdminUsersPage() {
                         u.accessSource === "free_code"
                           ? `Signed up with a 100%-off code${u.promoCode ? ` (${u.promoCode})` : ""}`
                           : u.accessSource === "paid"
-                            ? `Paid ${formatMoney(u.lastPaymentCents, u.lastPaymentCurrency)} via Stripe`
+                            ? `Paid ${formatPaid(u.lastPaymentCents, u.lastPaymentCurrency)} via Stripe`
                             : "Access granted by an admin"
                       }
                       className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${SOURCE_STYLE[u.accessSource]}`}
@@ -446,7 +442,7 @@ export default function AdminUsersPage() {
                         <span className="text-stone-500">How they got access:</span>{" "}
                         <span className="text-white font-medium">{SOURCE_LABEL[u.accessSource]}</span>
                         {u.accessSource === "free_code" && u.promoCode && <> · code <span className="font-mono text-amber-300">{u.promoCode}</span></>}
-                        {u.accessSource !== "admin" && u.lastPaymentCents !== null && <> · charged {formatMoney(u.lastPaymentCents, u.lastPaymentCurrency)}</>}
+                        {u.accessSource !== "admin" && u.lastPaymentCents !== null && <> · charged {formatPaid(u.lastPaymentCents, u.lastPaymentCurrency)}</>}
                         {u.planName && <> · {u.planName}{u.planInterval ? ` (${u.planInterval})` : ""}</>}
                         {u.subscriptionExpiresAt ? <> · {u.subscriptionExpiresAt > 4102444800000 ? "lifetime" : `ends ${formatDate(u.subscriptionExpiresAt)}`}</> : null}
                       </p>
@@ -461,7 +457,7 @@ export default function AdminUsersPage() {
                         <option value="">Choose plan…</option>
                         {plans.map((p) => (
                           <option key={p.id} value={p.id} disabled={!p.active}>
-                            {p.name} · {p.interval} · ${(p.priceCents / 100).toFixed(2)}{p.active ? "" : " (inactive — activate in Plans tab)"}
+                            {p.name} · {p.interval} · {formatMoney(p.priceCents, p.currency, "en-US")}{p.active ? "" : " (inactive — activate in Plans tab)"}
                           </option>
                         ))}
                       </select>

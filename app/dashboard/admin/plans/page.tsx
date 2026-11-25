@@ -4,11 +4,10 @@ import { useEffect, useState, useCallback } from "react";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { PlanEditorModal, emptyDraft, type PlanDraft } from "@/components/admin/PlanEditorModal";
 import type { PlanDoc } from "@/lib/firestore/types";
+import { formatMoney } from "@/lib/shared/money";
 
-function formatPrice(cents: number) {
-  const v = cents / 100;
-  return `$${v % 1 === 0 ? v.toFixed(0) : v.toFixed(2)}`;
-}
+const formatPrice = (p: Pick<PlanDoc, "priceCents" | "currency">) =>
+  formatMoney(p.priceCents, p.currency, "en-US", { trimWholeNumbers: true });
 
 export default function AdminPlansPage() {
   const { user } = useAuth();
@@ -138,7 +137,7 @@ export default function AdminPlansPage() {
                 </div>
                 <div className="text-right shrink-0">
                   <div className="text-lg font-bold text-white" style={{ fontFamily: "var(--font-brand), sans-serif" }}>
-                    {formatPrice(p.priceCents)}
+                    {formatPrice(p)}
                   </div>
                   <div className="text-[10px] text-stone-500 uppercase tracking-wide">{p.interval}</div>
                 </div>
