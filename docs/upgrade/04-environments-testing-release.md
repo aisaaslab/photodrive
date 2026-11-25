@@ -40,6 +40,23 @@ Existing variables are in `.env.example`. Add (all server-side unless noted):
 of each Stripe test-mode scenario is saved in `docs/upgrade/evidence/<sprint>.md` (date, scenario,
 Stripe event ids, result).
 
+## Running the tests locally
+
+```bash
+npm test            # unit + route tests (no external services)
+npm run test:emu    # emulator suite: starts Auth + Firestore emulators, runs tests/emu, shuts down (needs Java 11+)
+npm run emu         # start the emulators for manual work
+```
+
+Fixtures and builders live in `tests/helpers/stripe.ts` (`sessionFixture`, `eventFixture`,
+`signedWebhookRequest`). To exercise a real endpoint with Stripe test mode, forward events with the
+Stripe CLI and use the secret it prints:
+
+```bash
+stripe listen --forward-to localhost:3000/api/stripe/webhook   # prints a whsec_… for STRIPE_WEBHOOK_SECRET
+stripe trigger checkout.session.completed
+```
+
 ## CI (S0-05)
 
 GitHub Actions on every PR and push to `main`: `npm ci` → `npm run lint` → `npm run typecheck` →

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAdminAuth } from "@/lib/firebase/admin";
 import { stripe, isSessionSettled } from "@/lib/stripe/server";
 import { activateSubscription } from "@/lib/stripe/activate";
+import { requestLogger } from "@/lib/server/log";
 
 /**
  * Client-side reconciliation for a completed Stripe Checkout session.
@@ -73,7 +74,7 @@ export async function POST(req: NextRequest) {
       interval: (session.metadata?.interval as "monthly" | "yearly" | undefined) ?? null,
     });
   } catch (err) {
-    console.error("[stripe verify] activation write failed for uid", decoded.uid, err);
+    requestLogger(req, "stripe.verify").error("activation write failed", { uid: decoded.uid, sessionId: session.id, err });
     return NextResponse.json({ error: "Activation failed" }, { status: 500 });
   }
 

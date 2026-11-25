@@ -1,3 +1,4 @@
+import { requestLogger } from "@/lib/server/log";
 import { NextRequest, NextResponse } from "next/server";
 import { getAdminAuth } from "@/lib/firebase/admin";
 import { stripe } from "@/lib/stripe/server";
@@ -73,7 +74,7 @@ export async function POST(req: NextRequest) {
     } catch (err) {
       // If the Stripe lookup fails (e.g. placeholder key in dev), fall
       // through and create a normal checkout session.
-      console.error("[stripe checkout] reconciliation lookup failed", err);
+      requestLogger(req, "stripe.checkout").warn("reconciliation lookup failed", { uid: decoded.uid, err });
     }
   }
 

@@ -9,11 +9,11 @@ tasks. Selected landing direction: **Concept B "Cinematic Dark"**.
 ## Status
 
 <!-- STATUS:START -->
-**Overall: 0/109 tasks (0 %)** · est. 0/157.5 ideal dev-days · current focus: S0 · next up: S0-01, S0-02, S0-03
+**Overall: 4/109 tasks (4 %)** · est. 5/157.5 ideal dev-days · current focus: S0 · next up: S0-01, S0-05, S0-06
 
 | Sprint | Goal | Phase | Tasks | Est. effort | Status |
 |---|---|---|---|---|---|
-| [S0](sprints/S00-environments-and-safety-net.md) | Environments and safety net | Payments and safety net | 0/8 | ~9 d | Not started |
+| [S0](sprints/S00-environments-and-safety-net.md) | Environments and safety net | Payments and safety net | 4/8 | ~9 d | In progress |
 | [S1](sprints/S01-payment-core.md) | Payment core | Payments and safety net | 0/12 | ~15.5 d | Not started |
 | [S2](sprints/S02-stripe-events-and-backfill.md) | Stripe events, reconciliation and back-fill | Payments and safety net | 0/12 | ~16.5 d | Not started |
 | [S3](sprints/S03-protected-delivery-and-abuse-protection.md) | Protected photo delivery and abuse protection | Security | 0/12 | ~16 d | Not started |
