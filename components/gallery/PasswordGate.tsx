@@ -34,6 +34,8 @@ export function PasswordGate({ slug, galleryName }: Props) {
         router.refresh();
       } else if (res.status === 401) {
         setError(g.wrongPassword);
+      } else if (res.status === 429) {
+        setError(g.tooManyAttempts);
       } else {
         setError(g.connectionError);
       }

@@ -29,3 +29,13 @@ describe("subscribe copy (S1-08) is complete in all six languages", () => {
     }
   });
 });
+
+describe("gallery password gate copy (S3-05)", () => {
+  it("every language has a non-empty 'too many attempts' message", () => {
+    for (const lang of langs) {
+      const g = (translations[lang] as unknown as { gallery: Record<string, string> }).gallery;
+      expect(g.tooManyAttempts?.length, lang).toBeGreaterThan(10);
+      expect(g.tooManyAttempts, lang).not.toBe(g.wrongPassword);
+    }
+  });
+});

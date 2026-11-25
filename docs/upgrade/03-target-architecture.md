@@ -160,12 +160,12 @@ Facts that constrain the design (see SEC-1): Drive folders are public by design;
 receives Drive file ids and `thumbnailLink`s; thumbnails/previews come from Google's CDN and
 single downloads from `drive.usercontent.google.com`.
 
-**Tiered model (recommended):**
+**Tiered model (decided, D15 option A).** A gallery is *public* (no password) or *private* (password required), D18:
 
 | Gallery type | Delivery |
 |---|---|
 | Public (no password), downloads allowed | Unchanged (CDN delivery). Proxy hardened. |
-| Password-protected **or** downloads disabled | **Opaque photo tokens** (`HMAC(secret, galleryId:fileId)`), no Drive ids or URLs in the client payload. Images and originals served only through `/api/g/{galleryId}/media/{token}` with signed, bucket-expiring URLs. |
+| **Private** (password required, D18) **or** downloads disabled | **Opaque photo tokens** (`HMAC(secret, galleryId:fileId)`), no Drive ids or URLs in the client payload. Images and originals served only through `/api/g/{galleryId}/media/{token}` with signed, bucket-expiring URLs. |
 
 Signed URL: `…/media/{token}?size=thumb|preview|full&e={expiryBucket}&s={sig}` where
 `sig = HMAC(g|token|size|e)` and `e` is rounded to a 6-hour bucket, so URLs are stable within a bucket
