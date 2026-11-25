@@ -1,15 +1,13 @@
 import { getAdminDb } from "@/lib/firebase/admin";
 import type { PlanDoc, PlanInterval } from "@/lib/firestore/types";
+import { periodMs } from "@/lib/server/billing/access";
+import { extendUserAccess } from "@/lib/server/billing/extend";
 
 // Monthly access runs 30 days, yearly 365 — both are one-time payments (no
-// auto-renew), matching the product's existing billing model.
-const PERIOD_MS: Record<PlanInterval, number> = {
-  monthly: 30 * 24 * 60 * 60 * 1000,
-  yearly: 365 * 24 * 60 * 60 * 1000,
-};
-
+// auto-renew), matching the product's existing billing model. The rule lives in
+// lib/server/billing/access.ts so customer and admin paths cannot drift apart.
 export function planPeriodMs(interval: PlanInterval): number {
-  return PERIOD_MS[interval] ?? PERIOD_MS.yearly;
+  return periodMs(interval);
 }
 
 function toPlan(id: string, data: Record<string, unknown>): PlanDoc {
@@ -100,26 +98,10 @@ export function normalizePlanInput(body: Record<string, unknown>): {
  * immediately: subscription becomes active and expiry is extended by the
  * plan's period from whichever is later — now or the current expiry.
  */
-export async function assignPlanToUser(uid: string, plan: PlanDoc): Promise<number> {
-  const ref = getAdminDb().collection("users").doc(uid);
-  const now = Date.now();
-
-  const snap = await ref.get();
-  const current = (snap.data()?.subscriptionExpiresAt as number | undefined) ?? 0;
-  const base = Math.max(now, current);
-  const expiresAt = base + planPeriodMs(plan.interval);
-
-  await ref.set(
-    {
-      subscriptionStatus: "active",
-      subscriptionExpiresAt: expiresAt,
-      planId: plan.id,
-      planName: plan.name,
-      planInterval: plan.interval,
-      compGranted: true,
-    },
-    { merge: true }
-  );
-
-  return expiresAt;
+export async function assignPlanToUser(uid: string, plan: PlanDoc, now: number = Date.now()): Promise<number> {
+  return extendUserAccess(getAdminDb(), uid, {
+    grantedMs: periodMs(plan.interval),
+    now,
+    fields: { planId: plan.id, planName: plan.name, planInterval: plan.interval },
+  });
 }

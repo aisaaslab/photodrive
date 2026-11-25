@@ -39,7 +39,7 @@
   - Depends: S1-06
   - Files: `app/subscribe/page.tsx`, `lib/i18n` (6 languages)
   - Done when: copy reviewed in all six languages; renewal flow works end to end in staging.
-- [ ] **S1-09** · S · Admin `assign_plan` and `grant_year` use the same `computeExpiry`; tests.
+- [x] **S1-09** · S · Admin `assign_plan` and `grant_year` use the same `computeExpiry`; tests.
   - Depends: S1-02
   - Files: `lib/plans.ts`, `app/api/admin/subscription/route.ts`
   - Done when: customer path and admin path give identical results for the same inputs.

@@ -15,6 +15,9 @@ export const YEAR_MS = 365 * DAY_MS;
  */
 export const LIFETIME_FROM = 4_102_444_800_000;
 
+/** Value the admin "grant lifetime" action writes (Jan 1, 3000). */
+export const LIFETIME_SENTINEL = 32_503_680_000_000;
+
 export function isLifetime(expiresAt: number | null | undefined): boolean {
   return typeof expiresAt === "number" && expiresAt >= LIFETIME_FROM;
 }
