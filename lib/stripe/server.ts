@@ -20,7 +20,7 @@ const ZERO_DECIMAL = new Set([
   "bif", "clp", "djf", "gnf", "jpy", "kmf", "krw", "mga", "pyg", "rwf", "ugx", "vnd", "vuv", "xaf", "xof", "xpf",
 ]);
 
-/** Stripe minor units → major units (e.g. 9900 usd → 99, 500 jpy → 500). */
+/** Stripe minor units → major units (e.g. 1250 usd → 12.5, 500 jpy → 500). */
 export function fromMinorUnits(amount: number, currency: string): number {
   return ZERO_DECIMAL.has(currency.toLowerCase()) ? amount : amount / 100;
 }

@@ -110,8 +110,7 @@ export function NewGalleryForm({ onCreated, onCancel, initialData, autoSubmit }:
   const [error, setError] = useState("");
   const [showPayment, setShowPayment] = useState(false);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
-  // Public plans shown in the payment step (same source as /subscribe). Empty
-  // list = legacy single $99/year card.
+  // Public plans shown in the payment step (same source as /subscribe).
   const [plans, setPlans] = useState<PublicPlan[]>([]);
   const [plansLoaded, setPlansLoaded] = useState(false);
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
@@ -251,7 +250,7 @@ export function NewGalleryForm({ onCreated, onCancel, initialData, autoSubmit }:
         setPlans(list);
         setSelectedPlanId(list.find((p) => p.highlight)?.id ?? list[0]?.id ?? null);
       } catch {
-        // Fall back to the legacy single-plan card.
+        // No plans loaded: the buy button stays disabled (no hard-coded price).
       }
       if (!cancelled) setPlansLoaded(true);
     })();
@@ -283,7 +282,7 @@ export function NewGalleryForm({ onCreated, onCancel, initialData, autoSubmit }:
       const res = await fetch("/api/stripe/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify(selectedPlan ? { planId: selectedPlan.id } : {}),
+        body: JSON.stringify({ planId: selectedPlan?.id }),
       });
       const data = await res.json();
       if (data.alreadyPaid) {
@@ -375,21 +374,8 @@ export function NewGalleryForm({ onCreated, onCancel, initialData, autoSubmit }:
               })}
             </div>
           ) : (
-            <div className="flex items-center justify-between mb-5">
-              <div>
-                <div className="flex items-center gap-2 mb-0.5">
-                  <span className="text-3xl font-bold text-white">$99</span>
-                  <span className="text-stone-500 text-sm">{f.perYear}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-stone-500 line-through text-sm">$199</span>
-                  <span className="bg-[#17509e]/20 text-[#2dabe0] text-xs font-bold px-2 py-0.5 rounded-full border border-[#17509e]/20">-50%</span>
-                </div>
-              </div>
-              <span className="bg-[#17509e]/20 text-[#2dabe0] text-xs font-semibold px-2.5 py-1 rounded-full border border-[#17509e]/20">
-                {f.offer}
-              </span>
-            </div>
+            /* No purchasable plan: never show a hard-coded price. */
+            <p className="text-center text-sm text-stone-400 mb-5">{f.error}</p>
           )}
 
           <ul className="space-y-2 mb-6">
@@ -405,7 +391,7 @@ export function NewGalleryForm({ onCreated, onCancel, initialData, autoSubmit }:
 
           <button
             onClick={handleCheckout}
-            disabled={checkoutLoading || !plansLoaded}
+            disabled={checkoutLoading || !plansLoaded || !selectedPlan}
             className="w-full bg-white text-stone-900 font-bold py-3 rounded-xl text-sm hover:bg-stone-100 transition-all disabled:opacity-60 flex items-center justify-center gap-2"
           >
             {checkoutLoading ? (

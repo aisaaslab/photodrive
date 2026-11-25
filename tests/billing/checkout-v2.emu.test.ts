@@ -82,6 +82,16 @@ describe("checkout (BILLING_FULFIL_V2=1)", () => {
     expect(keys[0]).not.toBe(keys[1]);
   });
 
+  it("requires a planId: there is no hard-coded fallback price any more (S1-07)", async () => {
+    await seedUser("u1");
+    for (const body of [{}, { planId: "" }, { planId: 5 }]) {
+      const res = await post(body);
+      expect(res.status).toBe(400);
+      expect(await res.json()).toEqual({ error: "planId is required" });
+    }
+    expect(create).not.toHaveBeenCalled();
+  });
+
   it("still rejects missing auth (401), unknown plans (400) and inactive plans (400)", async () => {
     expect((await post({ planId: "m" }, null)).status).toBe(401);
     expect((await post({ planId: "nope" })).status).toBe(400);

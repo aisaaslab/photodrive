@@ -79,10 +79,11 @@ export default function SubscribePage() {
   const selectedPlan = plans.find((p) => p.id === selectedPlanId) ?? null;
 
   async function handleCheckout() {
+    if (!selectedPlan) return;
     if (!user) {
       // Keep the chosen plan through the login round-trip (?checkout=1 also
       // auto-starts checkout once the user is back).
-      const planSuffix = selectedPlan ? `&plan=${selectedPlan.id}` : "";
+      const planSuffix = `&plan=${selectedPlan.id}`;
       router.push("/login?next=" + encodeURIComponent(`/subscribe?checkout=1${planSuffix}`));
       return;
     }
@@ -93,7 +94,7 @@ export default function SubscribePage() {
       const res = await fetch("/api/stripe/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify(selectedPlan ? { planId: selectedPlan.id } : {}),
+        body: JSON.stringify({ planId: selectedPlan.id }),
       });
       const data = await res.json();
       if (data.url) {
@@ -224,31 +225,8 @@ export default function SubscribePage() {
               })}
             </div>
           ) : selectedPlan ? null : (
-            /* Legacy default card (before any plans exist) */
-            <div className="bg-white/[0.04] border border-white/[0.08] rounded-2xl p-6">
-              <div className="text-center mb-6">
-                <div className="flex items-end justify-center gap-1">
-                  <span className="text-5xl font-bold text-white">$99</span>
-                  <span className="text-stone-400 text-sm mb-2">{s.perYear}</span>
-                </div>
-                <p className="text-white text-lg font-medium mt-1">{t.pricing.vatNote}</p>
-                <p className="flex items-center justify-center gap-1.5 text-stone-400 text-xs mt-2">
-                  <svg className="w-3.5 h-3.5 text-[#2dabe0] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
-                  {noAutoRenew}
-                </p>
-              </div>
-
-              <ul className="space-y-2.5 mb-6">
-                {[s.f1, s.f2, s.f3, s.f4, s.f5, s.f6, s.f7].map((f) => (
-                  <li key={f} className="flex items-center gap-2.5 text-sm text-stone-300">
-                    <svg className="w-4 h-4 text-[#2dabe0] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-                    </svg>
-                    {f}
-                  </li>
-                ))}
-              </ul>
-            </div>
+            /* No purchasable plan loaded: never show a hard-coded price. */
+            <p className="text-center text-sm text-stone-400 py-8">{s.error}</p>
           )}
 
           {/* Selected plan summary + buy button (plan mode) */}
@@ -282,24 +260,6 @@ export default function SubscribePage() {
                 )}
               </button>
             </div>
-          )}
-
-          {/* Legacy single-card buy button */}
-          {plansLoaded && !selectedPlan && (
-            <button
-              onClick={handleCheckout}
-              disabled={loading}
-              className="w-full mt-6 bg-white text-stone-900 font-bold py-3 rounded-xl text-sm hover:bg-stone-100 transition-all hover:scale-[1.01] active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-            >
-              {loading ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-stone-400 border-t-stone-900 rounded-full animate-spin" />
-                  {s.loading}
-                </>
-              ) : (
-                s.buyBtn
-              )}
-            </button>
           )}
 
           {error && <p className="text-xs text-red-400 text-center mt-3">{error}</p>}

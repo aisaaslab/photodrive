@@ -22,21 +22,20 @@ export async function POST(req: NextRequest) {
   const decoded = await getDecoded(req);
   if (!decoded) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  // Optional plan selection (monthly / yearly / custom private plan).
+  // A plan is required: the old hard-coded "$99 annual" path was replaced by a seeded
+  // default plan (see scripts/migrations/seed-default-plan.ts).
   let planId: string | null = null;
   try {
     const body = await req.json();
     if (typeof body?.planId === "string" && body.planId) planId = body.planId;
   } catch {
-    // No / invalid body — legacy annual checkout.
+    // Missing / invalid body: handled below.
   }
+  if (!planId) return NextResponse.json({ error: "planId is required" }, { status: 400 });
 
-  let plan = null;
-  if (planId) {
-    plan = await getPlanById(planId);
-    if (!plan || !plan.active) {
-      return NextResponse.json({ error: "Plan not found" }, { status: 400 });
-    }
+  const plan = await getPlanById(planId);
+  if (!plan || !plan.active) {
+    return NextResponse.json({ error: "Plan not found" }, { status: 400 });
   }
 
   const appUrl = process.env.APP_URL ?? new URL(req.url).origin;
@@ -59,7 +58,7 @@ export async function POST(req: NextRequest) {
         limit: 100,
       });
       const paid = sessions.data.find(
-        (s) => s.payment_status === "paid" && (s.metadata?.planId ?? null) === (planId ?? null)
+        (s) => s.payment_status === "paid" && (s.metadata?.planId ?? null) === planId
       );
       if (paid) {
         await activateSubscription({
@@ -84,45 +83,32 @@ export async function POST(req: NextRequest) {
   // New path: checkout only creates sessions. Whether the customer is new, lapsed
   // or still active, they can buy; fulfilment stacks the time (see fulfil.ts).
   // The idempotency key makes a double click return the same Checkout Session.
-  const idempotencyKey = `checkout:${decoded.uid}:${planId ?? "legacy"}:${Math.floor(Date.now() / 60_000)}`;
+  const idempotencyKey = `checkout:${decoded.uid}:${plan.id}:${Math.floor(Date.now() / 60_000)}`;
 
   const session = await stripe.checkout.sessions.create(
     {
       mode: "payment",
       customer_email: decoded.email ?? undefined,
       line_items: [
-        plan
-          ? {
-              price_data: {
-                currency: plan.currency || "usd",
-                // Shown on the Stripe checkout page and on the customer's
-                // receipt, so it names the actual plan the user picked.
-                product_data: {
-                  name: `${APP_NAME} ${plan.name}`,
-                  ...(plan.description ? { description: plan.description } : {}),
-                },
-                unit_amount: plan.priceCents,
-              },
-              quantity: 1,
-            }
-          : {
-              price_data: {
-                currency: "usd",
-                // Shown on the Stripe checkout page and on the customer's
-                // receipt, so it follows NEXT_PUBLIC_APP_NAME rather than being
-                // hardcoded.
-                product_data: {
-                  name: `${APP_NAME} Annual license`,
-                },
-                unit_amount: 9900,
-              },
-              quantity: 1,
+        {
+          price_data: {
+            currency: plan.currency || "usd",
+            // Shown on the Stripe checkout page and on the customer's receipt, so it
+            // names the actual plan the user picked.
+            product_data: {
+              name: `${APP_NAME} ${plan.name}`,
+              ...(plan.description ? { description: plan.description } : {}),
             },
+            unit_amount: plan.priceCents,
+          },
+          quantity: 1,
+        },
       ],
       ...(v2 ? { client_reference_id: decoded.uid } : {}),
       metadata: {
         uid: decoded.uid,
-        ...(plan ? { planId: plan.id, interval: plan.interval } : {}),
+        planId: plan.id,
+        interval: plan.interval,
         ...(v2 ? { env: appEnv() } : {}),
       },
       allow_promotion_codes: true,

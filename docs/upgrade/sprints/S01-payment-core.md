@@ -32,7 +32,7 @@
   - Files: `app/api/stripe/checkout/route.ts`
   - Done when: a lapsed monthly customer who bought the same plan before gets a new Checkout URL (PAY-1 test passes).
   - Refs: PAY-1, PAY-3
-- [ ] **S1-07** · S · Remove the hard-coded legacy `$99` path: seed a default "Annual" plan (script), require `planId`, make the landing fallback card read the seeded plan.
+- [x] **S1-07** · S · Remove the hard-coded legacy `$99` path: seed a default "Annual" plan (script), require `planId`, make the landing fallback card read the seeded plan.
   - Files: `app/api/stripe/checkout/route.ts`, `scripts/migrations/seed-default-plan.ts`, `app/subscribe/page.tsx`, `app/page.tsx` (fallback)
   - Done when: no `9900` literal remains; subscribe works with the seeded plan.
 - [ ] **S1-08** · M · Subscribe page for active users: show current expiry and "Renewing extends your access to <date>"; replace the `alreadyPaid` redirect; clear error and pending states.
@@ -60,3 +60,7 @@
 - The webhook is the only thing that can double-grant; the `payments` document is the idempotency key, so test concurrency explicitly.
 - Do not change plan lengths (monthly 30 d, yearly 365 d).
 - Production still runs the old path until the R1 gate (S2-11).
+
+## Parking lot
+
+- Account page CTA text still says "Subscribe — $99/year" (`subscribeCta`, six languages in `lib/i18n/index.tsx`); make it price-free in S1-08 with the other renewal copy.
