@@ -12,11 +12,17 @@
 }
 
 /*
- * Display font is loaded via next/font in app/layout.tsx.
- * Components reference it via `fontFamily: "var(--font-brand), sans-serif"`.
+ * Fonts are self-hosted: the @font-face rules are in app/fonts.css (files in app/fonts/).
+ * Components reference the UI font via `fontFamily: "var(--font-brand), sans-serif"`; the gallery title
+ * fonts are chosen through lib/gallery/title-style.ts.
  */
 :root {
-  --font-brand: var(--font-sans, system-ui, -apple-system, "Segoe UI", sans-serif);
+  --font-sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-brand: var(--font-sans);
+  --font-title-serif: "Playfair Display Variable";
+  --font-title-script: "Dancing Script Variable";
+  --font-title-modern: "Poppins";
+  --font-title-mono: "Space Mono";
 }
 
 * {

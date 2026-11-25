@@ -56,3 +56,4 @@
 - S5-06 touches 40 files: do it as an automated codemod-style change, not by hand, and keep the old API.
 - File-split tasks must not change behaviour; add characterisation tests where logic is extracted.
 - If Manrope lacks usable Greek, keep IBM Plex Sans for the app and use Manrope for Latin display only (record in D8).
+- Fonts are already self-hosted (done early, after a CI build failed fetching Google Fonts): `app/fonts.css` + `app/fonts/*.woff2` (unmodified `@fontsource` files, OFL licences and sources in `app/fonts/README.md`), no `next/font/google`. S5-01 should add the new typeface (D8, Greek coverage) the same way: copy the unmodified woff2 files for the needed scripts, add `@font-face` rules with `unicode-range`, define the CSS variable in `globals.css`.

@@ -1,44 +1,13 @@
 import type { Metadata } from "next";
 import Script from "next/script";
-import { IBM_Plex_Sans } from "next/font/google";
-import { Playfair_Display, Dancing_Script, Poppins, Space_Mono } from "next/font/google";
+import "./fonts.css";
 import "./globals.css";
 import { ClientProviders } from "@/components/ClientProviders";
 import { SiteAnalytics } from "@/components/SiteAnalytics";
 import { APP_NAME, APP_URL } from "@/lib/branding";
 import { getTrackingIds } from "@/lib/tracking-settings";
 
-const ibmPlexSans = IBM_Plex_Sans({
-  subsets: ["latin", "greek"],
-  weight: ["400", "500", "600", "700"],
-  variable: "--font-sans",
-});
-
-// Gallery title fonts the photographer can pick (see lib/gallery/title-style.ts).
-// Self-hosted at build time; a woff2 file is only downloaded when a page
-// actually renders text in that family, so unused fonts cost ~nothing.
-const playfairDisplay = Playfair_Display({
-  subsets: ["latin"],
-  variable: "--font-title-serif",
-  display: "swap",
-});
-const dancingScript = Dancing_Script({
-  subsets: ["latin"],
-  variable: "--font-title-script",
-  display: "swap",
-});
-const poppins = Poppins({
-  subsets: ["latin"],
-  weight: ["600", "700"],
-  variable: "--font-title-modern",
-  display: "swap",
-});
-const spaceMono = Space_Mono({
-  subsets: ["latin"],
-  weight: ["400", "700"],
-  variable: "--font-title-mono",
-  display: "swap",
-});
+// Fonts are self-hosted (app/fonts.css + app/fonts/*.woff2): nothing is fetched from Google at build or run time.
 
 const description =
   "Share professional galleries with your clients straight from Google Drive.";
@@ -69,7 +38,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html
       lang="en"
-      className={`${ibmPlexSans.variable} ${playfairDisplay.variable} ${dancingScript.variable} ${poppins.variable} ${spaceMono.variable} h-full antialiased`}
+      className="h-full antialiased"
     >
       {/* suppressHydrationWarning: browser extensions (e.g. ColorZilla) inject
           attributes like cz-shortcut-listen="true" onto <body> before React
