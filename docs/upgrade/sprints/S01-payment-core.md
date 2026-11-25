@@ -27,7 +27,7 @@
   - Depends: S1-03
   - Files: `app/api/stripe/verify/route.ts`, `app/thank-you/page.tsx`
   - Done when: verify + webhook racing on one session results in exactly one fulfilment.
-- [ ] **S1-06** · M · Checkout route creates sessions only: remove the `sessions.list` reconciliation and `alreadyPaid`; add Stripe idempotency key, `client_reference_id`, richer metadata (`uid`, `planId`, `interval`, `env`); allow already-active users to buy.
+- [x] **S1-06** · M · Checkout route creates sessions only: remove the `sessions.list` reconciliation and `alreadyPaid`; add Stripe idempotency key, `client_reference_id`, richer metadata (`uid`, `planId`, `interval`, `env`); allow already-active users to buy.
   - Depends: S1-03
   - Files: `app/api/stripe/checkout/route.ts`
   - Done when: a lapsed monthly customer who bought the same plan before gets a new Checkout URL (PAY-1 test passes).

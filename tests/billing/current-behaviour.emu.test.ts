@@ -2,10 +2,15 @@
  * S1-01: characterisation of the CURRENT payment code (audit PAY-1, PAY-2).
  *
  * Tests wrapped in `it.fails` assert the CORRECT behaviour and currently fail
- * because of the defect. When S1-03/S1-06 fix the code they start passing,
- * `it.fails` then reports an error, and the wrapper must be removed (turning
- * them into ordinary regression tests). Runs against the Firebase emulators:
+ * because of the defect. When the code is fixed they start passing, `it.fails`
+ * then reports an error, and the wrapper must be removed (turning them into
+ * ordinary regression tests). Runs against the Firebase emulators:
  * `npm run test:emu`.
+ *
+ * Status: PAY-1 was fixed in S1-06 behind BILLING_FULFIL_V2 (test below now
+ * runs with the flag on; the flag-off test keeps documenting the old defect).
+ * PAY-2 on the old `activateSubscription` stays an expected failure until that
+ * function is deleted (S1-12); the fixed behaviour is tested in fulfil.emu.test.ts.
  */
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
@@ -90,6 +95,7 @@ describe("PAY-1: returning customer cannot renew", () => {
     });
 
   beforeEach(async () => {
+    vi.unstubAllEnvs();
     await seedUser("u1", { subscriptionStatus: "active", subscriptionExpiresAt: Date.now() - 2 * DAY });
     await seedPlan("monthly", { interval: "monthly", priceCents: 900, currency: "usd", name: "Monthly" });
     vi.spyOn(testAuth(), "verifyIdToken").mockResolvedValue({ uid: "u1", email: "u1@example.com" } as never);
@@ -105,17 +111,19 @@ describe("PAY-1: returning customer cannot renew", () => {
     });
   });
 
-  // PAY-1 → fixed by S1-06 (checkout creates sessions only)
-  it.fails("a lapsed customer who bought this plan before gets a new Checkout URL", async () => {
+  // PAY-1 → fixed by S1-06 (checkout creates sessions only) when BILLING_FULFIL_V2 is on
+  it("[fixed with BILLING_FULFIL_V2=1] a lapsed customer who bought this plan before gets a new Checkout URL", async () => {
+    vi.stubEnv("BILLING_FULFIL_V2", "1");
     const res = await checkout(request());
     const body = await res.json();
-    // Today: { alreadyPaid: true } and no new session, so the customer stays expired.
+    // Before the fix: { alreadyPaid: true } and no new session, so the customer stayed expired.
     expect(body.url).toBe("https://checkout.stripe.test/new");
     expect(body.alreadyPaid).toBeUndefined();
     expect(sessionsCreate).toHaveBeenCalledTimes(1);
+    expect(sessionsList).not.toHaveBeenCalled();
   });
 
-  it("[defect, documents today] returns alreadyPaid and leaves the account expired", async () => {
+  it("[defect with BILLING_FULFIL_V2 off] returns alreadyPaid and leaves the account expired", async () => {
     const res = await checkout(request());
     expect(await res.json()).toEqual({ alreadyPaid: true });
     expect(sessionsCreate).not.toHaveBeenCalled();

@@ -1,4 +1,5 @@
 import { requestLogger } from "@/lib/server/log";
+import { appEnv, billingFulfilV2 } from "@/lib/server/billing/flags";
 import { NextRequest, NextResponse } from "next/server";
 import { getAdminAuth } from "@/lib/firebase/admin";
 import { stripe } from "@/lib/stripe/server";
@@ -40,13 +41,15 @@ export async function POST(req: NextRequest) {
 
   const appUrl = process.env.APP_URL ?? new URL(req.url).origin;
 
-  // Anti-double-charge guard: before sending this user to Stripe again, look
+  const v2 = billingFulfilV2();
+
+  // LEGACY (BILLING_FULFIL_V2 off) — Anti-double-charge guard: before sending this user to Stripe again, look
   // for an already-paid session for their email within the last year. If one
   // exists (e.g. they paid earlier but the webhook never landed), activate it
   // instead of taking a second payment. With plans, the guard only matches
   // sessions bought for the SAME plan — switching from monthly to yearly
   // (or the legacy annual) starts a fresh checkout.
-  if (decoded.email) {
+  if (!v2 && decoded.email) {
     try {
       const oneYearAgo = Math.floor((Date.now() - 365 * 24 * 60 * 60 * 1000) / 1000);
       const sessions = await stripe.checkout.sessions.list({
@@ -78,50 +81,60 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  const session = await stripe.checkout.sessions.create({
-    mode: "payment",
-    customer_email: decoded.email ?? undefined,
-    line_items: [
-      plan
-        ? {
-            price_data: {
-              currency: plan.currency || "usd",
-              // Shown on the Stripe checkout page and on the customer's
-              // receipt, so it names the actual plan the user picked.
-              product_data: {
-                name: `${APP_NAME} ${plan.name}`,
-                ...(plan.description ? { description: plan.description } : {}),
+  // New path: checkout only creates sessions. Whether the customer is new, lapsed
+  // or still active, they can buy; fulfilment stacks the time (see fulfil.ts).
+  // The idempotency key makes a double click return the same Checkout Session.
+  const idempotencyKey = `checkout:${decoded.uid}:${planId ?? "legacy"}:${Math.floor(Date.now() / 60_000)}`;
+
+  const session = await stripe.checkout.sessions.create(
+    {
+      mode: "payment",
+      customer_email: decoded.email ?? undefined,
+      line_items: [
+        plan
+          ? {
+              price_data: {
+                currency: plan.currency || "usd",
+                // Shown on the Stripe checkout page and on the customer's
+                // receipt, so it names the actual plan the user picked.
+                product_data: {
+                  name: `${APP_NAME} ${plan.name}`,
+                  ...(plan.description ? { description: plan.description } : {}),
+                },
+                unit_amount: plan.priceCents,
               },
-              unit_amount: plan.priceCents,
-            },
-            quantity: 1,
-          }
-        : {
-            price_data: {
-              currency: "usd",
-              // Shown on the Stripe checkout page and on the customer's
-              // receipt, so it follows NEXT_PUBLIC_APP_NAME rather than being
-              // hardcoded.
-              product_data: {
-                name: `${APP_NAME} Annual license`,
+              quantity: 1,
+            }
+          : {
+              price_data: {
+                currency: "usd",
+                // Shown on the Stripe checkout page and on the customer's
+                // receipt, so it follows NEXT_PUBLIC_APP_NAME rather than being
+                // hardcoded.
+                product_data: {
+                  name: `${APP_NAME} Annual license`,
+                },
+                unit_amount: 9900,
               },
-              unit_amount: 9900,
+              quantity: 1,
             },
-            quantity: 1,
-          },
-    ],
-    metadata: {
-      uid: decoded.uid,
-      ...(plan ? { planId: plan.id, interval: plan.interval } : {}),
+      ],
+      ...(v2 ? { client_reference_id: decoded.uid } : {}),
+      metadata: {
+        uid: decoded.uid,
+        ...(plan ? { planId: plan.id, interval: plan.interval } : {}),
+        ...(v2 ? { env: appEnv() } : {}),
+      },
+      allow_promotion_codes: true,
+      success_url: `${appUrl}/thank-you?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${appUrl}/subscribe`,
+      // "auto" lets Stripe follow the customer's own browser language. Pinning a
+      // locale here would show every customer a checkout page in that language.
+      locale: "auto",
+      payment_method_types: ["card"],
     },
-    allow_promotion_codes: true,
-    success_url: `${appUrl}/thank-you?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${appUrl}/subscribe`,
-    // "auto" lets Stripe follow the customer's own browser language. Pinning a
-    // locale here would show every customer a checkout page in that language.
-    locale: "auto",
-    payment_method_types: ["card"],
-  });
+    v2 ? { idempotencyKey } : undefined,
+  );
 
   return NextResponse.json({ url: session.url });
 }
