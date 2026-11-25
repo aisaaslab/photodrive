@@ -3,6 +3,7 @@ import { getAdminAuth, getAdminDb } from "@/lib/firebase/admin";
 import { extractFolderId } from "@/lib/drive/url-parser";
 import { generateSlug } from "@/lib/gallery/slug";
 import { hashPassword } from "@/lib/gallery/password";
+import { planCreate } from "@/lib/gallery/visibility";
 import { sealPassword, forOwner, migrateLegacyPassword } from "@/lib/gallery/password-vault";
 import { isAdmin } from "@/lib/firebase/admin-guard";
 import type { GalleryDoc } from "@/lib/firestore/types";
@@ -32,8 +33,15 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  const body = await req.json();
-  const { name, driveUrl, password } = body;
+  let body: Record<string, unknown>;
+  try {
+    const parsed = await req.json();
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) throw new Error("not an object");
+    body = parsed as Record<string, unknown>;
+  } catch {
+    return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+  }
+  const { name, driveUrl } = body as { name?: string; driveUrl?: string };
 
   if (!name || !driveUrl) {
     return NextResponse.json({ error: "name and driveUrl are required" }, { status: 400 });
@@ -44,8 +52,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid Google Drive folder URL" }, { status: 400 });
   }
 
+  // Public or private (D18): a private gallery needs a password, a public one cannot have one.
+  const plan = planCreate({ visibility: body.visibility, password: body.password });
+  if (!plan.ok) return NextResponse.json({ error: plan.error }, { status: 400 });
+
   const slug = generateSlug();
-  const passwordHash = password ? await hashPassword(password) : undefined;
+  const passwordHash = plan.newPassword ? await hashPassword(plan.newPassword) : undefined;
 
   const normUrl = (u: unknown): string | undefined => {
     if (typeof u !== "string") return undefined;
@@ -85,7 +97,8 @@ export async function POST(req: NextRequest) {
     // so they can remind a client who lost it; that value is stored only in
     // sealed (AES-GCM) form as `passwordEnc` — never as plaintext. See
     // lib/gallery/password-vault.ts.
-    ...(passwordHash ? { passwordHash, passwordEnc: sealPassword(password) } : {}),
+    visibility: plan.visibility,
+    ...(passwordHash && plan.newPassword ? { passwordHash, passwordEnc: sealPassword(plan.newPassword) } : {}),
     ...(website ? { website } : {}),
     ...(instagram ? { instagram } : {}),
     ...(facebook ? { facebook } : {}),

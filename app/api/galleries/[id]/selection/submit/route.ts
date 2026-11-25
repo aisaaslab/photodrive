@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAdminAuth, getAdminDb } from "@/lib/firebase/admin";
 import { verifyGalleryToken } from "@/lib/gallery/session";
+import { isPrivate } from "@/lib/gallery/visibility";
 import { sendEmail, escapeHtml } from "@/lib/email";
 import { APP_URL } from "@/lib/branding";
 
@@ -67,7 +68,7 @@ export async function POST(
   const gallery = galSnap.data()!;
 
   // Password-protected galleries: the visitor must have unlocked this gallery.
-  if (gallery.passwordHash) {
+  if (isPrivate(gallery)) {
     const token = req.cookies.get(`gallery_token_${id}`)?.value;
     const valid = token ? await verifyGalleryToken(token) : null;
     if (!valid || valid.galleryId !== id || valid.v !== (gallery.pwChangedAt ?? 0)) {

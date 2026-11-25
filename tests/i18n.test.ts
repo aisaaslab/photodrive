@@ -39,3 +39,28 @@ describe("gallery password gate copy (S3-05)", () => {
     }
   });
 });
+
+describe("gallery visibility copy (S3-13, D18)", () => {
+  const formKeys = ["visibilityLabel", "visibilityPublic", "visibilityPublicHint", "visibilityPrivate", "visibilityPrivateHint", "passwordRequired"];
+  const cardKeys = [
+    "visibilityLabel", "visibilityPublic", "visibilityPrivate", "publicBadge", "passwordRequiredLabel",
+    "passwordRequired", "makePublicWarning", "makePublicConfirm", "confirmMakePublic",
+  ];
+  const section = (lang: keyof typeof translations, name: string) =>
+    (translations[lang] as unknown as Record<string, Record<string, string>>)[name];
+
+  it("every language has every new key, non-empty", () => {
+    for (const lang of langs) {
+      for (const k of formKeys) expect(section(lang, "newGalleryForm")[k]?.length, `${lang}.newGalleryForm.${k}`).toBeGreaterThan(3);
+      for (const k of cardKeys) expect(section(lang, "galleryCard")[k]?.length, `${lang}.galleryCard.${k}`).toBeGreaterThan(3);
+    }
+  });
+
+  it("public and private are named differently in every language", () => {
+    for (const lang of langs) {
+      expect(section(lang, "newGalleryForm").visibilityPublic, lang).not.toBe(section(lang, "newGalleryForm").visibilityPrivate);
+      expect(section(lang, "galleryCard").visibilityPublic, lang).not.toBe(section(lang, "galleryCard").visibilityPrivate);
+    }
+  });
+});
+

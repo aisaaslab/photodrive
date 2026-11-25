@@ -109,7 +109,11 @@ describe("verify and webhook racing on one session", () => {
       callVerify("cs_race"),
       webhook(new NextRequest(signedWebhookRequest(event))),
     ]);
-    expect(results.map((r) => r.status)).toEqual([200, 200, 200, 200]);
+    // verify always answers 200. A webhook delivery that arrives while another delivery of the same event is
+    // still being processed answers 409 (S2-01) so that Stripe retries; both outcomes are correct here.
+    const [v1, w1, v2, w2] = results.map((r) => r.status);
+    expect([v1, v2]).toEqual([200, 200]);
+    for (const w of [w1, w2]) expect([200, 409]).toContain(w);
     const u = await user();
     expect(u.subscriptionExpiresAt).toBeGreaterThan(Date.now() + MONTH_MS - 5000);
     expect(u.subscriptionExpiresAt).toBeLessThan(Date.now() + MONTH_MS + 5000); // one month, not two

@@ -1,5 +1,6 @@
 ﻿"use client";
 
+import { galleryVisibility, isPrivate, type Visibility } from "@/lib/gallery/visibility";
 import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { useLanguage } from "@/lib/i18n";
@@ -41,7 +42,9 @@ export function GalleryCard({ gallery, onDelete, onUpdate }: Props) {
   const [editName, setEditName] = useState(gallery.name);
   const [editDriveUrl, setEditDriveUrl] = useState(`https://drive.google.com/drive/folders/${gallery.folderId}`);
   const [editPassword, setEditPassword] = useState(gallery.password ?? "");
-  const [removePassword, setRemovePassword] = useState(false);
+  // Public / private (D18). Switching a private gallery to public removes its password, so it needs a confirmation.
+  const [editVisibility, setEditVisibility] = useState<Visibility>(galleryVisibility(gallery));
+  const [confirmMakePublic, setConfirmMakePublic] = useState(false);
   const [editAllowDownload, setEditAllowDownload] = useState(gallery.allowDownload !== false);
   const [editSocial, setEditSocial] = useState({
     website: gallery.website ?? "",
@@ -185,13 +188,23 @@ export function GalleryCard({ gallery, onDelete, onUpdate }: Props) {
   async function saveEdit() {
     if (!editName.trim()) return;
     if (!user) return;
+    const wasPrivate = isPrivate(gallery);
+    if (editVisibility === "private" && !editPassword && !wasPrivate) {
+      setEditError(c.passwordRequired);
+      return;
+    }
+    if (editVisibility === "public" && wasPrivate && !confirmMakePublic) {
+      setEditError(c.confirmMakePublic);
+      return;
+    }
     setSaving(true);
     setEditError("");
     try {
       const token = await user.getIdToken();
       const body: Record<string, unknown> = { name: editName.trim() };
-      if (editPassword) body.password = editPassword;
-      if (removePassword) body.removePassword = true;
+      body.visibility = editVisibility;
+      // Only send the password when it is new: re-sending the stored one would log every visitor out on each save.
+      if (editVisibility === "private" && editPassword && editPassword !== gallery.password) body.password = editPassword;
       body.website = editSocial.website.trim();
       body.instagram = editSocial.instagram.trim();
       body.facebook = editSocial.facebook.trim();
@@ -225,8 +238,9 @@ export function GalleryCard({ gallery, onDelete, onUpdate }: Props) {
       toast(c.savedToast);
       setIsEditing(false);
       setEditDriveUrl("");
-      setEditPassword("");
-      setRemovePassword(false);
+      setEditPassword(updated.password ?? "");
+      setEditVisibility(updated.visibility ?? "public");
+      setConfirmMakePublic(false);
     } finally {
       setSaving(false);
     }
@@ -237,7 +251,8 @@ export function GalleryCard({ gallery, onDelete, onUpdate }: Props) {
     setEditName(gallery.name);
     setEditDriveUrl(`https://drive.google.com/drive/folders/${gallery.folderId}`);
     setEditPassword(gallery.password ?? "");
-    setRemovePassword(false);
+    setEditVisibility(galleryVisibility(gallery));
+    setConfirmMakePublic(false);
     setEditAllowDownload(gallery.allowDownload !== false);
     setEditSocial({ website: gallery.website ?? "", instagram: gallery.instagram ?? "", facebook: gallery.facebook ?? "" });
     setEditDescription(gallery.description ?? "");
@@ -338,7 +353,7 @@ export function GalleryCard({ gallery, onDelete, onUpdate }: Props) {
               <div className="p-4">
                 <div className="flex items-center gap-2 mb-0.5">
                   <h3 className="font-semibold text-white text-sm leading-snug truncate flex-1">{gallery.name}</h3>
-                  {gallery.passwordHash && !removePassword && (
+                  {isPrivate(gallery) ? (
                     <button
                       onClick={() => setShowPassword((v) => !v)}
                       className="shrink-0 bg-white/[0.06] text-white/70 text-xs px-2 py-0.5 rounded-full flex items-center gap-1 border border-white/10 hover:bg-white/[0.10] transition-colors"
@@ -351,6 +366,13 @@ export function GalleryCard({ gallery, onDelete, onUpdate }: Props) {
                         : c.password
                       }
                     </button>
+                  ) : (
+                    <span className="shrink-0 bg-white/[0.04] text-white/50 text-xs px-2 py-0.5 rounded-full flex items-center gap-1 border border-white/10">
+                      <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 21a9 9 0 100-18 9 9 0 000 18zm0 0c2.5-2.4 3.75-5.4 3.75-9S14.5 5.4 12 3m0 18c-2.5-2.4-3.75-5.4-3.75-9S9.5 5.4 12 3m-9 9h18" />
+                      </svg>
+                      {c.publicBadge}
+                    </span>
                   )}
                 </div>
                 {createdDate && (
@@ -669,32 +691,58 @@ export function GalleryCard({ gallery, onDelete, onUpdate }: Props) {
             <section className="space-y-3">
               <h4 className={sectionHeading}>{c.sectionPrivacy}</h4>
               <div>
-                <label htmlFor={`pw-${gallery.id}`} className="text-xs font-medium text-white/70 mb-1 block">
-                  {gallery.passwordHash ? c.newPasswordLabel : c.passwordOptionalLabel}
-                </label>
-                <input
-                  id={`pw-${gallery.id}`}
-                  type="text"
-                  value={editPassword}
-                  onChange={(e) => setEditPassword(e.target.value)}
-                  disabled={removePassword}
-                  placeholder={gallery.password ?? c.noPassword}
-                  className={`${inputCls} disabled:opacity-40`}
-                />
+                <div className="text-xs font-medium text-white/70 mb-1.5">{c.visibilityLabel}</div>
+                <div role="radiogroup" aria-label={c.visibilityLabel} className="grid grid-cols-2 gap-2">
+                  {(["public", "private"] as const).map((v) => {
+                    const on = editVisibility === v;
+                    return (
+                      <button
+                        key={v}
+                        type="button"
+                        role="radio"
+                        aria-checked={on}
+                        onClick={() => {
+                          setEditVisibility(v);
+                          setConfirmMakePublic(false);
+                          setEditError("");
+                        }}
+                        className={`rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${on ? "border-white/60 bg-white/[0.08] text-white" : "border-white/10 text-white/60 hover:border-white/25"}`}
+                      >
+                        {v === "public" ? c.visibilityPublic : c.visibilityPrivate}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
-              {gallery.passwordHash && (
-                <label className="flex items-center gap-2 text-xs text-white/70 cursor-pointer">
+              {editVisibility === "private" && (
+                <div>
+                  <label htmlFor={`pw-${gallery.id}`} className="text-xs font-medium text-white/70 mb-1 block">
+                    {isPrivate(gallery) ? c.newPasswordLabel : c.passwordRequiredLabel}
+                  </label>
                   <input
-                    type="checkbox"
-                    checked={removePassword}
-                    onChange={(e) => {
-                      setRemovePassword(e.target.checked);
-                      if (e.target.checked) setEditPassword("");
-                    }}
-                    className="rounded border-white/20"
+                    id={`pw-${gallery.id}`}
+                    type="text"
+                    maxLength={200}
+                    value={editPassword}
+                    onChange={(e) => setEditPassword(e.target.value)}
+                    placeholder={gallery.password ?? ""}
+                    className={inputCls}
                   />
-                  {c.removePassword}
-                </label>
+                </div>
+              )}
+              {editVisibility === "public" && isPrivate(gallery) && (
+                <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2.5 space-y-2">
+                  <p className="text-xs text-amber-200/90 leading-relaxed">{c.makePublicWarning}</p>
+                  <label className="flex items-center gap-2 text-xs text-white/80 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={confirmMakePublic}
+                      onChange={(e) => setConfirmMakePublic(e.target.checked)}
+                      className="rounded border-white/20"
+                    />
+                    {c.makePublicConfirm}
+                  </label>
+                </div>
               )}
               <label className="flex items-start gap-2.5 cursor-pointer bg-white/[0.03] border border-white/[0.06] rounded-lg px-3 py-2.5">
                 <input

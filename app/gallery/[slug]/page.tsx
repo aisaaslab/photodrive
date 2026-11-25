@@ -5,6 +5,7 @@ import { cookies } from "next/headers";
 import { getAdminDb } from "@/lib/firebase/admin";
 import { fetchDriveFolder } from "@/lib/drive/client";
 import { verifyGalleryToken } from "@/lib/gallery/session";
+import { isPrivate } from "@/lib/gallery/visibility";
 import { driveImageUrl } from "@/lib/drive/public-url";
 import { MasonryGrid } from "@/components/gallery/MasonryGrid";
 import { PasswordGate } from "@/components/gallery/PasswordGate";
@@ -43,6 +44,7 @@ export default async function GalleryPage({ params }: Props) {
     slug: string;
     folderId: string;
     passwordHash?: string;
+    visibility?: "public" | "private";
     pwChangedAt?: number;
     website?: string;
     instagram?: string;
@@ -62,7 +64,7 @@ export default async function GalleryPage({ params }: Props) {
     headerBranding?: "photographer" | null;
   };
 
-  if (gallery.passwordHash) {
+  if (isPrivate(gallery)) {
     const cookieStore = await cookies();
     const token = cookieStore.get(`gallery_token_${gallery.id}`)?.value;
     const valid = token ? await verifyGalleryToken(token) : null;

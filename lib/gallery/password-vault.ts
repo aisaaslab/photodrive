@@ -1,5 +1,6 @@
 // Server-only helper (import from API routes only — never from client code).
 import { createCipheriv, createDecipheriv, hkdfSync, randomBytes } from "crypto";
+import { galleryVisibility, type Visibility } from "@/lib/gallery/visibility";
 
 /**
  * Reversible, encrypted storage for gallery passwords.
@@ -57,10 +58,10 @@ type Doc = Record<string, unknown>;
  * sealed value and exposes `password` (decrypted, or the legacy plaintext that
  * hasn't been migrated yet, or null).
  */
-export function forOwner<T extends Doc>(data: T): Omit<T, "passwordEnc"> & { password: string | null } {
+export function forOwner<T extends Doc>(data: T): Omit<T, "passwordEnc"> & { password: string | null; visibility: Visibility } {
   const { passwordEnc, ...rest } = data;
   const legacy = typeof data.password === "string" ? data.password : null;
-  return { ...rest, password: openPassword(passwordEnc) ?? legacy };
+  return { ...rest, password: openPassword(passwordEnc) ?? legacy, visibility: galleryVisibility(data) };
 }
 
 /**

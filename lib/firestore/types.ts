@@ -6,6 +6,9 @@ export interface GalleryDoc {
   folderId: string;
   passwordHash?: string;
   password?: string;
+  // Public (no password) or private (password required), decision D18. Galleries created before this
+  // existed have none: derive it with galleryVisibility() (lib/gallery/visibility.ts).
+  visibility?: "public" | "private";
   website?: string;
   instagram?: string;
   facebook?: string;

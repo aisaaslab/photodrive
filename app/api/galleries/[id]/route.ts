@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAdminAuth, getAdminDb } from "@/lib/firebase/admin";
 import { hashPassword } from "@/lib/gallery/password";
+import { planUpdate } from "@/lib/gallery/visibility";
 import { sealPassword, forOwner } from "@/lib/gallery/password-vault";
 import { extractFolderId } from "@/lib/drive/url-parser";
 import { validTitleFont, validTitleColor, validTitleSize } from "@/lib/gallery/title-style";
@@ -37,26 +38,41 @@ export async function PATCH(
   const gallery = await getGalleryForOwner(id, uid);
   if (!gallery) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  const body = await req.json();
+  let body: Record<string, unknown>;
+  try {
+    const parsed = await req.json();
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) throw new Error("not an object");
+    body = parsed as Record<string, unknown>;
+  } catch {
+    return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+  }
   const updates: Record<string, unknown> = { updatedAt: Date.now() };
 
   if (body.name) updates.name = body.name;
   if (body.driveUrl) {
-    const folderId = extractFolderId(body.driveUrl);
+    const folderId = extractFolderId(String(body.driveUrl));
     if (!folderId) return NextResponse.json({ error: "Invalid Drive URL" }, { status: 400 });
     updates.folderId = folderId;
   }
-  if (body.password) {
-    updates.passwordHash = await hashPassword(body.password);
-    updates.passwordEnc = sealPassword(String(body.password));
-    updates.password = null; // clear any legacy plaintext copy
-    updates.pwChangedAt = Date.now();
-  }
-  if (body.removePassword) {
-    updates.passwordHash = null;
-    updates.passwordEnc = null;
-    updates.password = null;
-    updates.pwChangedAt = Date.now();
+  // Public or private (D18). A private gallery always keeps a password; switching to public removes it.
+  // Only touch visibility/password when the request actually says something about them.
+  if (body.visibility !== undefined || body.password !== undefined || body.removePassword !== undefined) {
+    const plan = planUpdate(gallery.data as Record<string, unknown>, {
+      visibility: body.visibility, password: body.password, removePassword: body.removePassword,
+    });
+    if (!plan.ok) return NextResponse.json({ error: plan.error }, { status: 400 });
+    updates.visibility = plan.visibility;
+    if (plan.newPassword) {
+      updates.passwordHash = await hashPassword(plan.newPassword);
+      updates.passwordEnc = sealPassword(plan.newPassword);
+      updates.password = null; // clear any legacy plaintext copy
+      updates.pwChangedAt = Date.now();
+    } else if (plan.clearPassword) {
+      updates.passwordHash = null;
+      updates.passwordEnc = null;
+      updates.password = null;
+      updates.pwChangedAt = Date.now();
+    }
   }
   if (typeof body.allowDownload === "boolean") updates.allowDownload = body.allowDownload;
 

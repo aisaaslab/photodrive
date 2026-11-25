@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { getAdminDb } from "@/lib/firebase/admin";
 import { fetchDriveFolder } from "@/lib/drive/client";
 import { verifyGalleryToken } from "@/lib/gallery/session";
+import { isPrivate } from "@/lib/gallery/visibility";
 import { makeZip } from "client-zip";
 
 // Node runtime + long timeout: we stream a (possibly large) zip built from
@@ -32,7 +33,7 @@ export async function GET(
   }
 
   // Password-protected gallery: require the same access cookie as the page.
-  if (gallery.passwordHash) {
+  if (isPrivate(gallery)) {
     const token = (await cookies()).get(`gallery_token_${id}`)?.value;
     const valid = token ? await verifyGalleryToken(token) : null;
     if (!valid || valid.galleryId !== id || valid.v !== (gallery.pwChangedAt ?? 0)) {

@@ -35,6 +35,7 @@ type Gallery = {
   folderId: string;
   passwordHash: string | null;
   password: string | null;
+  visibility?: "public" | "private";
   website?: string | null;
   instagram?: string | null;
   facebook?: string | null;
@@ -110,6 +111,8 @@ export default function AdminUsersPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
   const [editPassword, setEditPassword] = useState("");
+  const [editVisibility, setEditVisibility] = useState<"public" | "private">("public");
+  const [editError, setEditError] = useState("");
   const [editDriveUrl, setEditDriveUrl] = useState("");
   const [editSocial, setEditSocial] = useState({ website: "", instagram: "", facebook: "" });
   const [editSaving, setEditSaving] = useState(false);
@@ -149,6 +152,8 @@ export default function AdminUsersPage() {
     setEditingId(g.id);
     setEditName(g.name);
     setEditPassword(g.password ?? "");
+    setEditVisibility(g.visibility ?? (g.passwordHash ? "private" : "public"));
+    setEditError("");
     setEditDriveUrl(`https://drive.google.com/drive/folders/${g.folderId}`);
     setEditSocial({ website: g.website ?? "", instagram: g.instagram ?? "", facebook: g.facebook ?? "" });
   };
@@ -159,8 +164,10 @@ export default function AdminUsersPage() {
     const token = await user.getIdToken();
     const body: Record<string, unknown> = { name: editName };
     if (editDriveUrl) body.driveUrl = editDriveUrl;
-    if (editPassword) body.password = editPassword;
-    else body.removePassword = true;
+    // Public or private (D18): a private gallery needs a password, a public one has none.
+    body.visibility = editVisibility;
+    const current = galleries.find((x) => x.id === id);
+    if (editVisibility === "private" && editPassword && editPassword !== current?.password) body.password = editPassword;
     body.website = editSocial.website.trim();
     body.instagram = editSocial.instagram.trim();
     body.facebook = editSocial.facebook.trim();
@@ -173,6 +180,8 @@ export default function AdminUsersPage() {
       const updated = await res.json();
       setGalleries((prev) => prev.map((g) => (g.id === id ? { ...g, ...updated } : g)));
       setEditingId(null);
+    } else {
+      setEditError((await res.json().catch(() => null))?.error ?? "Could not save");
     }
     setEditSaving(false);
   };
@@ -551,13 +560,28 @@ export default function AdminUsersPage() {
                                   />
                                 </div>
                                 <div>
-                                  <label className="block text-xs text-stone-400 mb-1">Password (empty = none)</label>
-                                  <input
-                                    value={editPassword}
-                                    onChange={(e) => setEditPassword(e.target.value)}
-                                    placeholder="Leave empty to remove"
-                                    className="w-full bg-white/[0.06] border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-stone-600 focus:outline-none focus:border-white/25"
-                                  />
+                                  <label className="block text-xs text-stone-400 mb-1">Visibility</label>
+                                  <select
+                                    value={editVisibility}
+                                    onChange={(e) => setEditVisibility(e.target.value as "public" | "private")}
+                                    className="w-full bg-white/[0.06] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-white/25"
+                                  >
+                                    <option value="public">Public (no password)</option>
+                                    <option value="private">Private (password required)</option>
+                                  </select>
+                                  {editVisibility === "private" && (
+                                    <input
+                                      value={editPassword}
+                                      onChange={(e) => setEditPassword(e.target.value)}
+                                      placeholder="Password (required)"
+                                      maxLength={200}
+                                      className="mt-2 w-full bg-white/[0.06] border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-stone-600 focus:outline-none focus:border-white/25"
+                                    />
+                                  )}
+                                  {editVisibility === "public" && g.passwordHash && (
+                                    <p className="mt-1 text-xs text-amber-300">Saving as public removes this gallery&apos;s password.</p>
+                                  )}
+                                  {editError && <p className="mt-1 text-xs text-red-400">{editError}</p>}
                                 </div>
                               </div>
                               <div>
@@ -619,6 +643,9 @@ export default function AdminUsersPage() {
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-2 flex-wrap">
                                   <span className="font-medium text-white text-sm">{g.name}</span>
+                                  {!g.passwordHash && (
+                                    <span className="text-xs bg-black/40 border border-white/10 text-stone-500 px-2 py-0.5 rounded-full">Public</span>
+                                  )}
                                   {g.passwordHash && (
                                     <span className="text-xs bg-black/40 border border-white/10 text-stone-400 px-2 py-0.5 rounded-full flex items-center gap-1">
                                       <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>

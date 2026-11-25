@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { LOCALES, useLanguage } from "@/lib/i18n";
+import type { Visibility } from "@/lib/gallery/visibility";
 import { formatMoney } from "@/lib/shared/money";
 
 type PublicPlan = {
@@ -29,7 +30,7 @@ const PER_INTERVAL: Record<string, Record<"monthly" | "yearly", string>> = {
 interface Props {
   onCreated: () => void;
   onCancel?: () => void;
-  initialData?: { name: string; driveUrl: string; password: string; website?: string; instagram?: string; facebook?: string; description?: string; eventDate?: string; location?: string };
+  initialData?: { name: string; driveUrl: string; password: string; visibility?: Visibility; website?: string; instagram?: string; facebook?: string; description?: string; eventDate?: string; location?: string };
   /** After payment, auto-submit the restored form once the subscription is active. */
   autoSubmit?: boolean;
 }
@@ -81,7 +82,8 @@ export function NewGalleryForm({ onCreated, onCancel, initialData, autoSubmit }:
   const [name, setName] = useState(initialData?.name ?? "");
   const [driveUrl, setDriveUrl] = useState(initialData?.driveUrl ?? "");
   const [password, setPassword] = useState(initialData?.password ?? "");
-  const [showPassword, setShowPassword] = useState(false);
+  // Public (link opens it) or private (password required), D18. A form saved before this existed has a password or none.
+  const [visibility, setVisibility] = useState<Visibility>(initialData?.visibility ?? (initialData?.password ? "private" : "public"));
   const [social, setSocial] = useState({
     website: initialData?.website ?? "",
     instagram: initialData?.instagram ?? "",
@@ -147,7 +149,8 @@ export function NewGalleryForm({ onCreated, onCancel, initialData, autoSubmit }:
       body: JSON.stringify({
         name,
         driveUrl,
-        password: password || undefined,
+        visibility,
+        password: visibility === "private" ? password : undefined,
         website: socialOn.website ? social.website.trim() || undefined : undefined,
         instagram: socialOn.instagram ? social.instagram.trim() || undefined : undefined,
         facebook: socialOn.facebook ? social.facebook.trim() || undefined : undefined,
@@ -186,6 +189,10 @@ export function NewGalleryForm({ onCreated, onCancel, initialData, autoSubmit }:
 
   async function submitForm(opts?: { justPaid?: boolean; skipSubscriptionCheck?: boolean }): Promise<void> {
     if (!user || submittingRef.current) return;
+    if (visibility === "private" && !password) {
+      setError(f.passwordRequired);
+      return;
+    }
     submittingRef.current = true;
     setError("");
     setLoading(true);
@@ -258,7 +265,7 @@ export function NewGalleryForm({ onCreated, onCancel, initialData, autoSubmit }:
     if (!user) return;
     setCheckoutLoading(true);
     localStorage.setItem("pending_gallery", JSON.stringify({
-      name, driveUrl, password,
+      name, driveUrl, password, visibility,
       website: socialOn.website ? social.website : "",
       instagram: socialOn.instagram ? social.instagram : "",
       facebook: socialOn.facebook ? social.facebook : "",
@@ -522,33 +529,40 @@ export function NewGalleryForm({ onCreated, onCancel, initialData, autoSubmit }:
           </div>
         </div>
 
-        {/* Password toggle */}
-        <div className="bg-[#1a1a1a] border border-white/10 rounded-xl overflow-hidden">
-          <button
-            type="button"
-            onClick={() => setShowPassword((v) => !v)}
-            className="w-full flex items-center justify-between px-4 py-3 hover:bg-white/[0.04] transition-colors"
-          >
-            <div className="flex items-center gap-2.5 text-sm text-white">
-              <svg className="w-4 h-4 text-white/60" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
-              </svg>
-              {f.passwordLabel}
-              <span className="text-xs text-white/40">{f.passwordOptional}</span>
-            </div>
-            <div className={`relative w-9 h-5 rounded-full transition-colors duration-200 ${showPassword ? "bg-white/80" : "bg-white/10"}`}>
-              <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow-sm transition-transform duration-200 ${showPassword ? "translate-x-4" : "translate-x-0.5"}`} />
-            </div>
-          </button>
-
-          {showPassword && (
-            <div className="px-4 pb-4 pt-1 border-t border-white/[0.06] animate-scale-in">
+        {/* Who can open this gallery: public (the link opens it) or private (a password is required) */}
+        <div className="bg-[#1a1a1a] border border-white/10 rounded-xl p-4 space-y-3">
+          <div className="text-xs font-medium text-white/80">{f.visibilityLabel}</div>
+          <div role="radiogroup" aria-label={f.visibilityLabel} className="grid grid-cols-2 gap-2">
+            {(["public", "private"] as const).map((v) => {
+              const on = visibility === v;
+              return (
+                <button
+                  key={v}
+                  type="button"
+                  role="radio"
+                  aria-checked={on}
+                  onClick={() => setVisibility(v)}
+                  className={`text-left rounded-lg border px-3 py-2.5 transition-colors ${on ? "border-white/60 bg-white/[0.08]" : "border-white/10 hover:border-white/25"}`}
+                >
+                  <span className="block text-sm font-medium text-white">{v === "public" ? f.visibilityPublic : f.visibilityPrivate}</span>
+                  <span className="block text-xs text-white/50 mt-0.5">{v === "public" ? f.visibilityPublicHint : f.visibilityPrivateHint}</span>
+                </button>
+              );
+            })}
+          </div>
+          {visibility === "private" && (
+            <div className="animate-scale-in">
+              <label htmlFor="new-gallery-password" className="text-xs font-medium text-white/70 mb-1 block">
+                {f.passwordLabel}
+              </label>
               <input
+                id="new-gallery-password"
                 type="password"
+                required
+                maxLength={200}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder={f.passwordPlaceholder}
-                autoFocus
                 className="w-full bg-[#1a1a1a] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-stone-600 outline-none focus:border-white/25 transition-all"
               />
             </div>
