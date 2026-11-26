@@ -76,5 +76,33 @@ export const it: Translations = {
       chipLockTitle: "Protetta da password",
       chipLockSub: "Per galleria",
     },
+    builtFor: {
+      label: "Pensato per",
+      weddings: "Matrimoni",
+      portraits: "Ritratti",
+      events: "Eventi",
+      sports: "Sport",
+      corporate: "Aziendale",
+    },
+    how: {
+      step1: "Usa il Google Drive che hai già — niente di nuovo da imparare.",
+      step2: "Imposta la cartella su «Chiunque abbia il link» così la tua galleria può leggerla.",
+      step3: "Incolla il link della cartella, dai un nome alla galleria e, se vuoi, aggiungi una password.",
+      step4: "Condividi un unico link personale. Il tuo cliente non ha bisogno di un account.",
+    },
+    features: {
+      title1: "Tutto ciò che i tuoi clienti si aspettano.",
+      title2: "Niente che non serva loro.",
+    },
+    client: {
+      label: "Esperienza del cliente",
+      title1: "I preferiti del tuo cliente,",
+      title2: "a un clic.",
+      lead: "Uno spazio calmo, veloce e con il tuo marchio per sfogliare, scegliere i preferiti e scaricare. Nessuna registrazione. Nessun attrito.",
+      b1: "Preferiti con filtro rapido",
+      b2: "Schermo intero con miniature",
+      b3: "Download a piena risoluzione",
+      lightbox: "Anteprima del visualizzatore della galleria",
+    },
   },
 };

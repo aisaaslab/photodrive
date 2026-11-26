@@ -24,9 +24,9 @@
 - [x] **S6-04** · L · Hero + product preview: gradients over the hero photo, badge, two-line H1 with gradient line 2, CTAs, checks, 1120×560 gallery window with three floating chips and the bottom fade. Hero image `priority`.
   - Files: `components/landing/Hero.tsx`, `GalleryWindow.tsx`, `FloatingChip.tsx`
   - Done when: matches node `5:14` at 1440.
-- [ ] **S6-05** · M · Built-for strip and How-it-works (4 equal-height steps with connectors).
+- [x] **S6-05** · M · Built-for strip and How-it-works (4 equal-height steps with connectors).
   - Done when: matches nodes `5:149`, `5:166`.
-- [ ] **S6-06** · L · Features bento (row 1: photo-mosaic card + live-sync card; rows 2–3 equal cards) and Client-experience section (lightbox mock with thumbnails).
+- [x] **S6-06** · L · Features bento (row 1: photo-mosaic card + live-sync card; rows 2–3 equal cards) and Client-experience section (lightbox mock with thumbnails).
   - Done when: matches nodes `8:2`, `8:100`.
 - [ ] **S6-07** · L · Pricing: move `buildTiers`/`discountPct` to `lib/shared/pricing.ts` with unit tests; `BillingToggle` island; `PlanCard` (highlight state); money via `lib/shared/money.ts` in the plan's own currency (D4); "One-time payment · no auto-renewal"; "Secure checkout powered by Stripe"; fallback card when no plans exist; CTA links to `/subscribe?plan=<id>`.
   - Depends: S2-05, S6-02

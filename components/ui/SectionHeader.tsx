@@ -8,8 +8,8 @@ export function SectionHeader({ eyebrow, title, lead, compact, align = "center",
   return (
     <header className={cn("flex flex-col gap-5", align === "center" ? "items-center text-center" : "items-start text-left", className)}>
       {eyebrow && <Pill>{eyebrow}</Pill>}
-      <Tag className={cn("font-extrabold text-fg text-balance", compact ? "text-h2-compact max-w-[15ch]" : "text-h2 max-w-[22ch]")}>{title}</Tag>
-      {lead && <p className="text-lead max-w-[36rem] text-fg-soft text-pretty">{lead}</p>}
+      <Tag className={cn("font-extrabold text-fg text-balance", compact ? "text-h2-compact max-w-[15ch]" : "text-h2 max-w-[900px]")}>{title}</Tag>
+      {lead && <p className="text-lead max-w-[36rem] text-fg-muted text-pretty">{lead}</p>}
     </header>
   );
 }

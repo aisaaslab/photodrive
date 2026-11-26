@@ -76,5 +76,33 @@ export const es: Translations = {
       chipLockTitle: "Protegida con contraseña",
       chipLockSub: "Por galería",
     },
+    builtFor: {
+      label: "Hecho para",
+      weddings: "Bodas",
+      portraits: "Retratos",
+      events: "Eventos",
+      sports: "Deporte",
+      corporate: "Corporativo",
+    },
+    how: {
+      step1: "Usa el Google Drive que ya tienes — nada nuevo que aprender.",
+      step2: "Configura la carpeta como «Cualquier persona con el enlace» para que tu galería pueda leerla.",
+      step3: "Pega el enlace de la carpeta, ponle nombre a tu galería y, si quieres, añade una contraseña.",
+      step4: "Comparte un enlace personal. Tu cliente no necesita cuenta.",
+    },
+    features: {
+      title1: "Todo lo que tus clientes esperan.",
+      title2: "Nada que no necesiten.",
+    },
+    client: {
+      label: "Experiencia del cliente",
+      title1: "Los favoritos de tu cliente,",
+      title2: "a un clic.",
+      lead: "Un espacio tranquilo, rápido y con tu marca para ver, elegir favoritas y descargar. Sin registro. Sin fricción.",
+      b1: "Favoritas con filtro rápido",
+      b2: "Pantalla completa con miniaturas",
+      b3: "Descargas en resolución completa",
+      lightbox: "Vista previa del visor de la galería",
+    },
   },
 };

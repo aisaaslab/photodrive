@@ -45,8 +45,8 @@
   --text-h1--line-height: 1.05;
   --text-h1--letter-spacing: -0.03em;
   --text-h1--font-weight: 800;
-  --text-h2: clamp(2rem, 1rem + 3.2vw, 3.5rem);
-  --text-h2--line-height: 1.08;
+  --text-h2: clamp(2rem, 1rem + 3.2vw, 3.75rem);
+  --text-h2--line-height: 1.07;
   --text-h2--letter-spacing: -0.025em;
   --text-h2--font-weight: 800;
   --text-h2-compact: clamp(1.75rem, 1rem + 2.4vw, 3rem);

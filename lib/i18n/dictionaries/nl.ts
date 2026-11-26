@@ -639,5 +639,33 @@ export const nl: Translations = {
       chipLockTitle: "Met wachtwoord beveiligd",
       chipLockSub: "Per galerij",
     },
+    builtFor: {
+      label: "Gemaakt voor",
+      weddings: "Bruiloften",
+      portraits: "Portretten",
+      events: "Evenementen",
+      sports: "Sport",
+      corporate: "Zakelijk",
+    },
+    how: {
+      step1: "Gebruik de Google Drive die je al hebt — niets nieuws om te leren.",
+      step2: "Zet de map op “Iedereen met de link”, zodat je galerij hem kan lezen.",
+      step3: "Plak de maplink, geef je galerij een naam en voeg eventueel een wachtwoord toe.",
+      step4: "Deel één persoonlijke link. Je klant heeft geen account nodig.",
+    },
+    features: {
+      title1: "Alles wat je klanten verwachten.",
+      title2: "Niets wat ze niet nodig hebben.",
+    },
+    client: {
+      label: "Klantervaring",
+      title1: "De favorieten van je klant,",
+      title2: "met één klik.",
+      lead: "Een rustige, snelle ruimte in jouw stijl om te bladeren, favorieten te kiezen en te downloaden. Geen aanmelding. Geen gedoe.",
+      b1: "Favorieten met een snel filter",
+      b2: "Volledig scherm met miniaturen",
+      b3: "Downloads in volledige resolutie",
+      lightbox: "Voorbeeld van de galerijweergave",
+    },
   },
 };

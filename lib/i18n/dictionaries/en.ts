@@ -637,6 +637,34 @@ export const en = {
       chipLockTitle: "Password protected",
       chipLockSub: "Per gallery",
     },
+    builtFor: {
+      label: "Built for",
+      weddings: "Weddings",
+      portraits: "Portraits",
+      events: "Events",
+      sports: "Sports",
+      corporate: "Corporate",
+    },
+    how: {
+      step1: "Use the Google Drive you already have — nothing new to learn.",
+      step2: "Set the folder to “Anyone with the link” so your gallery can read it.",
+      step3: "Paste the folder link, name your gallery and optionally add a password.",
+      step4: "Share one personal link. Your client needs no account.",
+    },
+    features: {
+      title1: "Everything your clients expect.",
+      title2: "Nothing they don’t need.",
+    },
+    client: {
+      label: "Client experience",
+      title1: "Your client’s favourites,",
+      title2: "one click away.",
+      lead: "A calm, fast, branded space to browse, pick favourites and download. No sign-up. No friction.",
+      b1: "Favourites with a quick filter",
+      b2: "Full-screen viewing with thumbnails",
+      b3: "Full-resolution downloads",
+      lightbox: "Gallery viewer preview",
+    },
   },
 };
 

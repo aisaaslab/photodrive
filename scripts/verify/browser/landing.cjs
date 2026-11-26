@@ -55,7 +55,7 @@ const check = (name, ok, extra = "") => { console.log(`${ok ? "PASS" : "FAIL"} $
     await page.getByRole("button", { name: "Menu", exact: true }).click();
     await page.locator("#landing-menu").getByRole("button", { name: /Language/ }).click();
     await page.locator("#landing-menu").getByRole("option", { name: "Deutsch" }).click();
-    await page.waitForFunction(() => document.documentElement.lang === "de", null, { timeout: 8000 }).catch(() => {});
+    await page.waitForFunction(() => document.documentElement.lang === "de" && (document.querySelector("h1")?.textContent || "").includes("Dein Google Drive"), null, { timeout: 10000 }).catch(() => {});
     check("phone: choosing Deutsch in the menu switches the page", (await page.evaluate(() => document.documentElement.lang)) === "de" && (await page.getByRole("heading", { level: 1 }).innerText()).includes("Dein Google Drive"));
     await ctx.close();
   }

@@ -5,8 +5,8 @@ export function Chip({ children, dot = true, active, onClick, className }: {
   children: React.ReactNode; dot?: boolean; active?: boolean; onClick?: () => void; className?: string;
 }) {
   const classes = cn(
-    "inline-flex items-center gap-2.5 rounded-pill border px-5 py-2 text-[15px] font-semibold transition-colors",
-    active ? "border-accent bg-accent-soft text-fg" : "border-line bg-surface-2 text-fg-soft",
+    "inline-flex items-center gap-2 rounded-pill border px-[18px] py-[9px] text-sm font-semibold transition-colors",
+    active ? "border-accent bg-accent-soft text-fg" : "border-line bg-surface text-fg",
     onClick && cn("hover:border-accent/60 hover:text-fg cursor-pointer", focusRing),
     className,
   );

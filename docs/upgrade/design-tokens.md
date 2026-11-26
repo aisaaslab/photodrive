@@ -26,7 +26,7 @@ The legacy light palette (`primary`, `ink`, `body`, `badge-*`) is kept for pages
 ## Type, radii, shadows, width
 
 - Font: `font-display` = Manrope (variable 200 to 800; latin, latin-ext, greek), falling back to IBM Plex Sans. Existing pages keep Plex until S5-12.
-- Scale (fluid between a 390 phone and the 1440 canvas): `text-h1` 40 to 80 px (reaches 80 at the 1440 canvas; about 62 at 1024 so the headline stays on two lines) / 800 / -3 %, `text-h2` 32 to 56 / 800 / -2.5 %,
+- Scale (fluid between a 390 phone and the 1440 canvas): `text-h1` 40 to 80 px (reaches 80 at the 1440 canvas; about 62 at 1024 so the headline stays on two lines) / 800 / -3 %, `text-h2` 32 to 60 / 800 / -2.5 %,
   `text-h2-compact` 28 to 48, `text-lead` 17 to 19 / 1.6. Body 15 to 16 (`text-[15px]` / `text-base`), eyebrow 12 px, 800, uppercase, +12 %.
 - Radii: `rounded-tile` 12, `rounded-card` 24, `rounded-panel` 32, `rounded-pill` fully round.
 - Shadows: `shadow-glow` (highlighted plan), `shadow-window` (gallery window), `shadow-chip` (floating chips).
