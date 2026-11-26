@@ -22,7 +22,8 @@ const deliver = (type: string, object: unknown) =>
 const user = (uid = "u1") => testDb().collection("users").doc(uid).get().then((s) => s.data()!);
 const pay = (id: string) => testDb().collection("payments").doc(id).get().then((s) => s.data()!);
 const lastEvent = async () => (await testDb().collection("stripe_events").doc(`evt_${n}`).get()).data()!;
-const near = (actual: number, expected: number, ms = 5000) => expect(Math.abs(actual - expected)).toBeLessThan(ms);
+// The tests tell apart whole days (30, 10, 0), so a generous tolerance keeps them robust on a slow CI runner.
+const near = (actual: number, expected: number, ms = 120_000) => expect(Math.abs(actual - expected)).toBeLessThan(ms);
 
 /** A real monthly purchase through the webhook, so payments/{id} is written by fulfilCheckoutSession. */
 async function buyMonthly(sessionId: string, paymentIntent: string, uid = "u1") {

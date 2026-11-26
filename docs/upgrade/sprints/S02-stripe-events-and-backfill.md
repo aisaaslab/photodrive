@@ -33,7 +33,7 @@
   - Refs: PAY-7
 - [ ] **S2-07** · S · **Owner review gate:** run the report against production (read-only), share the CSV with the owner, record which rows are approved.
   - Done when: `approved.csv` exists (or "no corrections needed") and the decision is logged in `evidence/S2.md`.
-- [ ] **S2-08** · M · Back-fill **apply** script: `--apply --approved approved.csv`; transactional, idempotent, one `audit_log`-style record per user, refuses to run without the file; rehearsed on staging.
+- [~] **S2-08** · M · Back-fill **apply** script: `--apply --approved approved.csv`; transactional, idempotent, one `audit_log`-style record per user, refuses to run without the file; rehearsed on staging.
   - Depends: S2-06
   - Done when: staging rehearsal passes; production run only after S2-07 approval.
 - [ ] **S2-09** · S · Show payment status (`refunded`, `disputed`, `needs_review`) minimally on the existing admin users page until the rebuilt Payments view (S8-01).

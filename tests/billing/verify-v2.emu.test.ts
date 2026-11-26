@@ -100,6 +100,7 @@ describe("verify misconfiguration (S1-10)", () => {
 
 describe("verify and webhook racing on one session", () => {
   it("results in exactly one fulfilment, whatever the interleaving", async () => {
+    const before = Date.now();
     const session = paid("cs_race");
     stripeReturns(session);
     const event = eventFixture("checkout.session.completed", session, "evt_race");
@@ -114,9 +115,12 @@ describe("verify and webhook racing on one session", () => {
     const [v1, w1, v2, w2] = results.map((r) => r.status);
     expect([v1, v2]).toEqual([200, 200]);
     for (const w of [w1, w2]) expect([200, 409]).toContain(w);
+    const after = Date.now();
     const u = await user();
-    expect(u.subscriptionExpiresAt).toBeGreaterThan(Date.now() + MONTH_MS - 5000);
-    expect(u.subscriptionExpiresAt).toBeLessThan(Date.now() + MONTH_MS + 5000); // one month, not two
+    // Exactly one month granted (not two), whenever in [before, after] the fulfilment ran: no wall-clock tolerance needed,
+    // so a slow CI runner cannot make this flaky.
+    expect(u.subscriptionExpiresAt).toBeGreaterThanOrEqual(before + MONTH_MS);
+    expect(u.subscriptionExpiresAt).toBeLessThanOrEqual(after + MONTH_MS);
     const payments = await testDb().collection("payments").where("uid", "==", "u1").get();
     expect(payments.size).toBe(1);
   });

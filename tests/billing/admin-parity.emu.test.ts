@@ -108,8 +108,9 @@ describe("admin route actions", () => {
   });
 
   it("assign_plan via the route, revoke, and non-admins are refused", async () => {
+    const before = Date.now();
     expect((await act({ uid: "u1", action: "assign_plan", planId: "y" })).status).toBe(200);
-    expect(await expiry("u1")).toBeGreaterThan(Date.now() + YEAR_MS - 5000);
+    expect(await expiry("u1")).toBeGreaterThanOrEqual(before + YEAR_MS);
     await act({ uid: "u1", action: "revoke" });
     expect(await expiry("u1")).toBe(0);
     vi.spyOn(testAuth(), "verifyIdToken").mockResolvedValue({ uid: "someone" } as never);
