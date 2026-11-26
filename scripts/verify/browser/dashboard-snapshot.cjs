@@ -119,6 +119,12 @@ const clean = (s) => String(s ?? "").replace(/\s+/g, " ").replace(/\d{1,2} [A-Z]
   await dialog().getByLabel(/password/i).first().fill("new-secret-9");
   await save();
   step("12 edit private: new password saved", await afterSave());
+  // the card's password reminder: reveal and hide
+  const pwBtn = card("Private test").locator("h3 + button");
+  await pwBtn.click();
+  step("12b card: password revealed", clean(await card("Private test").innerText()).slice(0, 140));
+  await pwBtn.click();
+  step("12c card: password hidden again", clean(await card("Private test").innerText()).slice(0, 140));
   // switching a private gallery to public needs a confirmation
   await openEdit("Private test");
   await dialog().locator('[role="radio"]:has-text("Public")').click();

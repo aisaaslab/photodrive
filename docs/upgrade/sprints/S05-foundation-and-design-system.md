@@ -31,7 +31,7 @@
   - Files: `lib/i18n/*`, `components/ClientProviders.tsx`, `app/layout.tsx`
   - Done when: bundle analysis shows one language per page; no hydration flash on language; parity check in CI.
   - Refs: STR-6 · D16
-- [ ] **S5-07** · M · Split `GalleryCard` (959 lines) into subcomponents and hooks; no behaviour change.
+- [x] **S5-07** · M · Split `GalleryCard` (959 lines) into subcomponents and hooks; no behaviour change.
   - Files: `components/dashboard/GalleryCard.tsx`
   - Done when: no file > 300 lines; manual regression list passes (edit, password, cover, share, download).
   - Refs: STR-4
