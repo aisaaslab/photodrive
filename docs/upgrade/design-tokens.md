@@ -21,7 +21,7 @@ Source: the approved Figma design (`02-landing-design-brief.md`, variables "B ·
 | `glass`, `scrim` | white 9 %, black 50 % | glass buttons, buttons over photos |
 | `danger`, `success-bright` | `#f87171`, `#34d399` | errors, success on dark |
 
-The legacy light palette (`primary`, `ink`, `body`, `badge-*`) is kept for pages not yet re-skinned and is removed with S5-12 / S6-13.
+The legacy light palette (`primary`, `ink`, `body`, `badge-*`) was removed with S6-13, when the last pages using it (the `/lp/*` pages) were re-skinned.
 
 ## Type, radii, shadows, width
 

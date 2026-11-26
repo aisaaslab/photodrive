@@ -45,7 +45,7 @@
 - [ ] **S6-12** · M · SEO and performance: metadata, restyled `opengraph-image.tsx`, JSON-LD (Organization, SoftwareApplication, FAQPage), `sizes` and priority on images, analytics (`SiteAnalytics`, tracking IDs, `trackPurchase`) unchanged; Lighthouse targets met.
   - Files: `app/page.tsx`, `app/opengraph-image.tsx`, `app/sitemap.ts`
   - Done when: Lighthouse report saved in `evidence/S6.md`.
-- [ ] **S6-13** · M · Migrate `/lp/*` pages and `components/Hero.tsx`, `components/lp/*` to the tokens/primitives (D13): same URLs, same content.
+- [x] **S6-13** · M · Migrate `/lp/*` pages and `components/Hero.tsx`, `components/lp/*` to the tokens/primitives (D13): same URLs, same content.
   - Files: `app/lp/*`, `components/Hero.tsx`, `components/lp/*`
   - Done when: no second design language remains; LP URLs still render and track.
   - Refs: STR-7

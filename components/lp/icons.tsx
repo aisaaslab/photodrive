@@ -11,7 +11,7 @@ export function GoogleDriveIcon({ className = "h-6 w-6" }: { className?: string 
   );
 }
 
-export function Check({ className = "h-4 w-4 text-emerald-500" }: { className?: string }) {
+export function Check({ className = "h-4 w-4 text-success-bright" }: { className?: string }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3} aria-label="Yes" role="img">
       <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
@@ -20,12 +20,12 @@ export function Check({ className = "h-4 w-4 text-emerald-500" }: { className?: 
 }
 
 export function Dash() {
-  return <span className="text-stone-300" aria-label="No" role="img">—</span>;
+  return <span className="text-fg-muted" aria-label="No" role="img">—</span>;
 }
 
 export function CheckCircle() {
   return (
-    <svg className="h-5 w-5 shrink-0 text-emerald-500" fill="currentColor" viewBox="0 0 20 20" aria-hidden>
+    <svg className="h-5 w-5 shrink-0 text-success-bright" fill="currentColor" viewBox="0 0 20 20" aria-hidden>
       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.7-9.3a1 1 0 00-1.4-1.4L9 10.6 7.7 9.3a1 1 0 00-1.4 1.4l2 2a1 1 0 001.4 0l4-4z" clipRule="evenodd" />
     </svg>
   );

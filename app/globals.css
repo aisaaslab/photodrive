@@ -40,7 +40,7 @@
   /* Page width: 1280 content inside the 1440 canvas (80px gutters on desktop, 16px on a phone) */
   --container-page: 80rem;
 
-  /* Type scale: fluid between 390 and 1440. Utilities: text-h1, text-h2, text-h2-compact, text-lead, text-body */
+  /* Type scale: fluid between 390 and 1440. Utilities: text-h1, text-h2, text-h2-compact, text-lead */
   --text-h1: clamp(2.5rem, 0.9rem + 4.6vw, 5rem);
   --text-h1--line-height: 1.05;
   --text-h1--letter-spacing: -0.03em;
@@ -55,15 +55,6 @@
   --text-h2-compact--font-weight: 800;
   --text-lead: clamp(1.0625rem, 0.95rem + 0.4vw, 1.1875rem);
   --text-lead--line-height: 1.6;
-
-  /* Legacy light palette used by the pages not yet re-skinned (S5-12 / S6-13 retire these) */
-  --color-primary: #2563eb;
-  --color-primary-dark: #1d4ed8;
-  --color-ink: #0f172a;
-  --color-body: #475569;
-  --color-success: #22c55e;
-  --color-badge-bg: #eff6ff;
-  --color-badge-text: #2563eb;
 }
 
 /*
