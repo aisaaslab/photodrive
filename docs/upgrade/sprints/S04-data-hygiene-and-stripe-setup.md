@@ -24,7 +24,7 @@
   - Files: `scripts/migrations/seal-legacy-passwords.ts`, `lib/gallery/password-vault.ts`, `app/api/galleries/route.ts`, `app/api/admin/users/route.ts`
   - Done when: no read endpoint writes to Firestore; migration report shows zero plaintext left.
   - Refs: SEC-8
-- [ ] **S4-05** · L · Stripe customer per user: create/look up once, store `stripeCustomerId`, pass `customer` to Checkout (instead of `customer_email`); handle existing users without an id; tests.
+- [~] **S4-05** · L · Stripe customer per user: create/look up once, store `stripeCustomerId`, pass `customer` to Checkout (instead of `customer_email`); handle existing users without an id; tests.
   - Files: `lib/server/billing/stripe.ts`, `app/api/stripe/checkout/route.ts`
   - Done when: the second purchase by a user reuses the same Stripe customer.
   - Refs: PAY-5

@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi, type MockInstance } from "vitest"
 import { NextRequest } from "next/server";
 import { clearEmulators, testAuth } from "../helpers/db";
 import { seedPlan, seedUser } from "../helpers/seed";
+import { createFakeCustomers } from "../helpers/stripe";
 
 vi.mock("@/lib/firebase/admin", async () => {
   const db = await import("../helpers/db");
@@ -32,6 +33,11 @@ beforeEach(async () => {
   vi.stubEnv("BILLING_FULFIL_V2", "1");
   vi.stubEnv("APP_ENV", "staging");
   for (const m of ["log", "warn", "error"] as const) vi.spyOn(console, m).mockImplementation(() => {});
+  // Customers API: an in-memory fake, so checkout never reaches the network (S4-05).
+  const fakeCustomers = createFakeCustomers();
+  for (const m of ["create", "retrieve", "update", "search"] as const) {
+    vi.spyOn(getStripe().customers, m).mockImplementation(fakeCustomers.impl[m] as never);
+  }
   create = vi.spyOn(getStripe().checkout.sessions, "create") as unknown as MockInstance;
   create.mockResolvedValue({ url: "https://checkout.stripe.test/s" });
   list = vi.spyOn(getStripe().checkout.sessions, "list") as unknown as MockInstance;

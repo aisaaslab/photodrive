@@ -57,3 +57,55 @@ export function chargeFixture(over: Record<string, unknown> = {}) {
 export function disputeFixture(over: Record<string, unknown> = {}) {
   return { id: "dp_test_1", object: "dispute", charge: "ch_test_1", payment_intent: "pi_test_1", amount: 9900, currency: "usd", status: "needs_response", ...over };
 }
+
+/**
+ * An in-memory stand-in for Stripe's Customers API, with the behaviours the code relies on: `create` honours idempotency keys
+ * (the same key returns the same customer), `retrieve` throws `resource_missing` for an unknown id and returns `{ deleted: true }`
+ * for a deleted one, and `search` understands `metadata['uid']:'…'`.
+ */
+export function createFakeCustomers() {
+  type Fake = { id: string; email?: string; name?: string; metadata: Record<string, string>; deleted?: true };
+  const customers = new Map<string, Fake>();
+  const keys = new Map<string, string>();
+  let n = 0;
+  const calls = { create: 0, retrieve: 0, search: 0, update: 0 };
+  const api = {
+    customers,
+    calls,
+    seed(id: string, data: Partial<Fake> = {}) {
+      customers.set(id, { id, metadata: {}, ...data });
+    },
+    impl: {
+      async create(params: Record<string, unknown>, options?: { idempotencyKey?: string }) {
+        calls.create++;
+        await Promise.resolve(); // yield, so concurrent callers really interleave
+        const key = options?.idempotencyKey;
+        if (key && keys.has(key)) return customers.get(keys.get(key)!)!;
+        const id = `cus_fake_${++n}`;
+        const c: Fake = { id, email: params.email as string | undefined, name: params.name as string | undefined, metadata: (params.metadata as Record<string, string>) ?? {} };
+        customers.set(id, c);
+        if (key) keys.set(key, id);
+        return c;
+      },
+      async retrieve(id: string) {
+        calls.retrieve++;
+        const c = customers.get(id);
+        if (!c) throw Object.assign(new Error(`No such customer: '${id}'`), { code: "resource_missing", statusCode: 404 });
+        return c.deleted ? { id, deleted: true, object: "customer" } : c;
+      },
+      async update(id: string, params: { metadata?: Record<string, string> }) {
+        calls.update++;
+        const c = customers.get(id);
+        if (!c) throw Object.assign(new Error("No such customer"), { code: "resource_missing", statusCode: 404 });
+        c.metadata = { ...c.metadata, ...(params.metadata ?? {}) };
+        return c;
+      },
+      async search(params: { query: string }) {
+        calls.search++;
+        const uid = /metadata\['uid'\]:'([^']*)'/.exec(params.query)?.[1];
+        return { data: [...customers.values()].filter((c) => !c.deleted && uid !== undefined && c.metadata.uid === uid) };
+      },
+    },
+  };
+  return api;
+}

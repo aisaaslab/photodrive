@@ -1,7 +1,8 @@
 import { requestLogger } from "@/lib/server/log";
 import { appEnv, billingFulfilV2 } from "@/lib/server/billing/flags";
 import { NextRequest, NextResponse } from "next/server";
-import { getAdminAuth } from "@/lib/firebase/admin";
+import { getAdminAuth, getAdminDb } from "@/lib/firebase/admin";
+import { ensureStripeCustomer } from "@/lib/server/billing/customer";
 import { getStripe, StripeConfigError } from "@/lib/server/billing/stripe";
 import { activateSubscription } from "@/lib/stripe/activate";
 import { getPlanById } from "@/lib/plans";
@@ -94,10 +95,22 @@ export async function POST(req: NextRequest) {
   // The idempotency key makes a double click return the same Checkout Session.
   const idempotencyKey = `checkout:${decoded.uid}:${plan.id}:${Math.floor(Date.now() / 60_000)}`;
 
+  // One Stripe Customer per user (S4-05). Best-effort: if Stripe's customer API fails, checkout still works the old way
+  // (a guest checkout with the e-mail address) rather than blocking a payment.
+  let customerId: string | null = null;
+  if (v2) {
+    try {
+      customerId = await ensureStripeCustomer(stripe, getAdminDb(), { uid: decoded.uid, email: decoded.email, name: decoded.name as string | undefined });
+    } catch (err) {
+      requestLogger(req, "stripe.checkout").warn("customer lookup failed; using e-mail only", { uid: decoded.uid, err: String(err) });
+    }
+  }
+
   const session = await stripe.checkout.sessions.create(
     {
       mode: "payment",
-      customer_email: decoded.email ?? undefined,
+      // With a Customer, Stripe takes the e-mail from it and the two parameters cannot be combined.
+      ...(customerId ? { customer: customerId } : { customer_email: decoded.email ?? undefined }),
       line_items: [
         {
           price_data: {
