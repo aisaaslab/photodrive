@@ -1,4 +1,3 @@
-import Link from "next/link";
 import type { Translations } from "@/lib/i18n";
 import { Accordion, type AccordionItem } from "@/components/ui/Accordion";
 import { SectionHeader } from "@/components/ui/SectionHeader";
