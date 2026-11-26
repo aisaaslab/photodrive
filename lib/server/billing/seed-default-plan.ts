@@ -1,3 +1,4 @@
+import "server-only";
 import type { Firestore } from "firebase-admin/firestore";
 import type { PlanDoc } from "@/lib/firestore/types";
 

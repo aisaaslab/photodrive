@@ -5,7 +5,7 @@ import { clearEmulators, testDb } from "../helpers/db";
 import { seedUser } from "../helpers/seed";
 import { TEST_WEBHOOK_SECRET, eventFixture, sessionFixture, signedWebhookRequest } from "../helpers/stripe";
 import { STALE_PROCESSING_MS, claimEvent, markEvent } from "@/lib/server/repos/stripeEvents";
-import { MONTH_MS } from "@/lib/server/billing/access";
+import { MONTH_MS } from "@/lib/shared/billing-access";
 
 vi.mock("@/lib/firebase/admin", async () => {
   const db = await import("../helpers/db");

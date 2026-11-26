@@ -1,3 +1,4 @@
+import "server-only";
 import type { DriveFile, DriveFolder } from "@/lib/drive/types";
 import { photoToken, signedMediaUrl } from "@/lib/server/media-token";
 import { isProtectedTier } from "@/lib/server/photo-access";

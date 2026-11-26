@@ -1,3 +1,4 @@
+import "server-only";
 import { NextResponse } from "next/server";
 
 export type DriveSize = "thumb" | "preview" | "full" | "stream";

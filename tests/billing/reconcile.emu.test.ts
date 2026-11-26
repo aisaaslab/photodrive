@@ -5,7 +5,7 @@ import { clearEmulators, testDb } from "../helpers/db";
 import { seedPayment, seedUser } from "../helpers/seed";
 import { sessionFixture } from "../helpers/stripe";
 import { createLogger } from "@/lib/server/log";
-import { MONTH_MS } from "@/lib/server/billing/access";
+import { MONTH_MS } from "@/lib/shared/billing-access";
 
 vi.mock("@/lib/firebase/admin", async () => {
   const db = await import("../helpers/db");

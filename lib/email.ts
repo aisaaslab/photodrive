@@ -1,3 +1,4 @@
+import "server-only";
 // Server-only helper (import from API routes only — never from client code).
 
 /**

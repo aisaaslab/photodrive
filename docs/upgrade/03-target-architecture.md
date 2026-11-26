@@ -47,7 +47,7 @@ request id, and never throws a bare 500 for bad input (400 with field errors).
 ### Access rules (pure, unit-tested)
 
 ```ts
-// lib/server/billing/access.ts
+// lib/shared/billing-access.ts
 const LIFETIME_FROM = 4_102_444_800_000; // ≥ 2100-01-01 treated as lifetime (existing sentinel is year 3000)
 computeExpiry({ now, currentExpiresAt, grantedMs }) =>
   currentExpiresAt >= LIFETIME_FROM ? currentExpiresAt          // comp/lifetime never shortened
@@ -57,7 +57,7 @@ revokeGrant({ now, currentExpiresAt, grantedMs }) =>
   : max(now, currentExpiresAt - grantedMs)
 ```
 
-Implemented in `lib/server/billing/access.ts` with two small refinements (both unit-tested): a zero/invalid
+Implemented in `lib/shared/billing-access.ts` with two small refinements (both unit-tested): a zero/invalid
 grant changes nothing, and `revokeGrant` never moves an already-expired account forward to `now`
 (it returns the current expiry unchanged).
 

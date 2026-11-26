@@ -1,3 +1,4 @@
+import "server-only";
 // Server-only helper (import from API routes only — never from client code).
 import { createCipheriv, createDecipheriv, hkdfSync, randomBytes } from "crypto";
 import { galleryVisibility, type Visibility } from "@/lib/gallery/visibility";

@@ -1,3 +1,4 @@
+import "server-only";
 /**
  * Structured JSON logger for server code (S0-07).
  *

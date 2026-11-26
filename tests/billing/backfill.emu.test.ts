@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { clearEmulators, testDb } from "../helpers/db";
 import { seedPayment, seedUser } from "../helpers/seed";
 import { sessionFixture } from "../helpers/stripe";
-import { DAY_MS, LIFETIME_SENTINEL, MONTH_MS, YEAR_MS } from "@/lib/server/billing/access";
+import { DAY_MS, LIFETIME_SENTINEL, MONTH_MS, YEAR_MS } from "@/lib/shared/billing-access";
 import {
   REPORT_A_COLUMNS, REPORT_B_COLUMNS, REPORT_WINDOW_MS, buildReportA, buildReportB, toCsv,
 } from "@/lib/server/billing/backfill";

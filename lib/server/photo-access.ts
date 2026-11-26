@@ -1,3 +1,4 @@
+import "server-only";
 import { getAdminAuth, getAdminDb } from "@/lib/firebase/admin";
 import { isAdmin } from "@/lib/firebase/admin-guard";
 import { fetchDriveFolder } from "@/lib/drive/client";

@@ -1,6 +1,7 @@
+import "server-only";
 import type { Firestore } from "firebase-admin/firestore";
 import type { PaymentDoc, PaymentStatus } from "@/lib/firestore/types";
-import { DAY_MS, computeExpiry, periodMs, revokeGrant } from "./access";
+import { DAY_MS, computeExpiry, periodMs, revokeGrant } from "@/lib/shared/billing-access";
 
 /** The grant is in effect (as opposed to taken back). Payments before S1-03 have no status. */
 const grantInEffect = (s: PaymentDoc["status"]) => s === undefined || s === "fulfilled" || s === "partially_refunded";

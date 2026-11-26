@@ -1,5 +1,6 @@
+import "server-only";
 import type { Firestore } from "firebase-admin/firestore";
-import { computeExpiry } from "./access";
+import { computeExpiry } from "@/lib/shared/billing-access";
 
 /**
  * Admin-side counterpart of fulfilCheckoutSession: adds `grantedMs` of access to a user with the

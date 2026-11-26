@@ -4,7 +4,7 @@ import { NextRequest } from "next/server";
 import { clearEmulators, testAuth, testDb } from "../helpers/db";
 import { seedPlan, seedUser } from "../helpers/seed";
 import { sessionFixture } from "../helpers/stripe";
-import { DAY_MS, LIFETIME_SENTINEL, MONTH_MS, YEAR_MS } from "@/lib/server/billing/access";
+import { DAY_MS, LIFETIME_SENTINEL, MONTH_MS, YEAR_MS } from "@/lib/shared/billing-access";
 
 vi.mock("@/lib/firebase/admin", async () => {
   const db = await import("../helpers/db");

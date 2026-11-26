@@ -1,3 +1,4 @@
+import "server-only";
 import type { Firestore } from "firebase-admin/firestore";
 import { APP_URL } from "@/lib/branding";
 import { notifyAdmin } from "@/lib/server/notify/admin";

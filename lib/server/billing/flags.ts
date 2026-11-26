@@ -1,3 +1,4 @@
+import "server-only";
 /** Read at call time so tests (and a redeploy-free env change) take effect immediately. */
 export function billingFulfilV2(): boolean {
   const v = process.env.BILLING_FULFIL_V2;

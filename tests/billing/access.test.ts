@@ -8,7 +8,7 @@ import {
   isLifetime,
   periodMs,
   revokeGrant,
-} from "@/lib/server/billing/access";
+} from "@/lib/shared/billing-access";
 
 const now = Date.UTC(2026, 10, 25);
 const LEGACY_LIFETIME = 32_503_680_000_000; // sentinel written by the admin "grant lifetime"

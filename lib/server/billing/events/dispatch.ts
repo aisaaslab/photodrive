@@ -1,3 +1,4 @@
+import "server-only";
 import type Stripe from "stripe";
 import { getAdminDb } from "@/lib/firebase/admin";
 import { claimEvent, markAlerted, markEvent } from "@/lib/server/repos/stripeEvents";

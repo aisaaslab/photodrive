@@ -1,3 +1,4 @@
+import "server-only";
 import { getAdminAuth, getAdminDb } from "@/lib/firebase/admin";
 import type { PlanInterval } from "@/lib/firestore/types";
 import { getStripe } from "@/lib/server/billing/stripe";

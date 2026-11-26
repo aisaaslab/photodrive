@@ -1,7 +1,8 @@
+import "server-only";
 import type Stripe from "stripe";
 import type { Firestore } from "firebase-admin/firestore";
 import type { PaymentDoc } from "@/lib/firestore/types";
-import { DAY_MS, computeExpiry, isLifetime } from "./access";
+import { DAY_MS, computeExpiry, isLifetime } from "@/lib/shared/billing-access";
 import { grantedMsOf } from "./adjust";
 import { isSessionSettled } from "./stripe";
 

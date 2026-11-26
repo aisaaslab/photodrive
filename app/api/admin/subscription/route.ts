@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAdminDb } from "@/lib/firebase/admin";
 import { getUidFromRequest, isAdmin } from "@/lib/firebase/admin-guard";
 import { assignPlanToUser, getPlanById } from "@/lib/plans";
-import { LIFETIME_SENTINEL, YEAR_MS } from "@/lib/server/billing/access";
+import { LIFETIME_SENTINEL, YEAR_MS } from "@/lib/shared/billing-access";
 import { extendUserAccess } from "@/lib/server/billing/extend";
 import { parseJson } from "@/lib/server/http";
 import { AdminSubscriptionBody } from "@/lib/shared/schemas/admin";

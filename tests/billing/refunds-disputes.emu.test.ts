@@ -6,7 +6,7 @@ import { seedPayment, seedUser } from "../helpers/seed";
 import {
   TEST_WEBHOOK_SECRET, chargeFixture, disputeFixture, eventFixture, sessionFixture, signedWebhookRequest,
 } from "../helpers/stripe";
-import { DAY_MS, LIFETIME_SENTINEL, MONTH_MS } from "@/lib/server/billing/access";
+import { DAY_MS, LIFETIME_SENTINEL, MONTH_MS } from "@/lib/shared/billing-access";
 
 vi.mock("@/lib/firebase/admin", async () => {
   const db = await import("../helpers/db");

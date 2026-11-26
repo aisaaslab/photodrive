@@ -1,3 +1,4 @@
+import "server-only";
 import { createHash } from "node:crypto";
 import { appEnv } from "@/lib/server/billing/flags";
 import { createLogger, type Logger } from "@/lib/server/log";

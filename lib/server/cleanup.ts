@@ -1,3 +1,4 @@
+import "server-only";
 import type { Firestore } from "firebase-admin/firestore";
 
 /** A demo gallery works for 10 minutes. */

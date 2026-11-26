@@ -2,7 +2,7 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { clearEmulators, testDb } from "../helpers/db";
 import { seedPayment, seedUser } from "../helpers/seed";
-import { DAY_MS, LIFETIME_SENTINEL, MONTH_MS } from "@/lib/server/billing/access";
+import { DAY_MS, LIFETIME_SENTINEL, MONTH_MS } from "@/lib/shared/billing-access";
 import { REPORT_A_COLUMNS, buildReportA, toCsv } from "@/lib/server/billing/backfill";
 import { ACTOR, applyBackfill, checkCliGuards, parseApprovedCsv, parseCsv, type ApprovedRow } from "@/lib/server/billing/backfill-apply";
 

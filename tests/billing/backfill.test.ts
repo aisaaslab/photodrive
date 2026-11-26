@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { csvCell, replayPayments, toCsv } from "@/lib/server/billing/backfill";
-import { DAY_MS, MONTH_MS, YEAR_MS } from "@/lib/server/billing/access";
+import { DAY_MS, MONTH_MS, YEAR_MS } from "@/lib/shared/billing-access";
 
 const T0 = Date.UTC(2026, 0, 1);
 

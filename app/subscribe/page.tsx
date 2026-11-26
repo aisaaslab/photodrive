@@ -7,7 +7,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { APP_NAME } from "@/lib/branding";
-import { computeExpiry, isLifetime, periodMs } from "@/lib/server/billing/access";
+import { computeExpiry, isLifetime, periodMs } from "@/lib/shared/billing-access";
 import { formatMoney } from "@/lib/shared/money";
 
 type PublicPlan = {

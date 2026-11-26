@@ -1,3 +1,4 @@
+import "server-only";
 import { sendEmail } from "@/lib/email";
 import type { Logger } from "@/lib/server/log";
 

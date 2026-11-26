@@ -12,7 +12,7 @@
   - Files: `tests/billing/current-behaviour.emu.test.ts` (emulator suite; `*.emu.test.ts` run under `npm run test:emu`)
   - Done when: both defects are demonstrated by tests and a short note is saved in `evidence/S1.md`.
   - Refs: PAY-1, PAY-2
-- [x] **S1-02** · M · Pure access rules `lib/server/billing/access.ts` (`computeExpiry`, `revokeGrant`, lifetime sentinel) with unit tests (stacking, expired, active, lifetime, zero grant, replays).
+- [x] **S1-02** · M · Pure access rules `lib/shared/billing-access.ts` (`computeExpiry`, `revokeGrant`, lifetime sentinel) with unit tests (stacking, expired, active, lifetime, zero grant, replays).
   - Done when: >95 % branch coverage on the file; matches `03-target-architecture.md` §2.
 - [x] **S1-03** · L · `fulfilCheckoutSession()` in `lib/server/billing/fulfil.ts`: single transactional, idempotent, stacking fulfilment; keeps promo/free-code logic (`lookupPromo`, `resolveAccessDays`); writes new payment fields (`status`, `grantedMs`, `expiresAtAfter`, `paymentIntentId`, `fulfilledBy`, `livemode`).
   - Depends: S1-02

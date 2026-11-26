@@ -2,7 +2,8 @@ import { defineConfig } from "vitest/config";
 import path from "node:path";
 
 export default defineConfig({
-  resolve: { alias: { "@": path.resolve(__dirname) } },
+  // `server-only` throws unless the bundler is building a server component; outside Next (tests) it is an empty module.
+  resolve: { alias: { "@": path.resolve(__dirname), "server-only": path.resolve(__dirname, "lib/shims/server-only.ts") } },
   test: {
     environment: "node",
     // Test-mode placeholder so Stripe-backed code can construct a client; no network calls are made.

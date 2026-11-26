@@ -1,3 +1,4 @@
+import "server-only";
 import type Stripe from "stripe";
 import type { Firestore } from "firebase-admin/firestore";
 import { findPaymentIdByPaymentIntent, paymentIntentIdOf } from "@/lib/server/repos/payments";

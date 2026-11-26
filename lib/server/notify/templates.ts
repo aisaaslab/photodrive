@@ -1,3 +1,4 @@
+import "server-only";
 import { escapeHtml } from "@/lib/email";
 import type { Lang } from "@/lib/i18n/languages";
 

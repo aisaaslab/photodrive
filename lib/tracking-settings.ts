@@ -1,3 +1,4 @@
+import "server-only";
 // Server-only helper (import from server components / API routes only).
 import { unstable_cache } from "next/cache";
 import { getAdminDb } from "@/lib/firebase/admin";

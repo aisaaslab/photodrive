@@ -1,6 +1,7 @@
+import "server-only";
 import type { Firestore } from "firebase-admin/firestore";
 import type { PaymentDoc } from "@/lib/firestore/types";
-import { DAY_MS, isLifetime } from "./access";
+import { DAY_MS, isLifetime } from "@/lib/shared/billing-access";
 import { replayPayments } from "./backfill";
 
 /**

@@ -1,3 +1,4 @@
+import "server-only";
 import type { Firestore } from "firebase-admin/firestore";
 import { verifyPassword } from "@/lib/gallery/password";
 import { openPassword, sealPassword } from "@/lib/gallery/password-vault";

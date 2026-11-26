@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { clearEmulators, testDb } from "../helpers/db";
 import { seedPayment, seedPlan, seedUser } from "../helpers/seed";
 import { sessionFixture } from "../helpers/stripe";
-import { DAY_MS, MONTH_MS, YEAR_MS } from "@/lib/server/billing/access";
+import { DAY_MS, MONTH_MS, YEAR_MS } from "@/lib/shared/billing-access";
 
 vi.mock("@/lib/firebase/admin", async () => {
   const db = await import("../helpers/db");

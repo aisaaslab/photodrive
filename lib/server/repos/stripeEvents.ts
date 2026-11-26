@@ -1,3 +1,4 @@
+import "server-only";
 import type { Firestore } from "firebase-admin/firestore";
 import type { StripeEventDoc, StripeEventStatus } from "@/lib/firestore/types";
 

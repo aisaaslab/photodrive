@@ -1,10 +1,11 @@
+import "server-only";
 import type Stripe from "stripe";
 import { FieldValue } from "firebase-admin/firestore";
 import { getAdminAuth, getAdminDb } from "@/lib/firebase/admin";
 import { getStripe, isSessionSettled } from "@/lib/server/billing/stripe";
 import { resolveAccessDays } from "@/lib/promo-codes";
 import type { FulfilSource, PaymentDoc, PlanInterval } from "@/lib/firestore/types";
-import { DAY_MS, computeExpiry, periodMs } from "./access";
+import { DAY_MS, computeExpiry, periodMs } from "@/lib/shared/billing-access";
 
 export type FulfilResult =
   /** Money not collected yet (async method still processing, unpaid, expired). No access change. */

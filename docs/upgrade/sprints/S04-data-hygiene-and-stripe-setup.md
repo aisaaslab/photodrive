@@ -37,7 +37,7 @@
   - Files: `app/api/stripe/checkout/route.ts`, `app/thank-you/page.tsx`, `docs/upgrade/04-environments-testing-release.md`
   - Done when: an iDEAL and a SEPA test payment complete (async) and activate access.
   - Refs: PAY-5
-- [ ] **S4-08** · S · `import "server-only"` in every server-only module (`password-vault`, `site-settings`, `email`, billing, repos); lint rule or CI check that client files cannot import them.
+- [x] **S4-08** · S · `import "server-only"` in every server-only module (`password-vault`, `site-settings`, `email`, billing, repos); lint rule or CI check that client files cannot import them.
   - Done when: an accidental client import fails the build.
   - Refs: SEC-9
 - [ ] **S4-09** · M · **Gate R2 — production rollout of Phase 2:** provision the rate limiter and secrets in production, enable payment methods and invoice settings in the Stripe dashboard, flip `MEDIA_PROTECTED_TIER` per S3-11 decision, promote CSP from report-only to enforcing after ≥ 3 clean days.

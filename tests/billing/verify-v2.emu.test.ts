@@ -4,7 +4,7 @@ import { NextRequest } from "next/server";
 import { clearEmulators, testAuth, testDb } from "../helpers/db";
 import { seedUser } from "../helpers/seed";
 import { TEST_WEBHOOK_SECRET, eventFixture, sessionFixture, signedWebhookRequest } from "../helpers/stripe";
-import { DAY_MS, MONTH_MS } from "@/lib/server/billing/access";
+import { DAY_MS, MONTH_MS } from "@/lib/shared/billing-access";
 
 vi.mock("@/lib/firebase/admin", async () => {
   const db = await import("../helpers/db");

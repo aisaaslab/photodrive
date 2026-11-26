@@ -1,9 +1,10 @@
+import "server-only";
 import type { Firestore } from "firebase-admin/firestore";
 import { APP_NAME, APP_URL } from "@/lib/branding";
 import { sendEmail } from "@/lib/email";
 import { LOCALES, type Lang } from "@/lib/i18n/languages";
 import { getSupportEmail } from "@/lib/site-settings";
-import { isLifetime } from "@/lib/server/billing/access";
+import { isLifetime } from "@/lib/shared/billing-access";
 import { formatMoney } from "@/lib/shared/money";
 import { userLanguage } from "@/lib/server/user-language";
 import type { Logger } from "@/lib/server/log";

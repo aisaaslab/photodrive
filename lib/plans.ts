@@ -1,11 +1,12 @@
+import "server-only";
 import { getAdminDb } from "@/lib/firebase/admin";
 import type { PlanDoc, PlanInterval } from "@/lib/firestore/types";
-import { periodMs } from "@/lib/server/billing/access";
+import { periodMs } from "@/lib/shared/billing-access";
 import { extendUserAccess } from "@/lib/server/billing/extend";
 
 // Monthly access runs 30 days, yearly 365 — both are one-time payments (no
 // auto-renew), matching the product's existing billing model. The rule lives in
-// lib/server/billing/access.ts so customer and admin paths cannot drift apart.
+// lib/shared/billing-access.ts so customer and admin paths cannot drift apart.
 export function planPeriodMs(interval: PlanInterval): number {
   return periodMs(interval);
 }
