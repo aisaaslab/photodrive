@@ -32,7 +32,7 @@
   - Depends: S4-05
   - Files: `app/api/stripe/checkout/route.ts`, `app/dashboard/account/page.tsx`
   - Done when: a test-mode purchase produces an invoice reachable from Account.
-- [ ] **S4-07** · M · Local payment methods: remove the pinned `payment_method_types: ["card"]`, enable dynamic methods in the dashboard (e.g. iDEAL, SEPA, Bancontact, Klarna as the owner chooses); make sure delayed methods work through `async_payment_succeeded/failed`; "payment processing" state on the thank-you page.
+- [~] **S4-07** · M · Local payment methods: remove the pinned `payment_method_types: ["card"]`, enable dynamic methods in the dashboard (e.g. iDEAL, SEPA, Bancontact, Klarna as the owner chooses); make sure delayed methods work through `async_payment_succeeded/failed`; "payment processing" state on the thank-you page.
   - Depends: S2-02
   - Files: `app/api/stripe/checkout/route.ts`, `app/thank-you/page.tsx`, `docs/upgrade/04-environments-testing-release.md`
   - Done when: an iDEAL and a SEPA test payment complete (async) and activate access.

@@ -139,7 +139,10 @@ export async function POST(req: NextRequest) {
       // "auto" lets Stripe follow the customer's own browser language. Pinning a
       // locale here would show every customer a checkout page in that language.
       locale: "auto",
-      payment_method_types: ["card"],
+      // Legacy (flag off): card only, as before. With BILLING_FULFIL_V2 the payment methods are not pinned here: Stripe shows the ones
+      // enabled in the dashboard (Settings > Payment methods) that suit the customer's country and the plan's currency, such as iDEAL,
+      // SEPA Debit, Bancontact or Klarna. Delayed methods finish later through checkout.session.async_payment_succeeded / _failed.
+      ...(v2 ? {} : { payment_method_types: ["card" as const] }),
     },
     v2 ? { idempotencyKey } : undefined,
   );

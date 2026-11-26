@@ -12,7 +12,7 @@ const MAX_TRIES = 40; // 40 × 1.5s ≈ 60s — the webhook is normally <5s but 
                       // leaves room for Stripe retries and slow propagation.
 
 type OrderState = "loading" | "ok" | "invalid";
-type Activation = "checking" | "ready" | "pending" | "login";
+type Activation = "checking" | "ready" | "pending" | "awaiting" | "login";
 
 export default function ThankYouPage() {
   return (
@@ -100,6 +100,12 @@ function ThankYouContent() {
               if (!cancelled) setActivation("ready");
               return;
             }
+            // A delayed payment method (bank debit...): the payment is on its way and can take days. Say so, and stop polling: access
+            // starts by itself when the payment clears.
+            if (data.awaiting) {
+              if (!cancelled) setActivation("awaiting");
+              return;
+            }
           }
         } catch {}
       }
@@ -135,6 +141,7 @@ function ThankYouContent() {
 
   const ss = t.subscribeSuccess;
   const confirmed = order === "ok";
+  const awaiting = activation === "awaiting";
   const loginHref = `/login?next=${encodeURIComponent(
     sessionId ? `/thank-you?session_id=${sessionId}` : "/thank-you"
   )}`;
@@ -161,10 +168,10 @@ function ThankYouContent() {
             <>
               <div
                 className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6 border ${
-                  confirmed ? "bg-emerald-500/20 border-emerald-500/30" : "bg-amber-500/20 border-amber-500/30"
+                  confirmed && !awaiting ? "bg-emerald-500/20 border-emerald-500/30" : "bg-amber-500/20 border-amber-500/30"
                 }`}
               >
-                {confirmed ? (
+                {confirmed && !awaiting ? (
                   <svg className="w-8 h-8 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                   </svg>
@@ -175,10 +182,10 @@ function ThankYouContent() {
                 )}
               </div>
               <h1 className="text-2xl font-bold mb-2" style={{ fontFamily: "var(--font-brand), sans-serif" }}>
-                {confirmed ? ss.orderTitle : ss.pendingTitle}
+                {awaiting ? ss.awaitingTitle : confirmed ? ss.orderTitle : ss.pendingTitle}
               </h1>
               <p className="text-stone-400 text-sm mb-6 leading-relaxed">
-                {confirmed ? ss.orderSubtitle : ss.pendingSubtitle}
+                {awaiting ? ss.awaitingSubtitle : confirmed ? ss.orderSubtitle : ss.pendingSubtitle}
               </p>
 
               {activation === "checking" && (

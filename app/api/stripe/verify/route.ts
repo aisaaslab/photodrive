@@ -120,7 +120,10 @@ async function verifyV2(
 
   if (!isSessionSettled(session)) {
     const state = session.status === "expired" ? "failed" : "pending";
-    return NextResponse.json({ state, paid: false, status: session.payment_status });
+    // The customer finished checkout but the money has not arrived: a delayed payment method (bank debit, transfer). The page says
+    // so instead of treating it as a problem; access starts by itself when Stripe reports the payment (async_payment_succeeded).
+    const awaiting = session.status === "complete" && session.payment_status === "unpaid";
+    return NextResponse.json({ state, paid: false, status: session.payment_status, ...(awaiting ? { awaiting: true } : {}) });
   }
 
   try {

@@ -70,6 +70,38 @@ describe("verify (BILLING_FULFIL_V2=1)", () => {
     expect((await user()).subscriptionExpiresAt).toBeUndefined();
   });
 
+  it("tells a delayed payment (bank debit, transfer) apart from a problem: awaiting, not failed", async () => {
+    // checkout completed, money not here yet
+    stripeReturns(sessionFixture("async_pending", { id: "cs_sepa", metadata: { uid: "u1" } }));
+    expect(await (await callVerify("cs_sepa")).json()).toEqual({ state: "pending", paid: false, status: "unpaid", awaiting: true });
+    // checkout not finished (customer still on the Stripe page): nothing to wait for yet
+    stripeReturns(sessionFixture("async_pending", { id: "cs_open", metadata: { uid: "u1" }, status: "open" }));
+    expect(await (await callVerify("cs_open")).json()).not.toHaveProperty("awaiting");
+    // expired: failed, not awaiting
+    stripeReturns(sessionFixture("async_pending", { id: "cs_exp", metadata: { uid: "u1" }, status: "expired" }));
+    expect(await (await callVerify("cs_exp")).json()).toMatchObject({ state: "failed" });
+    expect(await (await callVerify("cs_exp")).json()).not.toHaveProperty("awaiting");
+    // paid: never awaiting
+    stripeReturns(paid("cs_paid"));
+    expect(await (await callVerify("cs_paid")).json()).not.toHaveProperty("awaiting");
+  });
+
+  it("a delayed payment end to end: awaiting, then Stripe reports it cleared, then access is active", async () => {
+    vi.stubEnv("STRIPE_WEBHOOK_SECRET", TEST_WEBHOOK_SECRET);
+    stripeReturns(sessionFixture("async_pending", { id: "cs_delay", metadata: { uid: "u1", planId: "m", interval: "monthly" } }));
+    expect(await (await callVerify("cs_delay")).json()).toMatchObject({ state: "pending", awaiting: true });
+    expect((await user()).subscriptionExpiresAt).toBeUndefined(); // nothing is granted before the money arrives
+
+    // days later: checkout.session.async_payment_succeeded
+    const cleared = paid("cs_delay");
+    const res = await webhook(signedWebhookRequest(eventFixture("checkout.session.async_payment_succeeded", cleared, "evt_async_ok")) as never);
+    expect(res.status).toBe(200);
+    expect(((await user()).subscriptionExpiresAt as number) - Date.now()).toBeGreaterThan(MONTH_MS - 60_000);
+
+    stripeReturns(cleared);
+    expect(await (await callVerify("cs_delay")).json()).toMatchObject({ state: "paid", activated: true, alreadyFulfilled: true });
+  });
+
   it("refuses a session that belongs to someone else, even with a matching e-mail", async () => {
     stripeReturns(paid("cs_other", { metadata: { uid: "someone-else" }, customer_email: "u1@example.com" }));
     expect((await callVerify("cs_other")).status).toBe(403);

@@ -98,6 +98,7 @@ describe("checkout with BILLING_FULFIL_V2", () => {
     expect(fake.calls).toEqual({ create: 0, retrieve: 0, search: 0, update: 0 });
     expect(sessionParams()).toMatchObject({ customer_email: "u1@example.com" });
     expect(sessionParams()).not.toHaveProperty("customer");
+    expect(sessionParams().payment_method_types).toEqual(["card"]); // the live shop stays card-only until the flag is on
   });
 });
 

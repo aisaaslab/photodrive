@@ -97,6 +97,18 @@ done until evidence is committed under `docs/upgrade/evidence/`.
 3. Keep the old path for one week, then delete it (S1-12 follow-up).
 4. Run the back-fill report **against production, read-only**; the owner reviews; apply only approved rows.
 
+### Stripe dashboard checklist for local payment methods (S4-07)
+
+With `BILLING_FULFIL_V2` on, checkout no longer pins `card`; Stripe offers the methods **enabled in the dashboard** that suit the customer's
+country and the plan's currency. The owner chooses; the code works with any of them.
+
+1. **Settings > Payment methods** (test mode first, then live): enable the methods wanted. Suggested for EU customers: iDEAL, Bancontact, SEPA Debit (delayed), Klarna as the owner chooses. Most local methods only appear for **EUR** plans, so a method will not show on a USD plan.
+2. **Webhook endpoint** (Developers > Webhooks) must subscribe to `checkout.session.async_payment_succeeded` and `checkout.session.async_payment_failed` as well as `checkout.session.completed` and `checkout.session.expired`. Without them a delayed payment would never activate access.
+3. Delayed methods (SEPA Debit, bank transfers) finish **days** after checkout. The customer lands on the thank-you page with "Payment on its way"; access starts by itself when `async_payment_succeeded` arrives (fulfilment is the same idempotent path), and a failure produces the "payment failed" notice (S2-14).
+4. Keep Stripe's receipt e-mails switched on (Settings > Customer emails).
+5. **Test-mode scenarios to run and record in `docs/upgrade/evidence/S4.md`:** an iDEAL payment (instant, redirect) and a SEPA Debit payment (delayed: use the test IBANs for success and for failure from Stripe's testing documentation) both end with access active and exactly one `payments` document; a failed delayed payment leaves access unchanged and sends the failure notice.
+6. Known limit: the conversion pixel on the thank-you page fires only for payments that are already paid when the page loads, so delayed payments are not reported as purchases.
+
 ### Rollback
 
 Payment rewrite: set `BILLING_FULFIL_V2=0` (old path resumes; `payments` records already written remain valid). Any data migration has a documented reverse or a backup export taken before `--apply`.

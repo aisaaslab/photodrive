@@ -58,6 +58,13 @@ describe("checkout (BILLING_FULFIL_V2=1)", () => {
     expect(options.idempotencyKey).toMatch(/^checkout:u1:m:\d+$/);
   });
 
+  it("does not pin the payment method: Stripe shows the methods enabled in the dashboard (iDEAL, SEPA, ...)", async () => {
+    await seedUser("u1");
+    await post({ planId: "m" });
+    expect(create.mock.calls[0][0]).not.toHaveProperty("payment_method_types");
+    expect(create.mock.calls[0][0]).not.toHaveProperty("payment_method_configuration");
+  });
+
   it("never looks up Stripe history and never answers alreadyPaid", async () => {
     await seedUser("u1");
     const body = await (await post({ planId: "m" })).json();
