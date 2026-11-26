@@ -31,7 +31,7 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done. Sizes: S ≈ ½ day, M �
   - Note: read the Next 16 docs for instrumentation and config wrapping first.
 - [x] **S0-07** · S · Structured logger `lib/server/log.ts` (JSON, levels, request id); replace `console.*` in the three Stripe routes first.
   - Done when: Stripe routes log through the logger; no secrets or full emails in logs.
-- [ ] **S0-08** · S · Baseline hygiene: confirm `npm run lint` passes (warnings policy documented), add `docs/upgrade/evidence/S0.md` with the environment checklist result and the first CI run link.
+- [x] **S0-08** · S · Baseline hygiene: confirm `npm run lint` passes (warnings policy documented), add `docs/upgrade/evidence/S0.md` with the environment checklist result and the first CI run link.
   - Done when: evidence file committed.
 
 ## Risks and notes

@@ -24,7 +24,8 @@ jobs:
           distribution: temurin
           java-version: 21
       - run: npm ci
-      - run: npm run lint
+      # Policy (docs/upgrade/evidence/S0.md): errors fail, and no new warnings beyond the current baseline.
+      - run: npm run lint -- --max-warnings 13
       - run: npm run typecheck
       - run: npm test
       - run: npm run test:emu
