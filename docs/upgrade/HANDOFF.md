@@ -1,4 +1,4 @@
-# Handoff: where the PhotoDrive upgrade stands (written 2026-11-26)
+# Handoff: where the PhotoDrive upgrade stands (updated 2026-11-26, end of the second working session)
 
 **Read this first if you are picking the work up on a different platform or in a fresh session.** It is written so that someone (or an AI
 coding agent) with only this repository and no chat history can continue without guessing. For day-to-day rules see
@@ -14,7 +14,7 @@ The owner commissioned an upgrade (payments fixes, security, a new landing page,
 `BILLING_FULFIL_V2`). Work so far is on branch **`claude/beautiful-archimedes-vsqbhq`**, draft **PR #8**
 (<https://github.com/aisaaslab/photodrive/pull/8>), CI green. Payments, security and the foundation are coded and tested; the
 **new landing page is fully built at `/new-landing`** and is waiting for the owner's review of a Vercel preview. The user-area redesign
-(S5-12) and the admin back office (S7/S8) are next.
+(S5-12) is **in progress** (foundation and first UX improvements done, see section 4) and the admin back office (S7/S8) follows.
 
 ## 2 · Where we stopped (and the goal of the sprint in progress)
 
@@ -61,7 +61,7 @@ performance 95, **LCP 2.6 s (target 2.5; re-measure on the preview)**.
 - **S4 data hygiene:** immutable `createdAt`, cascade deletes, Firestore rules tests, legacy password sealing, Stripe customers/invoices, async payment UI.
   Coded and tested; **production dry-runs are the owner's step**.
 - **S5 foundation:** Manrope + design tokens + UI primitives (`/dev/ui`), translations split per language and chosen on the server, shared server layer
-  (`lib/server/auth.ts`, `http.ts`, `repos/*`), the large-file splits, brand clean-up. Only **S5-12** remains.
+  (`lib/server/auth.ts`, `http.ts`, `repos/*`), the large-file splits, brand clean-up. **S5-12** is in progress (section 4).
 - **S6:** see section 2.
 
 **Open work that the code cannot finish alone** (needs the owner): staging environments (D12, deferred "much later"), production dry-runs
@@ -73,9 +73,28 @@ native review of draft translations, copy review (S3-13), measurements that need
 ## 4 · What to do next, in order
 
 1. **Get the owner's verdict on `/new-landing`** on the Vercel preview (desktop, about 1024, phone). Apply their changes, then S6-14 (section 2).
-2. **S5-12, user-area redesign (decision D9: full redesign, designed in code, no Figma).** Dashboard, client gallery, account, admin, toasts, dialogs, empty/error
-   states on the Concept B tokens and primitives. Behaviour must not change: update labels in, then diff, the two snapshot checks
-   (`scripts/verify/browser/gallery-snapshot.cjs`, `dashboard-snapshot.cjs`; see section 6). Do it area by area and ask the owner to approve screenshots per area.
+2. **S5-12, user-area redesign (decision D9). IN PROGRESS.**
+   **The owner's objective, stated explicitly: this is not a recolour. The user area must be more user-friendly, better designed, with better layouts and a better
+   experience overall.** Designed in code (no Figma), on the Concept B tokens and primitives, area by area, with the owner approving screenshots per area.
+
+   *Done (commits `73370f5`, `636c6cf` and the one after):* every screen now uses the tokens (no raw colours), Manrope, the original logo, accent pill buttons,
+   flat canvas backgrounds; the client gallery is dark; shared language menu. UX improvements already in: **account menu** in the dashboard header,
+   **subscription status pill**, **guided empty state** (three steps + button), **new-gallery form as a dialog** (no longer pushes the list down),
+   **section chips with scroll-spy** in the gallery settings dialog, proper **no-results copy**, labels and names on every control.
+   Evidence: `evidence/S5.md` (S5-12 section). axe is clean on 15 screens at 1280 and 390.
+
+   *Still to do, in priority order (each is a real UX improvement, not a restyle; check every one with the snapshots and `user-area-shots.cjs`):*
+   1. **Dashboard gallery cards and list:** surface what a photographer needs at a glance (new favourites, visibility, last activity), a clear single primary action,
+      grid/list density choice, and better phone layout; consider a "gallery created" success state with the link ready to copy and share (WhatsApp/e-mail) instead of only a toast.
+   2. **Account page layout** (`app/dashboard/account/page.tsx`, 344 lines): group into clear cards (profile, plan and payments with the invoice link, language, danger zone), one primary action per card.
+   3. **Subscribe and thank-you pages:** plan cards in the landing style, clearer renewal wording (extends access to a date), progress/awaiting states.
+   4. **Client gallery:** hero and header polish (photographer identity, share), an obvious selection flow ("pick favourites, then send"), lightbox ergonomics on phones
+      (swipe, larger targets), loading and empty states, password gate with the photographer's name/cover.
+   5. **Admin area** (`app/dashboard/admin/*`): re-skin and layout once S7 defines the admin design; do not redesign it twice.
+   6. **Toasts, dialogs, error and 404 pages:** consistent copy and icons; undo for destructive actions where possible.
+   7. A last **mobile pass** (390) of every screen with real content and long translations (Greek, German), and a keyboard walkthrough of the dashboard.
+   *How to verify a UX change:* `scripts/verify/browser/dashboard-snapshot.cjs` and `gallery-snapshot.cjs` against `scripts/verify/browser/baselines/*.json` (API requests, toasts and validation must not change
+   unless you mean them to; text/layout differences are expected, review them and update the baseline in the same commit). Selectors use `data-ui` hooks and roles, not CSS classes: add a hook rather than a class selector.
 3. **S7 → S8 admin back office** (see sprint files), then **S9/S10** features, then **S11** release.
 4. Whenever the owner provides staging or test-mode access: S1-11, S2-10, S1-08 finishing, the R1/R2 gates.
 
@@ -118,13 +137,14 @@ scripts/verify/browser/serve-emu.sh                              # production se
 export NODE_PATH=$(npm root -g)                                  # Playwright is installed globally in the cloud sandbox; else `npm i -D playwright`
 WITH_PLANS=1 npx tsx scripts/verify/browser/landing.cjs          # new landing: 70+ checks, six languages, three widths
 node scripts/verify/browser/lp.cjs                               # /lp/* pages
+SHOT=/tmp/shots AXE_PATH=/path/to/axe.min.js node scripts/verify/browser/user-area-shots.cjs   # user-area screenshots + axe (15 screens, 2 widths)
 npx tsx scripts/verify/browser/i18n.cjs                          # one language per page, server-rendered, cookie
 # for the UI primitives check start the server with: SHOW_DEV_UI=1 scripts/verify/browser/serve-emu.sh
 node scripts/verify/browser/ui-primitives.cjs
 ```
 
-Reset and reseed before each snapshot run (`gallery-snapshot.cjs`, `dashboard-snapshot.cjs`); compare two runs with `diff` (identical output = a refactor changed nothing a
-visitor can see). Never use real Stripe, Firebase or Google credentials in a test.
+Reset and reseed before each snapshot run (`gallery-snapshot.cjs`, `dashboard-snapshot.cjs`, never both without a reset in between: they change the data); `diff` the output with `scripts/verify/browser/baselines/` (identical = a refactor changed nothing a
+visitor can see; update the baseline deliberately when the UI is meant to change). Never use real Stripe, Firebase or Google credentials in a test.
 
 **Conventions (from `NEXT-SESSION.md` and `AGENTS.md`)**
 
@@ -189,5 +209,5 @@ We are continuing the PhotoDrive upgrade in the repo aisaaslab/photodrive, branc
    Update the task checkbox in the same commit (node docs/upgrade/tools/status.mjs done <ID>), write proof in docs/upgrade/evidence/, and push to the PR branch.
 
 Rules: the live shop must not change until I say so; never use live Stripe keys or real credentials; ask before anything outward-facing or irreversible;
-use the original PhotoDrive logo; English/US is the main market; the user area is redesigned in code, not in Figma.
+use the original PhotoDrive logo; English/US is the main market; the user area is redesigned in code, not in Figma, and the redesign must make it more user-friendly with better layouts and a better experience (not just a recolour).
 ```
