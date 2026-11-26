@@ -41,7 +41,7 @@
 - [ ] **S5-09** · M · Split `NewGalleryForm` (654 lines): sections + form hook with the zod schema shared with the API.
   - Files: `components/dashboard/NewGalleryForm.tsx`
   - Done when: no file > 300 lines; create/edit flows pass.
-- [~] **S5-10** · M · Split `Lightbox` (571 lines) and `CoverPickerModal` (475 lines).
+- [x] **S5-10** · M · Split `Lightbox` (571 lines) and `CoverPickerModal` (475 lines).
   - Files: `components/gallery/Lightbox.tsx`, `components/dashboard/CoverPickerModal.tsx`
   - Done when: no file > 300 lines; keyboard navigation and cover picking unchanged.
 - [x] **S5-11** · S · Housekeeping: unify on one zip library (`client-zip` or `jszip`), delete dead `lib/firestore/favorites.ts`, strip BOMs from the 26 files, fix mojibake in `globals.css`, `not-found.tsx`, `ImageCompareSlider.tsx`, `TrustSection.tsx`, `branding.ts`; centralise brand/email defaults in `lib/branding.ts` (no hard-coded `photodrive.co` or earlier product name elsewhere, per D1).

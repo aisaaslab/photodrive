@@ -39,3 +39,32 @@ export function coverObjectPosition(x?: number | null, y?: number | null): strin
   const py = validCoverPos(y) ?? COVER_POS_DEFAULT;
   return `${px}% ${py}%`;
 }
+
+/** The two focal-point axes the picker edits. */
+export type CoverPos = { x: number; y: number };
+
+/** What gets saved for a choice: no cover means no focal point to remember. */
+export function coverSaveValues(selectedId: string | null, pos: CoverPos) {
+  return {
+    coverFileId: selectedId,
+    coverPosX: selectedId === null ? null : pos.x,
+    coverPosY: selectedId === null ? null : pos.y,
+  };
+}
+
+/**
+ * Whether the choice differs from what is already saved. If it is the same, Save stays disabled: no point saving an identical value.
+ * A different photo is a change; the same photo is a change only if its focal point moved (and with no cover there is no focal point).
+ */
+export function coverHasChanges(selectedId: string | null, savedId: string | null | undefined, pos: CoverPos, savedPos: CoverPos): boolean {
+  const posChanged = pos.x !== savedPos.x || pos.y !== savedPos.y;
+  return selectedId !== (savedId ?? null) || (selectedId !== null && posChanged);
+}
+
+/** Warnings for the chosen photo: narrower than the recommended minimum (may look blurry on large screens), or a portrait (heavily cropped in the banner). */
+export function coverWarnings(photo: { width?: number | null; height?: number | null } | null) {
+  return {
+    lowRes: !!photo?.width && photo.width < COVER_RECOMMENDED.minWidth,
+    portrait: !!photo?.width && !!photo?.height && photo.height > photo.width,
+  };
+}

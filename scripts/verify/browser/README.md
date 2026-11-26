@@ -14,18 +14,21 @@ openssl genrsa -out /tmp/fake-key.pem 2048
 npx firebase emulators:start --only auth,firestore --project demo-photodrive &        # wait until port 8080 answers
 
 export FIREBASE_ADMIN_PRIVATE_KEY="$(cat /tmp/fake-key.pem)"
-NODE_PATH=$PWD/node_modules node scripts/verify/protected-tier/seed.cjs            # three galleries: private, downloads-off, public
+NODE_PATH=$PWD/node_modules node scripts/verify/browser/seed.cjs            # three galleries: private, downloads-off, public
 
 FIREBASE_ADMIN_PROJECT_ID=demo-photodrive FIREBASE_ADMIN_CLIENT_EMAIL=x@demo-photodrive.iam.gserviceaccount.com \
 FIRESTORE_EMULATOR_HOST=127.0.0.1:8080 GALLERY_JWT_SECRET=e2e-secret-for-gallery-tokens-0123456789 \
-GOOGLE_DRIVE_API_KEY=fake MEDIA_PROTECTED_TIER=1 NODE_OPTIONS="--require $PWD/scripts/verify/protected-tier/fake-drive.cjs" \
+GOOGLE_DRIVE_API_KEY=fake MEDIA_PROTECTED_TIER=1 NODE_OPTIONS="--require $PWD/scripts/verify/browser/fake-drive.cjs" \
 npx next start -p 3997 &
 
-NODE_PATH=$(npm root -g) node scripts/verify/protected-tier/browser.cjs          # Playwright (preinstalled globally in the cloud sandbox)
+NODE_PATH=$(npm root -g) node scripts/verify/browser/browser.cjs          # Playwright (preinstalled globally in the cloud sandbox)
 ```
 
-Also `NODE_PATH=$(npm root -g) node scripts/verify/protected-tier/zip.cjs` checks, in the same setup, that selecting photos and pressing "Download (.zip)" yields a valid zip in the browser (public gallery through the proxy, private gallery through the signed URLs).
+Also `NODE_PATH=$(npm root -g) node scripts/verify/browser/zip.cjs` checks, in the same setup, that selecting photos and pressing "Download (.zip)" yields a valid zip in the browser (public gallery through the proxy, private gallery through the signed URLs).
 
 **Behaviour snapshot** (`gallery-snapshot.cjs`): records 33 observable facts about the public gallery page (tab counts, search, sort, folders, show-more, selection mode, favourites persisted through the server, and the lightbox: counter, keys, zoom, thumbnail strip, slideshow, video) as JSON. It uses the seeded `bigtest` gallery (130 files and a subfolder, served by `fake-drive.cjs`). Reset the emulator and reseed before each run (the favourites step writes), then compare two runs with `diff`: identical output means a refactor changed nothing a visitor can see. Used for S5-08 and S5-10.
+
+**Signed-in dashboard snapshot** (`dashboard-snapshot.cjs`): signs a fake photographer in through the app's own login form and records 38 observations of what the dashboard DOES (cards, search, sort, copy link, the client's favourites panel and the owner's zip download, the settings modal and its validations, cover picker, delete, new gallery) together with every API request the screens send. It records behaviour, not appearance, so it stays valid through a redesign (the selectors use visible text and ARIA roles; expect to update them when labels change).
+It needs the browser pointed at the emulators: build with `NEXT_PUBLIC_FIREBASE_EMULATORS=1 NEXT_PUBLIC_FIREBASE_PROJECT_ID=demo-photodrive NEXT_PUBLIC_FIREBASE_API_KEY=fake-key` (the switch in `lib/firebase/emulator.ts` only activates for a `demo-` project), start the server with `FIREBASE_AUTH_EMULATOR_HOST=127.0.0.1:9099` as well, and let `seed.cjs` create the photographer. Reset the emulators (Firestore and Auth) and reseed before each run, then `diff` two runs.
 
 Prints one PASS/FAIL line per check. On staging, run the same page checks by hand against a real private gallery (S3-11).
