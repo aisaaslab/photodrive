@@ -20,6 +20,7 @@ import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { APP_NAME } from "@/lib/branding";
 import { titleFontFamily, titleSizeClass, validTitleColor } from "@/lib/gallery/title-style";
 import { coverObjectPosition } from "@/lib/gallery/cover-position";
+import { protectedCoverUrl, toProtectedFolders, toProtectedPhotos, usesProtectedTier } from "@/lib/server/protected-photos";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -108,6 +109,14 @@ export default async function GalleryPage({ params }: Props) {
     ? photos.find((p) => p.id === gallery.coverFileId) ?? null
     : null;
 
+  // Protected tier (D15, S3-03): private galleries and galleries with downloads off (when MEDIA_PROTECTED_TIER=1) send the
+  // browser opaque tokens and signed same-site URLs instead of Drive ids and Google URLs.
+  const allowDownload = gallery.allowDownload !== false;
+  const protectedTier = usesProtectedTier({ private: isPrivate(gallery), allowDownload });
+  const clientPhotos = protectedTier ? toProtectedPhotos(gallery.id, photos, allowDownload) : photos;
+  const clientFolders = protectedTier ? toProtectedFolders(gallery.id, subfolders) : subfolders;
+  const protectedCover = protectedTier ? protectedCoverUrl(gallery.id, gallery.coverFileId ?? undefined, photos) : null;
+
   const totalPhotos = photos.filter((p) => p.mimeType.startsWith("image/")).length;
   const totalVideos = photos.length - totalPhotos;
 
@@ -174,8 +183,8 @@ export default async function GalleryPage({ params }: Props) {
       <section className="relative w-full h-[40vh] min-h-[300px] sm:min-h-[260px] max-h-[440px] overflow-hidden">
         {coverPhoto && gallery.coverFileId ? (
           <HeroImage
-            primaryUrl={driveImageUrl(coverPhoto, 2048)}
-            fileId={gallery.coverFileId}
+            primaryUrl={protectedTier ? (protectedCover ?? "") : driveImageUrl(coverPhoto, 2048)}
+            fileId={protectedTier ? undefined : gallery.coverFileId}
             galleryId={gallery.id}
             objectPosition={coverObjectPosition(gallery.coverPosX, gallery.coverPosY)}
           />
@@ -251,7 +260,7 @@ export default async function GalleryPage({ params }: Props) {
         ) : photos.length === 0 ? (
           <GalleryStatus type="noPhotos" />
         ) : (
-          <MasonryGrid photos={photos} subfolders={subfolders} galleryId={gallery.id} allowDownload={gallery.allowDownload !== false} />
+          <MasonryGrid photos={clientPhotos} subfolders={clientFolders} galleryId={gallery.id} allowDownload={allowDownload} />
         )}
       </div>
 

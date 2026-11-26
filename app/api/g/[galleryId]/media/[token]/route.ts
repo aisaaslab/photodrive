@@ -16,7 +16,8 @@ const deny = (status: number, error: string) => NextResponse.json({ error }, { s
  * tokens (see `lib/server/media-token.ts`), so no Drive file id or Drive URL ever reaches it. Every request is checked:
  *
  *   signature and expiry  →  rate limit  →  the gallery exists (a demo too)  →  the token is one of the files in that gallery's
- *   own folder  →  private galleries need the visitor's unlock cookie  →  originals (`size=full`) need downloads turned on.
+ *   own folder  →  private galleries need the visitor's unlock cookie  →  originals for download (`size=full`) need downloads
+ *   turned on (`size=stream`, for playing a video in the page, does not).
  *
  * The photographer who owns the gallery and administrators (an `Authorization: Bearer` header) skip the cookie and download checks.
  * Range requests are forwarded so videos can seek. Responses for private galleries never sit in a shared cache.
@@ -42,8 +43,9 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ gall
   const apiKey = process.env.GOOGLE_DRIVE_API_KEY;
   if (!apiKey) return deny(500, "Server misconfigured");
 
-  const rule = size === "full" ? FULL_LIMIT : VIEW_LIMIT;
-  const limit = await getRateLimiter().limit({ name: size === "full" ? "media-full" : "media-view", id: clientIp(req), ...rule });
+  const heavy = size === "full" || size === "stream";
+  const rule = heavy ? FULL_LIMIT : VIEW_LIMIT;
+  const limit = await getRateLimiter().limit({ name: heavy ? "media-full" : "media-view", id: clientIp(req), ...rule });
   if (!limit.allowed) {
     return NextResponse.json({ error: "Too many requests" }, { status: 429, headers: rateLimitHeaders(limit) });
   }

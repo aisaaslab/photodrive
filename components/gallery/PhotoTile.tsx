@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { DriveFile } from "@/lib/drive/types";
 import { FavoriteButton } from "./FavoriteButton";
-import { driveImageUrl, driveDownloadUrl } from "@/lib/drive/public-url";
+import { photoDownloadHref, photoImageSrc, isProtectedPhoto } from "@/lib/drive/photo-src";
 import { useLanguage } from "@/lib/i18n";
 import { proxyUrl } from "@/lib/drive/proxy-url";
 
@@ -70,14 +70,14 @@ export function PhotoTile({
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         ref={imgRef}
-        src={isVideo && photo.thumbnailLink ? photo.thumbnailLink.replace(/=s\d+$/, "=s800") : driveImageUrl(photo, 800)}
+        src={isVideo && photo.thumbnailLink ? photo.thumbnailLink.replace(/=s\d+$/, "=s800") : photoImageSrc(photo, 800)}
         alt=""
         loading="lazy"
         onLoad={() => setLoaded(true)}
         onError={(e) => {
           // If Google's CDN throttles/fails, fall back to our proxy once.
           const img = e.currentTarget;
-          if (!img.dataset.fallback && !isVideo) {
+          if (!img.dataset.fallback && !isVideo && !isProtectedPhoto(photo)) {
             img.dataset.fallback = "1";
             img.src = proxyUrl(galleryId, photo.id, "thumb");
           } else {
@@ -148,10 +148,10 @@ export function PhotoTile({
       </div>
 
       {/* Download button */}
-      {!selectionMode && allowDownload && (
+      {!selectionMode && allowDownload && photoDownloadHref(photo) && (
         <div className="absolute bottom-2 right-2">
           <a
-            href={driveDownloadUrl(photo.id)}
+            href={photoDownloadHref(photo)!}
             download={photo.name}
             onClick={(e) => e.stopPropagation()}
             aria-label={`${t.gallery.download} ${photo.name}`}

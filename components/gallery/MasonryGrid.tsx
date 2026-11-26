@@ -227,7 +227,7 @@ export function MasonryGrid({ photos, subfolders = [], galleryId, allowDownload 
           batch.map(async (id) => {
             const photo = photos.find((p) => p.id === id);
             try {
-              const res = await fetch(proxyUrl(galleryId, id, "full"));
+              const res = await fetch(photo?.urls?.full ?? proxyUrl(galleryId, id, "full"));
               if (res.ok) zip.file(photo?.name ?? `${id}.jpg`, await res.blob());
             } catch {
               // skip this file, keep the rest

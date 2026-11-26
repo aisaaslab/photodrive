@@ -19,7 +19,8 @@ import { proxyUrl } from "@/lib/drive/proxy-url";
  */
 interface Props {
   primaryUrl: string;
-  fileId: string;
+  /** Absent for protected galleries: the Drive id must not reach the browser, so there is no fallback chain, only `primaryUrl`. */
+  fileId?: string;
   /** The gallery the photo belongs to: the proxy only serves files of the gallery it is asked about. */
   galleryId: string;
   alt?: string;
@@ -31,7 +32,7 @@ export function HeroImage({ primaryUrl, fileId, galleryId, alt = "", objectPosit
   // 0 = primary CDN url, 1 = drive thumbnail, 2 = our proxy, 3 = failed
   const [stage, setStage] = useState(0);
 
-  if (stage >= 3) {
+  if (stage >= 3 || (!fileId && stage >= 1)) {
     // All URLs failed — branded gradient, never a broken-image icon.
     return <div className="absolute inset-0 bg-gradient-to-br from-[#17509e] via-[#0d2d5c] to-stone-900" />;
   }
@@ -40,8 +41,8 @@ export function HeroImage({ primaryUrl, fileId, galleryId, alt = "", objectPosit
     stage === 0
       ? primaryUrl
       : stage === 1
-        ? driveFileThumbUrl(fileId, 2048)
-        : proxyUrl(galleryId, fileId, "preview");
+        ? driveFileThumbUrl(fileId!, 2048)
+        : proxyUrl(galleryId, fileId!, "preview");
 
   return (
     // eslint-disable-next-line @next/next/no-img-element

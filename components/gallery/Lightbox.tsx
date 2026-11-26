@@ -2,7 +2,7 @@
 
 import { useEffect, useCallback, useRef, useState } from "react";
 import { DriveFile } from "@/lib/drive/types";
-import { driveImageUrl, driveDownloadUrl } from "@/lib/drive/public-url";
+import { photoDownloadHref, photoImageSrc, isProtectedPhoto } from "@/lib/drive/photo-src";
 import { useLanguage } from "@/lib/i18n";
 import { proxyUrl } from "@/lib/drive/proxy-url";
 
@@ -253,7 +253,7 @@ export function Lightbox({ galleryId, photos, activeIndex, favorites, allowDownl
       const p = photos[i];
       if (p && !p.mimeType.startsWith("video/")) {
         const img = new window.Image();
-        img.src = driveImageUrl(p, 2048);
+        img.src = photoImageSrc(p, 2048);
       }
     }
   }, [activeIndex, photos]);
@@ -373,9 +373,9 @@ export function Lightbox({ galleryId, photos, activeIndex, favorites, allowDownl
           </button>
 
           {/* Download */}
-          {allowDownload && (
+          {allowDownload && photoDownloadHref(photo) && (
             <a
-              href={driveDownloadUrl(photo.id)}
+              href={photoDownloadHref(photo)!}
               download={photo.name}
               onClick={(e) => e.stopPropagation()}
               className="flex items-center gap-1.5 bg-white/10 hover:bg-white/20 text-white/70 hover:text-white rounded-full px-3 py-1.5 text-xs font-medium transition-all"
@@ -463,15 +463,27 @@ export function Lightbox({ galleryId, photos, activeIndex, favorites, allowDownl
         {/* Image or Video */}
         <div onClick={(e) => e.stopPropagation()} className="max-w-5xl max-h-full w-full flex items-center justify-center relative">
           {photo.mimeType.startsWith("video/") ? (
-            // Play the video straight from Google Drive's own player (no bytes
-            // through our server). Keeps video off Vercel bandwidth.
-            <iframe
-              key={photo.id}
-              src={`https://drive.google.com/file/d/${photo.id}/preview`}
-              allow="autoplay; fullscreen"
-              allowFullScreen
-              className="w-full max-w-4xl aspect-video max-h-[75vh] rounded-lg shadow-2xl animate-scale-in border-0"
-            />
+            photo.urls ? (
+              // Protected gallery: the signed same-site stream, so no Drive id or URL reaches the browser.
+              <video
+                key={photo.id}
+                src={photo.urls.stream}
+                controls
+                playsInline
+                controlsList={allowDownload ? undefined : "nodownload"}
+                className="w-full max-w-4xl aspect-video max-h-[75vh] rounded-lg shadow-2xl animate-scale-in bg-black"
+              />
+            ) : (
+              // Play the video straight from Google Drive's own player (no bytes
+              // through our server). Keeps video off Vercel bandwidth.
+              <iframe
+                key={photo.id}
+                src={`https://drive.google.com/file/d/${photo.id}/preview`}
+                allow="autoplay; fullscreen"
+                allowFullScreen
+                className="w-full max-w-4xl aspect-video max-h-[75vh] rounded-lg shadow-2xl animate-scale-in border-0"
+              />
+            )
           ) : (
             <>
               {!imgLoaded && (
@@ -486,14 +498,14 @@ export function Lightbox({ galleryId, photos, activeIndex, favorites, allowDownl
               <img
                 ref={imgRef}
                 draggable={false}
-                src={driveImageUrl(photo, 2048)}
+                src={photoImageSrc(photo, 2048)}
                 alt={photo.name}
                 fetchPriority="high"
                 decoding="async"
                 onLoad={() => setImgLoaded(true)}
                 onError={(e) => {
                   const img = e.currentTarget;
-                  if (!img.dataset.fallback) {
+                  if (!img.dataset.fallback && !isProtectedPhoto(photo)) {
                     img.dataset.fallback = "1";
                     img.src = proxyUrl(galleryId, photo.id, "preview");
                   } else {
@@ -548,13 +560,13 @@ export function Lightbox({ galleryId, photos, activeIndex, favorites, allowDownl
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={driveImageUrl(p, 150)}
+                src={photoImageSrc(p, 150)}
                 alt=""
                 loading="lazy"
                 onError={(e) => {
                   // If Google's CDN throttles/fails, fall back to our proxy once.
                   const img = e.currentTarget;
-                  if (!img.dataset.fallback) {
+                  if (!img.dataset.fallback && !isProtectedPhoto(p)) {
                     img.dataset.fallback = "1";
                     img.src = proxyUrl(galleryId, p.id, "thumb");
                   }

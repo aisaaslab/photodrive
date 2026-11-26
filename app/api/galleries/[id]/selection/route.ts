@@ -2,10 +2,33 @@ import { NextRequest, NextResponse } from "next/server";
 import { parseJson } from "@/lib/server/http";
 import { SelectionToggleBody } from "@/lib/shared/schemas/public";
 import { getAdminAuth, getAdminDb } from "@/lib/firebase/admin";
+import { galleryFiles, hasGalleryAccess, isOwnerOrAdmin, loadProxyGallery, type ProxyGallery } from "@/lib/server/photo-access";
+import { photoToken } from "@/lib/server/media-token";
+import { usesProtectedTier } from "@/lib/server/protected-photos";
 
 const COLLECTION = "gallery_selections";
 
 type Item = { id: string; name: string };
+
+/**
+ * Who may read and change the favourites of a gallery (S3-03). A private gallery's visitors must have unlocked it (before, anyone
+ * who knew a gallery id could read and edit its favourites, and read the Drive file ids in them); the owner and administrators
+ * always may. In the protected tier, visitors see and send opaque photo tokens; the stored favourites always hold real file ids
+ * (the owner's dashboard needs them), and the translation happens here.
+ */
+type Access =
+  | { error: NextResponse; gallery?: undefined; tokens?: undefined }
+  | { error?: undefined; gallery: ProxyGallery; owner: boolean; tokens: boolean };
+
+async function selectionAccess(req: NextRequest, id: string): Promise<Access> {
+  const gallery = await loadProxyGallery(id);
+  if (!gallery) return { error: NextResponse.json({ error: "Not found" }, { status: 404 }) };
+  const owner = await isOwnerOrAdmin(req, gallery);
+  if (!owner && gallery.private && !(await hasGalleryAccess(req.cookies.get(`gallery_token_${id}`)?.value, gallery))) {
+    return { error: NextResponse.json({ error: "Unauthorized" }, { status: 401 }) };
+  }
+  return { gallery, owner, tokens: !owner && usesProtectedTier(gallery) };
+}
 
 /**
  * Shared favourites for a gallery. There is ONE selection per gallery, so
@@ -21,10 +44,13 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
+  const access = await selectionAccess(req, id);
+  if (access.error) return access.error;
   const db = getAdminDb();
   const snap = await db.collection(COLLECTION).doc(id).get();
-  const items: Item[] = snap.exists ? (snap.data()?.items ?? []) : [];
+  let items: Item[] = snap.exists ? (snap.data()?.items ?? []) : [];
   items.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
+  if (access.tokens) items = items.map((i) => ({ id: photoToken(id, i.id), name: i.name }));
 
   let submission: unknown = undefined;
   const token = req.headers.get("authorization")?.replace("Bearer ", "");
@@ -51,20 +77,28 @@ export async function POST(
   if (!body.ok) return body.response;
   const { action, item } = body.data;
 
-  const db = getAdminDb();
-  const galSnap = await db.collection("galleries").doc(id).get();
-  if (!galSnap.exists) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  const access = await selectionAccess(req, id);
+  if (access.error) return access.error;
 
+  // Protected tier: the visitor sends a token; store the real file id it stands for. A token that is not in the gallery's folder is refused.
+  let fileId = item.id;
+  if (access.tokens) {
+    const match = (await galleryFiles(access.gallery.folderId)).find((f) => photoToken(id, f.id) === item.id);
+    if (!match) return NextResponse.json({ error: "Not found" }, { status: 404 });
+    fileId = match.id;
+  }
+
+  const db = getAdminDb();
   const ref = db.collection(COLLECTION).doc(id);
   const snap = await ref.get();
   let items: Item[] = snap.exists ? (snap.data()?.items ?? []) : [];
 
   if (action === "add") {
-    if (!items.some((i) => i.id === item.id)) {
-      items.push({ id: item.id, name: String(item.name ?? "").slice(0, 300) });
+    if (!items.some((i) => i.id === fileId)) {
+      items.push({ id: fileId, name: String(item.name ?? "").slice(0, 300) });
     }
   } else {
-    items = items.filter((i) => i.id !== item.id);
+    items = items.filter((i) => i.id !== fileId);
   }
 
   // merge: keep the client's submission (stored on the same doc) intact.

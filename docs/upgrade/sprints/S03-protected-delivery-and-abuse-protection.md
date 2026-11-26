@@ -21,7 +21,7 @@
   - Files: `lib/server/media-token.ts`, `app/api/g/[galleryId]/media/[token]/route.ts`
   - Done when: unit + route tests cover every denial path and a valid signed request streams bytes.
   - Refs: SEC-1 · Decision D15
-- [ ] **S3-03** · L · Client payload and consumers for the **protected tier** (private galleries and galleries with downloads disabled): the gallery page sends opaque tokens and signed URLs instead of Drive ids/`thumbnailLink`s; update every consumer; keep Google-CDN delivery for the public tier.
+- [x] **S3-03** · L · Client payload and consumers for the **protected tier** (private galleries and galleries with downloads disabled): the gallery page sends opaque tokens and signed URLs instead of Drive ids/`thumbnailLink`s; update every consumer; keep Google-CDN delivery for the public tier.
   - Depends: S3-02, S3-13
   - Files: `app/gallery/[slug]/page.tsx`, `lib/drive/public-url.ts`, `components/gallery/PhotoTile.tsx`, `components/gallery/Lightbox.tsx`, `components/gallery/HeroImage.tsx`, `components/gallery/MasonryGrid.tsx`, `components/dashboard/GalleryCard.tsx`, `components/dashboard/CoverPickerModal.tsx`, `app/api/galleries/[id]/download-all/route.ts`
   - Done when: in a private gallery, the rendered HTML and network log contain no Drive file id and no `googleusercontent`/`drive.usercontent` URL; public galleries behave as before.

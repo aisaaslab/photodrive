@@ -23,7 +23,7 @@ let upstream: ReturnType<typeof vi.fn>;
 const fetchMedia = (
   galleryId: string,
   fileId: string,
-  size: "thumb" | "preview" | "full",
+  size: "thumb" | "preview" | "full" | "stream",
   opts: { headers?: Record<string, string>; cookie?: string; edit?: (u: URL) => void; now?: number; ip?: string } = {},
 ) => {
   const url = new URL(signedMediaUrl(galleryId, fileId, size, opts.now), "http://localhost");
@@ -203,6 +203,27 @@ describe("downloads turned off", () => {
     expect(res.headers.get("cache-control")).toBe("private, max-age=3600");
     expect(upstream.mock.calls[0][1]).toEqual({ headers: { Range: "bytes=0-3" } });
     expect((await fetchMedia("g1", FILE, "full", { headers: { authorization: "Bearer boss-token" } })).status).toBe(200);
+  });
+});
+
+describe("video playback (size=stream)", () => {
+  it("plays in a gallery with downloads off (it is not a download), seeks with Range, and is never cached by shared caches", async () => {
+    await seed("g1", { allowDownload: false });
+    upstream.mockImplementationOnce(async () => new Response("part", { status: 206, headers: { "content-range": "bytes 0-3/10", "content-type": "video/mp4" } }));
+    const res = await fetchMedia("g1", FILE, "stream", { headers: { range: "bytes=0-3" } });
+    expect(res.status).toBe(206);
+    expect(res.headers.get("content-range")).toBe("bytes 0-3/10");
+    expect(res.headers.get("cache-control")).toBe("private, max-age=3600");
+    expect(upstream.mock.calls[0][1]).toEqual({ headers: { Range: "bytes=0-3" } });
+    expect(String(upstream.mock.calls[0][0])).toContain("alt=media");
+  });
+
+  it("a private gallery still needs the unlock cookie, and a stream link cannot be turned into a download link", async () => {
+    await seed("g1", { visibility: "private", passwordHash: "x", pwChangedAt: 1 });
+    expect((await fetchMedia("g1", FILE, "stream")).status).toBe(401);
+    expect((await fetchMedia("g1", FILE, "stream", { cookie: await cookieFor("g1", 1) })).status).toBe(200);
+    await seed("g2", { allowDownload: false });
+    expect((await fetchMedia("g2", FILE, "stream", { edit: (u) => u.searchParams.set("size", "full") })).status).toBe(403); // signature covers the size
   });
 });
 

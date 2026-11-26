@@ -15,8 +15,12 @@ import { createHmac, hkdfSync, timingSafeEqual } from "node:crypto";
  */
 
 export const BUCKET_MS = 6 * 60 * 60 * 1000;
-export type MediaSize = "thumb" | "preview" | "full";
-export const MEDIA_SIZES: readonly MediaSize[] = ["thumb", "preview", "full"];
+/**
+ * thumb / preview: images. full: the original, for downloads (needs downloads turned on). stream: the original for playing in the
+ * page (video), which needs no download permission but is otherwise checked the same way and supports Range.
+ */
+export type MediaSize = "thumb" | "preview" | "full" | "stream";
+export const MEDIA_SIZES: readonly MediaSize[] = ["thumb", "preview", "full", "stream"];
 
 const TOKEN_BYTES = 16; // 128 bits, 22 characters
 const SIG_BYTES = 16;
