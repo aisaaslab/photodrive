@@ -53,11 +53,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setLoading(false);
 
       if (firebaseUser) {
-        await upsertUser(firebaseUser.uid, {
-          email: firebaseUser.email ?? "",
-          name: firebaseUser.displayName ?? "",
-          photoURL: firebaseUser.photoURL ?? undefined,
-        });
+        try {
+          await upsertUser(firebaseUser.uid, {
+            email: firebaseUser.email ?? "",
+            name: firebaseUser.displayName ?? "",
+            photoURL: firebaseUser.photoURL ?? undefined,
+          });
+        } catch {
+          // Not fatal: the profile read below still works, and the next sign-in tries again. (An older cached copy of the app can
+          // be refused by the rules that now keep `createdAt` fixed.)
+        }
         // Fetch the Firestore profile (may differ from Firebase Auth if the
         // user uploaded a custom avatar).
         try {

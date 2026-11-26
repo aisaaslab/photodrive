@@ -8,7 +8,7 @@
 
 ## Tasks
 
-- [ ] **S4-01** · M · Fix `createdAt` reset: set it only when the profile is created (never in later upserts); one-off script to restore historical `createdAt` from Firebase Auth creation time (dry-run first).
+- [~] **S4-01** · M · Fix `createdAt` reset: set it only when the profile is created (never in later upserts); one-off script to restore historical `createdAt` from Firebase Auth creation time (dry-run first).
   - Files: `lib/firestore/users.ts`, `components/auth/AuthProvider.tsx`, `scripts/migrations/restore-created-at.ts`
   - Done when: signing in twice leaves `createdAt` unchanged (test); script report reviewed.
   - Refs: SEC-4

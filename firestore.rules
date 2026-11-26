@@ -32,9 +32,12 @@ service cloud.firestore {
 
       // On later logins it may update profile fields, but cannot add/change/remove
       // any subscription/billing field.
+      //
+      // `createdAt` (the sign-up date) is written once, at creation, and never changed by the client.
       allow update: if request.auth != null
         && request.auth.uid == uid
-        && !request.resource.data.diff(resource.data).affectedKeys().hasAny(locked());
+        && !request.resource.data.diff(resource.data).affectedKeys().hasAny(locked())
+        && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['createdAt']);
 
       allow delete: if false;
     }

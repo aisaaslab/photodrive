@@ -17,7 +17,7 @@ tasks. Selected landing direction: **Concept B "Cinematic Dark"**.
 | [S1](sprints/S01-payment-core.md) | Payment core | Payments and safety net | 9/12 | ~15.5 d | In progress |
 | [S2](sprints/S02-stripe-events-and-backfill.md) | Stripe events, reconciliation and back-fill | Payments and safety net | 6/16 | ~22 d | In progress |
 | [S3](sprints/S03-protected-delivery-and-abuse-protection.md) | Protected photo delivery and abuse protection | Security | 9/13 | ~17.5 d | In progress |
-| [S4](sprints/S04-data-hygiene-and-stripe-setup.md) | Data hygiene and Stripe setup | Security | 0/9 | ~13 d | Not started |
+| [S4](sprints/S04-data-hygiene-and-stripe-setup.md) | Data hygiene and Stripe setup | Security | 0/9 | ~13 d | In progress |
 | [S5](sprints/S05-foundation-and-design-system.md) | Foundation: shared code layer and design system | Redesign and foundation | 0/12 | ~19 d | Not started |
 | [S6](sprints/S06-landing-page.md) | New landing page (Concept B "Cinematic Dark") | Redesign and foundation | 0/15 | ~25 d | Not started |
 | [S7](sprints/S07-admin-foundation.md) | Admin back office I: design, roles, audit, counters, users, galleries | Redesign and foundation | 0/6 | ~12 d | Not started |
