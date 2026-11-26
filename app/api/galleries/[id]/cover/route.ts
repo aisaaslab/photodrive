@@ -1,24 +1,16 @@
+import { route } from "@/lib/server/http";
 import { NextRequest, NextResponse } from "next/server";
-import { getAdminAuth, getAdminDb } from "@/lib/firebase/admin";
+import { getAdminDb } from "@/lib/firebase/admin";
+import { requireUser } from "@/lib/server/auth";
 
-async function getUid(req: NextRequest): Promise<string | null> {
-  const token = req.headers.get("authorization")?.replace("Bearer ", "");
-  if (!token) return null;
-  try {
-    const decoded = await getAdminAuth().verifyIdToken(token);
-    return decoded.uid;
-  } catch {
-    return null;
-  }
-}
-
-export async function GET(
+export const GET = route("galleries.cover.get", async (
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
-) {
+) => {
   const { id } = await params;
-  const uid = await getUid(req);
-  if (!uid) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const auth = await requireUser(req);
+  if (!auth.ok) return auth.response;
+  const uid = auth.user.uid;
 
   const snap = await getAdminDb().collection("galleries").doc(id).get();
   if (!snap.exists) return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -53,4 +45,4 @@ export async function GET(
   } catch {
     return NextResponse.json({ fileId: null });
   }
-}
+});

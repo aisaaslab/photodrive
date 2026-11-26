@@ -18,7 +18,7 @@
 - [ ] **S5-03** · L · UI primitives in `components/ui/`: `Button`, `Pill`, `Chip`, `Card`, `IconTile`, `Input`, `Toggle`, `Accordion`, `Badge`, `Tabs`, `SectionHeader` (+ existing `Modal`, `Toast` restyled); variants with `clsx` + `tailwind-merge`; a `/dev/ui` kitchen-sink page (not in production builds).
   - Depends: S5-02
   - Done when: every primitive has states (hover, focus, disabled) shown on `/dev/ui`.
-- [ ] **S5-04** · M · Shared server layer: `lib/server/auth.ts` (`requireUser`, `requireAdmin`), `lib/server/http.ts` (`route()` wrapper with auth, zod parse, error mapping, Sentry capture, request id); migrate the 9 duplicated routes and remove `getUid` copies.
+- [x] **S5-04** · M · Shared server layer: `lib/server/auth.ts` (`requireUser`, `requireAdmin`), `lib/server/http.ts` (`route()` wrapper with auth, zod parse, error mapping, Sentry capture, request id); migrate the 9 duplicated routes and remove `getUid` copies.
   - Depends: S3-09
   - Files: `lib/server/auth.ts`, `lib/server/http.ts`, all routes listed in STR-2
   - Done when: `grep -r "verifyIdToken" app` finds no route-level copies.

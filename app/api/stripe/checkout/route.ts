@@ -1,7 +1,9 @@
+import { route } from "@/lib/server/http";
 import { requestLogger } from "@/lib/server/log";
 import { appEnv, billingFulfilV2 } from "@/lib/server/billing/flags";
 import { NextRequest, NextResponse } from "next/server";
-import { getAdminAuth, getAdminDb } from "@/lib/firebase/admin";
+import { getAdminDb } from "@/lib/firebase/admin";
+import { requireUser } from "@/lib/server/auth";
 import { ensureStripeCustomer } from "@/lib/server/billing/customer";
 import { getStripe, StripeConfigError } from "@/lib/server/billing/stripe";
 import { activateSubscription } from "@/lib/stripe/activate";
@@ -9,19 +11,10 @@ import { getPlanById } from "@/lib/plans";
 import { APP_NAME } from "@/lib/branding";
 import type { PlanInterval } from "@/lib/firestore/types";
 
-async function getDecoded(req: NextRequest) {
-  const token = req.headers.get("authorization")?.replace("Bearer ", "");
-  if (!token) return null;
-  try {
-    return await getAdminAuth().verifyIdToken(token);
-  } catch {
-    return null;
-  }
-}
-
-export async function POST(req: NextRequest) {
-  const decoded = await getDecoded(req);
-  if (!decoded) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+export const POST = route("stripe.checkout.post", async (req: NextRequest) => {
+  const auth = await requireUser(req);
+  if (!auth.ok) return auth.response;
+  const decoded = auth.user;
 
   let stripe;
   try {
@@ -161,4 +154,4 @@ export async function POST(req: NextRequest) {
   );
 
   return NextResponse.json({ url: session.url });
-}
+});

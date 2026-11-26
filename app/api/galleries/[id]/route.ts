@@ -1,25 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
-import { parseJson } from "@/lib/server/http";
+import { parseJson, route } from "@/lib/server/http";
 import { deleteGalleryCascade } from "@/lib/server/repos/galleries";
 import { GalleryBody } from "@/lib/shared/schemas/galleries";
-import { getAdminAuth, getAdminDb } from "@/lib/firebase/admin";
+import { getAdminDb } from "@/lib/firebase/admin";
+import { requireUser } from "@/lib/server/auth";
 import { hashPassword } from "@/lib/gallery/password";
 import { planUpdate } from "@/lib/gallery/visibility";
 import { sealPassword, forOwner } from "@/lib/gallery/password-vault";
 import { extractFolderId } from "@/lib/drive/url-parser";
 import { validTitleFont, validTitleColor, validTitleSize } from "@/lib/gallery/title-style";
 import { validCoverPos } from "@/lib/gallery/cover-position";
-
-async function getUid(req: NextRequest): Promise<string | null> {
-  const token = req.headers.get("authorization")?.replace("Bearer ", "");
-  if (!token) return null;
-  try {
-    const decoded = await getAdminAuth().verifyIdToken(token);
-    return decoded.uid;
-  } catch {
-    return null;
-  }
-}
 
 async function getGalleryForOwner(id: string, uid: string) {
   const ref = getAdminDb().collection("galleries").doc(id);
@@ -30,13 +20,14 @@ async function getGalleryForOwner(id: string, uid: string) {
   return { ref, data: { id: snap.id, ...data } };
 }
 
-export async function PATCH(
+export const PATCH = route("galleries.item.patch", async (
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
-) {
+) => {
   const { id } = await params;
-  const uid = await getUid(req);
-  if (!uid) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const auth = await requireUser(req);
+  if (!auth.ok) return auth.response;
+  const uid = auth.user.uid;
 
   const gallery = await getGalleryForOwner(id, uid);
   if (!gallery) return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -117,15 +108,16 @@ export async function PATCH(
 
   await gallery.ref.update(updates);
   return NextResponse.json(forOwner({ ...gallery.data, ...updates }));
-}
+});
 
-export async function DELETE(
+export const DELETE = route("galleries.item.delete", async (
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
-) {
+) => {
   const { id } = await params;
-  const uid = await getUid(req);
-  if (!uid) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const auth = await requireUser(req);
+  if (!auth.ok) return auth.response;
+  const uid = auth.user.uid;
 
   const gallery = await getGalleryForOwner(id, uid);
   if (!gallery) return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -133,4 +125,4 @@ export async function DELETE(
   // The gallery and its client favourites / submission go together.
   await deleteGalleryCascade(getAdminDb(), id);
   return NextResponse.json({ ok: true });
-}
+});

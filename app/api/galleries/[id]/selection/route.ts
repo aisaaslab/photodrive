@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { parseJson } from "@/lib/server/http";
+import { parseJson, route } from "@/lib/server/http";
 import { SelectionToggleBody } from "@/lib/shared/schemas/public";
-import { getAdminAuth, getAdminDb } from "@/lib/firebase/admin";
+import { getAdminDb } from "@/lib/firebase/admin";
+import { verifyBearer } from "@/lib/server/auth";
 import { galleryFiles, hasGalleryAccess, isOwnerOrAdmin, loadProxyGallery, type ProxyGallery } from "@/lib/server/photo-access";
 import { photoToken } from "@/lib/server/media-token";
 import { usesProtectedTier } from "@/lib/server/protected-photos";
@@ -39,10 +40,10 @@ async function selectionAccess(req: NextRequest, id: string): Promise<Access> {
 // Public: return the gallery's shared favourites. When the caller is the
 // gallery's owner (Bearer token), the client's submission — name, email, note —
 // is included too; it is never exposed to the public.
-export async function GET(
+export const GET = route("galleries.selection.get", async (
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
-) {
+) => {
   const { id } = await params;
   const access = await selectionAccess(req, id);
   if (access.error) return access.error;
@@ -53,24 +54,22 @@ export async function GET(
   if (access.tokens) items = items.map((i) => ({ id: photoToken(id, i.id), name: i.name }));
 
   let submission: unknown = undefined;
-  const token = req.headers.get("authorization")?.replace("Bearer ", "");
-  if (token && snap.exists && snap.data()?.submission) {
-    try {
-      const uid = (await getAdminAuth().verifyIdToken(token)).uid;
+  // The client's name, e-mail and note are for the gallery's owner only; anyone else (or an invalid token) is a public request.
+  if (snap.exists && snap.data()?.submission) {
+    const uid = (await verifyBearer(req))?.uid;
+    if (uid) {
       const gal = await db.collection("galleries").doc(id).get();
       if (gal.exists && gal.data()?.photographerId === uid) submission = snap.data()!.submission;
-    } catch {
-      // invalid token — treat as a public request
     }
   }
   return NextResponse.json({ photos: items, ...(submission ? { submission } : {}) });
-}
+});
 
 // Public: add or remove one photo from the shared favourites.
-export async function POST(
+export const POST = route("galleries.selection.post", async (
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
-) {
+) => {
   const { id } = await params;
 
   const body = await parseJson(req, SelectionToggleBody);
@@ -104,4 +103,4 @@ export async function POST(
   // merge: keep the client's submission (stored on the same doc) intact.
   await ref.set({ galleryId: id, items, count: items.length, updatedAt: Date.now() }, { merge: true });
   return NextResponse.json({ ok: true, count: items.length });
-}
+});

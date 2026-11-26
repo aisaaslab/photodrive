@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { parseJson } from "@/lib/server/http";
+import { parseJson, route } from "@/lib/server/http";
 import { GalleryBody } from "@/lib/shared/schemas/galleries";
-import { getAdminAuth, getAdminDb } from "@/lib/firebase/admin";
+import { getAdminDb } from "@/lib/firebase/admin";
+import { requireUser } from "@/lib/server/auth";
 import { extractFolderId } from "@/lib/drive/url-parser";
 import { generateSlug } from "@/lib/gallery/slug";
 import { hashPassword } from "@/lib/gallery/password";
@@ -10,20 +11,10 @@ import { sealPassword, forOwner } from "@/lib/gallery/password-vault";
 import { isAdmin } from "@/lib/firebase/admin-guard";
 import type { GalleryDoc } from "@/lib/firestore/types";
 
-async function getUid(req: NextRequest): Promise<string | null> {
-  const token = req.headers.get("authorization")?.replace("Bearer ", "");
-  if (!token) return null;
-  try {
-    const decoded = await getAdminAuth().verifyIdToken(token);
-    return decoded.uid;
-  } catch {
-    return null;
-  }
-}
-
-export async function POST(req: NextRequest) {
-  const uid = await getUid(req);
-  if (!uid) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+export const POST = route("galleries.post", async (req: NextRequest) => {
+  const auth = await requireUser(req);
+  if (!auth.ok) return auth.response;
+  const uid = auth.user.uid;
 
   // Paywall enforced server-side — the client-side subscription check alone is bypassable.
   if (!isAdmin(uid)) {
@@ -112,11 +103,12 @@ export async function POST(req: NextRequest) {
   const ref = await getAdminDb().collection("galleries").add(data);
 
   return NextResponse.json(forOwner({ id: ref.id, ...data }), { status: 201 });
-}
+});
 
-export async function GET(req: NextRequest) {
-  const uid = await getUid(req);
-  if (!uid) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+export const GET = route("galleries.get", async (req: NextRequest) => {
+  const auth = await requireUser(req);
+  if (!auth.ok) return auth.response;
+  const uid = auth.user.uid;
 
   const snap = await getAdminDb()
     .collection("galleries")
@@ -147,4 +139,4 @@ export async function GET(req: NextRequest) {
     });
   }
   return NextResponse.json({ galleries });
-}
+});

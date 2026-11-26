@@ -1,6 +1,7 @@
 import "server-only";
 import { NextResponse } from "next/server";
 import type { z } from "zod";
+import { requestLogger } from "@/lib/server/log";
 
 /** The one 400 body every validated route returns: a short message plus which fields were wrong (never the values sent). */
 export type BadRequestBody = { error: string; issues?: { path: string; message: string }[] };
@@ -41,4 +42,22 @@ export async function parseJson<S extends z.ZodType>(
   const parsed = schema.safeParse(raw);
   if (!parsed.success) return { ok: false, response: badRequest(opts.message, issuesOf(parsed.error)) };
   return { ok: true, data: parsed.data };
+}
+
+/**
+ * Wraps a route handler so an unexpected error is logged (with a request id) and answered as a plain 500, never as a stack trace or
+ * an unhandled rejection (S5-04). A place to hook error monitoring in once there is one (S0-06). Expected outcomes (401, 400, 404 ...)
+ * are returned by the handler as before; this only catches what it did not expect.
+ *
+ *   export const GET = route("user.subscription", async (req) => { ... });
+ */
+export function route<R extends Request, A extends unknown[]>(scope: string, handler: (req: R, ...rest: A) => Promise<Response>) {
+  return async (req: R, ...rest: A): Promise<Response> => {
+    try {
+      return await handler(req, ...rest);
+    } catch (err) {
+      requestLogger(req, scope).error("unhandled error", { err });
+      return NextResponse.json({ error: "Internal error" }, { status: 500 });
+    }
+  };
 }

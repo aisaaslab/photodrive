@@ -1,6 +1,7 @@
+import { route } from "@/lib/server/http";
 import { NextRequest, NextResponse } from "next/server";
 import type Stripe from "stripe";
-import { getAdminAuth } from "@/lib/firebase/admin";
+import { requireUser } from "@/lib/server/auth";
 import { getStripe, isSessionSettled, StripeConfigError } from "@/lib/server/billing/stripe";
 import { activateSubscription } from "@/lib/stripe/activate";
 import { requestLogger } from "@/lib/server/log";
@@ -15,16 +16,10 @@ import { fulfilCheckoutSession } from "@/lib/server/billing/fulfil";
  * own: it re-fetches the session from Stripe (never trusting the client),
  * checks it was really paid, and activates the subscription if so.
  */
-export async function POST(req: NextRequest) {
-  const token = req.headers.get("authorization")?.replace("Bearer ", "");
-  if (!token) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-  let decoded;
-  try {
-    decoded = await getAdminAuth().verifyIdToken(token);
-  } catch {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+export const POST = route("stripe.verify.post", async (req: NextRequest) => {
+  const auth = await requireUser(req);
+  if (!auth.ok) return auth.response;
+  const decoded = auth.user;
 
   let sessionId: string | undefined;
   try {
@@ -93,7 +88,7 @@ export async function POST(req: NextRequest) {
   }
 
   return NextResponse.json({ paid: true, activated: true });
-}
+});
 
 /**
  * New path (BILLING_FULFIL_V2): ownership first, then the shared fulfilment.

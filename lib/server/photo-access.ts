@@ -1,6 +1,6 @@
 import "server-only";
-import { getAdminAuth, getAdminDb } from "@/lib/firebase/admin";
-import { isAdmin } from "@/lib/firebase/admin-guard";
+import { getAdminDb } from "@/lib/firebase/admin";
+import { isAdmin, verifyBearer } from "@/lib/server/auth";
 import { fetchDriveFolder } from "@/lib/drive/client";
 import { verifyGalleryToken } from "@/lib/gallery/session";
 import { isPrivate } from "@/lib/gallery/visibility";
@@ -59,14 +59,9 @@ export async function fileInGallery(folderId: string, fileId: string): Promise<b
 
 /** The signed-in photographer who owns the gallery, or an administrator. Needs an `Authorization: Bearer` header. */
 export async function isOwnerOrAdmin(req: Request, gallery: ProxyGallery): Promise<boolean> {
-  const token = req.headers.get("authorization")?.replace(/^Bearer /, "");
-  if (!token) return false;
-  try {
-    const { uid } = await getAdminAuth().verifyIdToken(token);
-    return isAdmin(uid) || (gallery.photographerId !== null && uid === gallery.photographerId);
-  } catch {
-    return false;
-  }
+  const user = await verifyBearer(req);
+  if (!user) return false;
+  return isAdmin(user.uid) || (gallery.photographerId !== null && user.uid === gallery.photographerId);
 }
 
 /** Has this visitor unlocked this private gallery (a valid, current access cookie)? */

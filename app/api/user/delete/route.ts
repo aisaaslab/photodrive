@@ -1,17 +1,13 @@
+import { route } from "@/lib/server/http";
 import { NextRequest, NextResponse } from "next/server";
 import { getAdminAuth, getAdminDb } from "@/lib/firebase/admin";
+import { requireUser } from "@/lib/server/auth";
 import { deleteUserGalleries } from "@/lib/server/repos/galleries";
 
-export async function DELETE(req: NextRequest) {
-  const token = req.headers.get("authorization")?.replace("Bearer ", "");
-  if (!token) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-  let uid: string;
-  try {
-    uid = (await getAdminAuth().verifyIdToken(token)).uid;
-  } catch {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+export const DELETE = route("user.delete.delete", async (req: NextRequest) => {
+  const auth = await requireUser(req);
+  if (!auth.ok) return auth.response;
+  const uid = auth.user.uid;
 
   const db = getAdminDb();
   // Every gallery with its client favourites and submissions (S4-02), then the profile.
@@ -23,4 +19,4 @@ export async function DELETE(req: NextRequest) {
   await getAdminAuth().deleteUser(uid);
 
   return NextResponse.json({ ok: true });
-}
+});
