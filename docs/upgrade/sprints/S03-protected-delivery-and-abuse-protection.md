@@ -16,7 +16,7 @@
   - Files: `lib/gallery/visibility.ts` (derive + rules), `lib/firestore/types.ts`, `app/api/galleries/route.ts`, `app/api/galleries/[id]/route.ts`, `components/dashboard/NewGalleryForm.tsx`, `components/dashboard/GalleryCard.tsx`, `app/api/admin/galleries/*`, `lib/i18n`
   - Done when: unit and route tests for the rules; a private gallery cannot be created or saved without a password; a public gallery never keeps one; existing galleries behave identically; copy reviewed in all six languages.
   - Refs: D18, D15, SEC-1
-- [ ] **S3-02** · L · Media signing and delivery: `lib/server/media-token.ts` (opaque photo tokens, signed URLs with 6-hour expiry buckets) and `/api/g/[galleryId]/media/[token]` enforcing gallery existence/not disabled, folder-membership (cached listing), gallery cookie for protected galleries, `allowDownload` for `size=full`, signature + expiry, rate limit, correct cache headers, Range support for video.
+- [x] **S3-02** · L · Media signing and delivery: `lib/server/media-token.ts` (opaque photo tokens, signed URLs with 6-hour expiry buckets) and `/api/g/[galleryId]/media/[token]` enforcing gallery existence/not disabled, folder-membership (cached listing), gallery cookie for protected galleries, `allowDownload` for `size=full`, signature + expiry, rate limit, correct cache headers, Range support for video.
   - Depends: S3-01, S3-13
   - Files: `lib/server/media-token.ts`, `app/api/g/[galleryId]/media/[token]/route.ts`
   - Done when: unit + route tests cover every denial path and a valid signed request streams bytes.

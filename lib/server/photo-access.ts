@@ -4,6 +4,14 @@ import { fetchDriveFolder } from "@/lib/drive/client";
 import { verifyGalleryToken } from "@/lib/gallery/session";
 import { isPrivate } from "@/lib/gallery/visibility";
 
+/**
+ * Per-visitor allowances shared by the photo proxy and the media route. Generous on purpose: when Google's CDN fails (proxy) or a
+ * protected gallery is open (media), hundreds of thumbnails arrive at once. The limit is there to stop scripts, not visitors.
+ */
+export const VIEW_LIMIT = { limit: 900, windowSec: 60 };
+/** Originals are big: a zip of a whole gallery is one request per photo. */
+export const FULL_LIMIT = { limit: 1500, windowSec: 10 * 60 };
+
 /** What the proxy needs to know about the gallery (or demo) a photo is requested for. */
 export type ProxyGallery = {
   id: string;
@@ -65,4 +73,12 @@ export async function hasGalleryAccess(cookie: string | undefined, gallery: Prox
   if (!cookie) return false;
   const claims = await verifyGalleryToken(cookie);
   return !!claims && claims.galleryId === gallery.id && claims.v === gallery.pwChangedAt;
+}
+
+/** The protected delivery tier (D15/D18): private galleries and galleries with downloads turned off. */
+export const isProtectedTier = (g: Pick<ProxyGallery, "private" | "allowDownload">) => g.private || !g.allowDownload;
+
+/** The whole listing, for callers that must turn an opaque token back into a file. */
+export async function galleryFiles(folderId: string) {
+  return (await fetchDriveFolder(folderId)).files;
 }
