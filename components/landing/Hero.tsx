@@ -4,10 +4,9 @@ import { DEMO_GALLERY_URL } from "@/lib/branding";
 import { Button } from "@/components/ui/Button";
 import { GalleryWindow } from "./GalleryWindow";
 import { Icon } from "./Icon";
-import { NavBar } from "./NavBar";
 
 /**
- * Nav, hero copy and the product preview (design node 5:14). The photo sits under two gradients (left to right and top to bottom) and the
+ * Hero copy and the product preview (design node 5:14; the nav that sits over it is rendered by the page, outside `main`). The photo sits under two gradients (left to right and top to bottom) and the
  * preview fades into the page at the bottom. Server-rendered in the visitor's language; only the nav is a client island.
  */
 export function Hero({ t }: { t: Translations }) {
@@ -19,7 +18,6 @@ export function Hero({ t }: { t: Translations }) {
         aria-hidden className="absolute inset-0 -z-10"
         style={{ backgroundImage: "linear-gradient(180deg, rgba(6,8,12,0) 40%, rgb(6,8,12) 100%), linear-gradient(90deg, rgba(6,8,12,0.92) 0%, rgba(6,8,12,0.55) 60%, rgba(6,8,12,0.25) 100%)" }}
       />
-      <NavBar />
 
       <div className="mx-auto flex max-w-[1440px] flex-col items-center gap-6 px-4 pt-32 text-center sm:px-8 sm:gap-7 lg:pt-44 xl:px-20">
         <p className="inline-flex max-w-full items-center gap-2.5 rounded-pill border border-line bg-glass px-4 py-2.5 text-[13px] font-medium text-fg sm:gap-3 sm:px-5 sm:text-sm">

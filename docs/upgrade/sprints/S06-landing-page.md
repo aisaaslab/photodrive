@@ -28,11 +28,11 @@
   - Done when: matches nodes `5:149`, `5:166`.
 - [x] **S6-06** · L · Features bento (row 1: photo-mosaic card + live-sync card; rows 2–3 equal cards) and Client-experience section (lightbox mock with thumbnails).
   - Done when: matches nodes `8:2`, `8:100`.
-- [ ] **S6-07** · L · Pricing: move `buildTiers`/`discountPct` to `lib/shared/pricing.ts` with unit tests; `BillingToggle` island; `PlanCard` (highlight state); money via `lib/shared/money.ts` in the plan's own currency (D4); "One-time payment · no auto-renewal"; "Secure checkout powered by Stripe"; fallback card when no plans exist; CTA links to `/subscribe?plan=<id>`.
+- [x] **S6-07** · L · Pricing: move `buildTiers`/`discountPct` to `lib/shared/pricing.ts` with unit tests; `BillingToggle` island; `PlanCard` (highlight state); money via `lib/shared/money.ts` in the plan's own currency (D4); "One-time payment · no auto-renewal"; "Secure checkout powered by Stripe"; fallback card when no plans exist; CTA links to `/subscribe?plan=<id>`.
   - Depends: S2-05, S6-02
   - Done when: matches node `8:151`; currency tests pass (USD, EUR, zero-decimal); toggle hidden when only one interval exists.
   - Refs: PAY-6
-- [ ] **S6-08** · M · FAQ (accessible accordion, real content from `app/faq/page.tsx`) and Final CTA panel.
+- [x] **S6-08** · M · FAQ (accessible accordion, real content from `app/faq/page.tsx`) and Final CTA panel.
   - Done when: matches nodes `8:256`, `8:286`.
 - [ ] **S6-09** · M · Preserve conversion features per D14: restyle `DemoForm` ("Try it now"), `DemoVideo`, and fold `TrustSection` content into the page; remove or relocate the compare slider. **Copy must not promise anything D3 contradicts** (see S9-07).
   - Depends: S6-00

@@ -47,9 +47,9 @@ const check = (name, ok, extra = "") => { console.log(`${ok ? "PASS" : "FAIL"} $
     await page.goto(BASE + PATH, { waitUntil: "networkidle" });
     const btn = page.getByRole("button", { name: "Menu", exact: true });
     check("phone: menu button starts closed", (await btn.getAttribute("aria-expanded")) === "false");
-    check("phone: the four links are hidden until opened", (await page.getByRole("link", { name: "Pricing" }).count()) === 0);
+    check("phone: the four links are hidden until opened", (await page.locator("header").getByRole("link", { name: "Pricing" }).count()) === 0);
     await btn.click();
-    check("phone: menu opens (aria-expanded, links shown)", (await page.getByRole("button", { name: "Close menu" }).getAttribute("aria-expanded")) === "true" && (await page.getByRole("link", { name: "Pricing" }).isVisible()));
+    check("phone: menu opens (aria-expanded, links shown)", (await page.getByRole("button", { name: "Close menu" }).getAttribute("aria-expanded")) === "true" && (await page.locator("header").getByRole("link", { name: "Pricing" }).isVisible()));
     await page.keyboard.press("Escape");
     check("phone: Escape closes the menu", (await page.getByRole("button", { name: "Menu", exact: true }).getAttribute("aria-expanded")) === "false");
     await page.getByRole("button", { name: "Menu", exact: true }).click();
@@ -69,8 +69,41 @@ const check = (name, ok, extra = "") => { console.log(`${ok ? "PASS" : "FAIL"} $
     check("desktop: anchors point to the sections", (await href("How it works")) === "#how" && (await href("Features")) === "#features" && (await href("Pricing")) === "#pricing" && (await href("FAQ")) === "#faq");
     check("desktop: Get started and Create your gallery go to /login", (await href("Get started")) === "/login" && (await href("Create your gallery")) === "/login");
     check("desktop: the original logo is used", (await page.locator("header img[alt=PhotoDrive]").first().getAttribute("src")).includes("logo-light"));
+    check("desktop: landmarks (banner, one main, contentinfo)", (await page.getByRole("banner").count()) === 1 && (await page.getByRole("main").count()) === 1 && (await page.getByRole("contentinfo").count()) === 1);
+    check("desktop: footer links go to the legal pages and the sections", (await page.locator("footer a[href='/terms']").count()) === 1 && (await page.locator("footer a[href='/privacy']").count()) === 1 && (await page.locator("footer a[href='/#pricing']").count()) === 1 && (await page.locator("footer a[href='/contact']").count()) === 1);
+    const faqBtn = page.locator("#faq").getByRole("button", { name: "Is billing recurring?" });
+    check("desktop: FAQ first item open, billing answer opens on click", (await page.locator("#faq button[aria-expanded=true]").count()) === 1 && (await faqBtn.click(), (await faqBtn.getAttribute("aria-expanded")) === "true"));
+    check("desktop: the final CTA button goes to /login", (await page.locator("section[aria-labelledby=cta-title] a[href='/login']").count()) === 1);
     check("desktop: one h1, two lines of headline", (await page.getByRole("heading", { level: 1 }).count()) === 1);
     check("desktop: hero image is preloaded (priority)", (await page.locator('link[rel=preload][as=image]').count()) >= 1);
+    await ctx.close();
+  }
+
+  // Pricing from real plans (WITH_PLANS=1: emulator seeded with seed.cjs and seed-plans.cjs) or the no-plans fallback
+  {
+    const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 }, extraHTTPHeaders: { "Accept-Language": "en" } });
+    const html = await (await ctx.request.get(BASE + PATH)).text();
+    const page = await ctx.newPage();
+    await page.goto(BASE + PATH, { waitUntil: "networkidle" });
+    const pricing = page.locator("#pricing");
+    if (process.env.WITH_PLANS) {
+      check("pricing: prices are in the server HTML", html.includes("$99") && html.includes("Save 31%"));
+      check("pricing: the billing toggle is shown with the saving badge", (await pricing.getByRole("button", { name: /Yearly/ }).innerText()).includes("Save 31%"));
+      check("pricing: yearly is the default", (await pricing.getByRole("button", { name: /Yearly/ }).getAttribute("aria-pressed")) === "true");
+      check("pricing: yearly shows both yearly plans, each in its own currency", (await pricing.innerText()).includes("$99") && (await pricing.innerText()).includes("€99"));
+      check("pricing: recommended plans say Most popular (the two highlighted yearly plans of the seed data)", (await pricing.getByText("Most popular").count()) === 2);
+      check("pricing: each button goes to checkout for its plan", (await pricing.locator('a[href="/subscribe?plan=p-pro-year"]').count()) === 1 && (await pricing.locator('a[href="/subscribe?plan=p-year"]').count()) === 1);
+      await pricing.getByRole("button", { name: "Monthly" }).click();
+      const monthly = await pricing.innerText();
+      check("pricing: toggling to monthly shows $12 / month and hides the yearly plans", monthly.includes("$12") && monthly.includes("/ month") && !monthly.includes("$99"));
+      check("pricing: monthly button is pressed", (await pricing.getByRole("button", { name: "Monthly" }).getAttribute("aria-pressed")) === "true");
+      check("pricing: yearly cards say how much is saved", (await (async () => { await pricing.getByRole("button", { name: /Yearly/ }).click(); return pricing.innerText(); })()).includes("Save 31% vs monthly."));
+    } else {
+      const text = await pricing.innerText();
+      check("pricing (no plans): shows the features card and a button, never a price", !/[$€£]\s?\d/.test(text) && (await pricing.locator('a[href="/subscribe"]').count()) === 1 && text.includes("Unlimited galleries"));
+      check("pricing (no plans): no billing toggle", (await pricing.getByRole("button", { name: "Monthly" }).count()) === 0);
+    }
+    check("pricing: states the billing model and the checkout provider", (await pricing.innerText()).includes("no auto-renewal") && (await pricing.innerText()).includes("Stripe"));
     await ctx.close();
   }
 

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getUidFromRequest, isAdmin } from "@/lib/firebase/admin-guard";
 import { normalizePlanInput } from "@/lib/plans";
 import { plansCol } from "@/lib/server/repos/collections";
+import { expirePublicPlans } from "@/lib/server/public-plans";
 
 /** PATCH: update a plan (full replace of the editable fields). */
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -31,6 +32,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       if (k in body) update[k] = body[k] === true;
     }
     await docRef.update(update);
+    expirePublicPlans();
     return NextResponse.json({ ok: true });
   }
 
@@ -42,6 +44,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   }
 
   await docRef.update({ ...input, currency: "usd", updatedAt: Date.now() });
+  expirePublicPlans();
 
   return NextResponse.json({ ok: true });
 }
@@ -59,5 +62,6 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     return NextResponse.json({ error: "Plan not found" }, { status: 404 });
   }
   await docRef.delete();
+  expirePublicPlans();
   return NextResponse.json({ ok: true });
 }
