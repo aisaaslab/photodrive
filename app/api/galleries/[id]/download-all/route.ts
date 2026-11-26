@@ -1,10 +1,10 @@
 import { NextRequest } from "next/server";
 import { cookies } from "next/headers";
-import { getAdminDb } from "@/lib/firebase/admin";
 import { fetchDriveFolder } from "@/lib/drive/client";
 import { verifyGalleryToken } from "@/lib/gallery/session";
 import { isPrivate } from "@/lib/gallery/visibility";
 import { makeZip } from "client-zip";
+import { galleriesCol } from "@/lib/server/repos/collections";
 
 // Node runtime + long timeout: we stream a (possibly large) zip built from
 // many Drive files. The zip is produced lazily with backpressure, so only one
@@ -23,7 +23,7 @@ export async function GET(
 ) {
   const { id } = await params;
 
-  const snap = await getAdminDb().collection("galleries").doc(id).get();
+  const snap = await galleriesCol().doc(id).get();
   if (!snap.exists) return new Response("Not found", { status: 404 });
   const gallery = snap.data()!;
 

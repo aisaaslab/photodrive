@@ -5,6 +5,7 @@ import type { PaymentDoc } from "@/lib/firestore/types";
 import { DAY_MS, computeExpiry, isLifetime } from "@/lib/shared/billing-access";
 import { grantedMsOf } from "./adjust";
 import { isSessionSettled } from "./stripe";
+import { paymentsCol, usersCol } from "@/lib/server/repos/collections";
 
 /**
  * Back-fill REPORTS (S2-06). Everything here is read-only: it only ever calls `.get()`, `.getAll()` and
@@ -95,7 +96,7 @@ export async function buildReportA(
   { now = Date.now(), adminUid = process.env.ADMIN_UID }: { now?: number; adminUid?: string } = {},
 ): Promise<{ rows: ReportARow[]; summary: ReportASummary }> {
   const byUser = new Map<string, PaymentDoc[]>();
-  for (const doc of (await db.collection("payments").get()).docs) {
+  for (const doc of (await paymentsCol(db).get()).docs) {
     const p = doc.data() as PaymentDoc;
     if (!p.uid) continue;
     byUser.set(p.uid, [...(byUser.get(p.uid) ?? []), p]);
@@ -109,7 +110,7 @@ export async function buildReportA(
 
   for (let i = 0; i < uids.length; i += 100) {
     const chunk = uids.slice(i, i + 100);
-    const snaps = await db.getAll(...chunk.map((uid) => db.collection("users").doc(uid)));
+    const snaps = await db.getAll(...chunk.map((uid) => usersCol(db).doc(uid)));
     snaps.forEach((snap, idx) => {
       const uid = chunk[idx];
       const payments = byUser.get(uid)!;
@@ -216,7 +217,7 @@ export async function buildReportB(
   const rows: ReportBRow[] = [];
   for (let i = 0; i < paid.length; i += 100) {
     const chunk = paid.slice(i, i + 100);
-    const snaps = await db.getAll(...chunk.map((s) => db.collection("payments").doc(s.id)));
+    const snaps = await db.getAll(...chunk.map((s) => paymentsCol(db).doc(s.id)));
     snaps.forEach((snap, idx) => {
       if (snap.exists) return;
       const s = chunk[idx];

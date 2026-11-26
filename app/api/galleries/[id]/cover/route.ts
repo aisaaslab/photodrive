@@ -1,7 +1,7 @@
 import { route } from "@/lib/server/http";
 import { NextRequest, NextResponse } from "next/server";
-import { getAdminDb } from "@/lib/firebase/admin";
 import { requireUser } from "@/lib/server/auth";
+import { galleriesCol } from "@/lib/server/repos/collections";
 
 export const GET = route("galleries.cover.get", async (
   req: NextRequest,
@@ -12,7 +12,7 @@ export const GET = route("galleries.cover.get", async (
   if (!auth.ok) return auth.response;
   const uid = auth.user.uid;
 
-  const snap = await getAdminDb().collection("galleries").doc(id).get();
+  const snap = await galleriesCol().doc(id).get();
   if (!snap.exists) return NextResponse.json({ error: "Not found" }, { status: 404 });
   const data = snap.data()!;
   if (data.photographerId !== uid) return NextResponse.json({ error: "Forbidden" }, { status: 403 });

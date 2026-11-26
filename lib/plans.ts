@@ -3,6 +3,7 @@ import { getAdminDb } from "@/lib/firebase/admin";
 import type { PlanDoc, PlanInterval } from "@/lib/firestore/types";
 import { periodMs } from "@/lib/shared/billing-access";
 import { extendUserAccess } from "@/lib/server/billing/extend";
+import { plansCol } from "@/lib/server/repos/collections";
 
 // Monthly access runs 30 days, yearly 365 — both are one-time payments (no
 // auto-renew), matching the product's existing billing model. The rule lives in
@@ -33,7 +34,7 @@ const bySortOrder = (a: PlanDoc, b: PlanDoc) =>
   a.sortOrder - b.sortOrder || a.priceCents - b.priceCents || a.name.localeCompare(b.name, "en");
 
 export async function listAllPlans(): Promise<PlanDoc[]> {
-  const snap = await getAdminDb().collection("plans").get();
+  const snap = await plansCol().get();
   return snap.docs.map((d) => toPlan(d.id, d.data() as Record<string, unknown>)).sort(bySortOrder);
 }
 
@@ -44,7 +45,7 @@ export async function listPublicPlans(): Promise<PlanDoc[]> {
 
 export async function getPlanById(id: string): Promise<PlanDoc | null> {
   if (!id) return null;
-  const snap = await getAdminDb().collection("plans").doc(id).get();
+  const snap = await plansCol().doc(id).get();
   if (!snap.exists) return null;
   return toPlan(snap.id, snap.data() as Record<string, unknown>);
 }

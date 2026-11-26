@@ -6,8 +6,8 @@ import { verifyBearer } from "@/lib/server/auth";
 import { galleryFiles, hasGalleryAccess, isOwnerOrAdmin, loadProxyGallery, type ProxyGallery } from "@/lib/server/photo-access";
 import { photoToken } from "@/lib/server/media-token";
 import { usesProtectedTier } from "@/lib/server/protected-photos";
+import { galleriesCol, gallerySelectionsCol } from "@/lib/server/repos/collections";
 
-const COLLECTION = "gallery_selections";
 
 type Item = { id: string; name: string };
 
@@ -48,7 +48,7 @@ export const GET = route("galleries.selection.get", async (
   const access = await selectionAccess(req, id);
   if (access.error) return access.error;
   const db = getAdminDb();
-  const snap = await db.collection(COLLECTION).doc(id).get();
+  const snap = await gallerySelectionsCol(db).doc(id).get();
   let items: Item[] = snap.exists ? (snap.data()?.items ?? []) : [];
   items.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
   if (access.tokens) items = items.map((i) => ({ id: photoToken(id, i.id), name: i.name }));
@@ -58,7 +58,7 @@ export const GET = route("galleries.selection.get", async (
   if (snap.exists && snap.data()?.submission) {
     const uid = (await verifyBearer(req))?.uid;
     if (uid) {
-      const gal = await db.collection("galleries").doc(id).get();
+      const gal = await galleriesCol(db).doc(id).get();
       if (gal.exists && gal.data()?.photographerId === uid) submission = snap.data()!.submission;
     }
   }
@@ -88,7 +88,7 @@ export const POST = route("galleries.selection.post", async (
   }
 
   const db = getAdminDb();
-  const ref = db.collection(COLLECTION).doc(id);
+  const ref = gallerySelectionsCol(db).doc(id);
   const snap = await ref.get();
   let items: Item[] = snap.exists ? (snap.data()?.items ?? []) : [];
 

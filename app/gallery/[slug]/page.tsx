@@ -2,7 +2,6 @@
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { cookies } from "next/headers";
-import { getAdminDb } from "@/lib/firebase/admin";
 import { fetchDriveFolder } from "@/lib/drive/client";
 import { verifyGalleryToken } from "@/lib/gallery/session";
 import { isPrivate } from "@/lib/gallery/visibility";
@@ -21,6 +20,7 @@ import { APP_NAME } from "@/lib/branding";
 import { titleFontFamily, titleSizeClass, validTitleColor } from "@/lib/gallery/title-style";
 import { coverObjectPosition } from "@/lib/gallery/cover-position";
 import { protectedCoverUrl, toProtectedFolders, toProtectedPhotos, usesProtectedTier } from "@/lib/server/protected-photos";
+import { galleriesCol, usersCol } from "@/lib/server/repos/collections";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -29,8 +29,7 @@ interface Props {
 export default async function GalleryPage({ params }: Props) {
   const { slug } = await params;
 
-  const snap = await getAdminDb()
-    .collection("galleries")
+  const snap = await galleriesCol()
     .where("slug", "==", slug)
     .limit(1)
     .get();
@@ -77,7 +76,7 @@ export default async function GalleryPage({ params }: Props) {
 
   let photographer = { name: "", photoURL: "" };
   try {
-    const userSnap = await getAdminDb().collection("users").doc(gallery.photographerId).get();
+    const userSnap = await usersCol().doc(gallery.photographerId).get();
     if (userSnap.exists) {
       const ud = userSnap.data()!;
       photographer = {

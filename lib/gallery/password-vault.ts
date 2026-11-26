@@ -52,16 +52,14 @@ export function openPassword(sealed: unknown): string | null {
   }
 }
 
-type Doc = Record<string, unknown>;
-
-/**
- * Shape a stored gallery for an authenticated owner/admin response: strips the
- * sealed value and exposes `password` (decrypted, or the legacy plaintext that
- * hasn't been migrated yet, or null). The legacy fallback stays until scripts/migrations/seal-legacy-passwords.ts has run in
- * production (S4-04); reading never writes.
- */
-export function forOwner<T extends Doc>(data: T): Omit<T, "passwordEnc"> & { password: string | null; visibility: Visibility } {
-  const { passwordEnc, ...rest } = data;
-  const legacy = typeof data.password === "string" ? data.password : null;
-  return { ...rest, password: openPassword(passwordEnc) ?? legacy, visibility: galleryVisibility(data) };
+export function forOwner<T extends object>(
+  data: T,
+): Omit<T, "passwordEnc" | "password" | "visibility"> & { password: string | null; visibility: Visibility } {
+  const rest = { ...data } as Record<string, unknown>;
+  const sealed = rest.passwordEnc;
+  delete rest.passwordEnc; // never leaves the server
+  const legacy = typeof rest.password === "string" ? rest.password : null;
+  const out = { ...rest, password: openPassword(sealed) ?? legacy, visibility: galleryVisibility(rest) };
+  // The one cast: the shape is built from a loosely typed copy, and is exactly the declared return type.
+  return out as Omit<T, "passwordEnc" | "password" | "visibility"> & { password: string | null; visibility: Visibility };
 }

@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAdminAuth, getAdminDb } from "@/lib/firebase/admin";
+import { getAdminAuth } from "@/lib/firebase/admin";
 import { getUidFromRequest, isAdmin } from "@/lib/firebase/admin-guard";
 import { listAllPlans } from "@/lib/plans";
+import { galleriesCol, paymentsCol, usersCol } from "@/lib/server/repos/collections";
 
 const DAY = 24 * 60 * 60 * 1000;
 // Far-future sentinel used for "lifetime / comp" access (Jan 1, 3000).
@@ -14,9 +15,9 @@ export async function GET(req: NextRequest) {
 
   const [listUsersResult, galleriesSnap, userDocs, paymentsSnap, plans] = await Promise.all([
     getAdminAuth().listUsers(1000),
-    getAdminDb().collection("galleries").get(),
-    getAdminDb().collection("users").get(),
-    getAdminDb().collection("payments").get(),
+    galleriesCol().get(),
+    usersCol().get(),
+    paymentsCol().get(),
     listAllPlans(),
   ]);
 

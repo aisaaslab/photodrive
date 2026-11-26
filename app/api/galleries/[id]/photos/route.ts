@@ -1,8 +1,8 @@
 import { route } from "@/lib/server/http";
 import { NextRequest, NextResponse } from "next/server";
-import { getAdminDb } from "@/lib/firebase/admin";
 import { requireUser } from "@/lib/server/auth";
 import { fetchDriveFolder } from "@/lib/drive/client";
+import { galleriesCol } from "@/lib/server/repos/collections";
 
 // Owner-auth-gated endpoint that returns the gallery's image list, used by the
 // dashboard cover picker. Public galleries never call this — the public page
@@ -11,7 +11,7 @@ import { fetchDriveFolder } from "@/lib/drive/client";
 // metadata leaks beyond the owner.
 
 async function getGalleryForOwner(id: string, uid: string) {
-  const ref = getAdminDb().collection("galleries").doc(id);
+  const ref = galleriesCol().doc(id);
   const snap = await ref.get();
   if (!snap.exists) return null;
   const data = snap.data()!;

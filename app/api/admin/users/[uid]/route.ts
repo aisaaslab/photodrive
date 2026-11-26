@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAdminAuth, getAdminDb } from "@/lib/firebase/admin";
 import { getUidFromRequest, isAdmin } from "@/lib/firebase/admin-guard";
 import { deleteUserGalleries } from "@/lib/server/repos/galleries";
+import { usersCol } from "@/lib/server/repos/collections";
 
 /**
  * Admin-only: permanently delete a user account.
@@ -37,7 +38,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ u
 
   // Firestore profile.
   try {
-    await db.collection("users").doc(uid).delete();
+    await usersCol(db).doc(uid).delete();
   } catch (err) {
     console.error("[admin users] delete profile failed", err);
   }

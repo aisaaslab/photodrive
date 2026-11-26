@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { getAdminDb } from "@/lib/firebase/admin";
 import { requireUser } from "@/lib/server/auth";
 import { parseJson, route } from "@/lib/server/http";
 import { LANGUAGES } from "@/lib/i18n/languages";
 import { getRateLimiter, rateLimitHeaders } from "@/lib/server/rate-limit";
+import { usersCol } from "@/lib/server/repos/collections";
 
 const Body = z.object({ language: z.enum(LANGUAGES) });
 
@@ -25,7 +25,7 @@ export const PUT = route("user.language.put", async (req: NextRequest) => {
 
   try {
     // update(), not set(): never create a half-empty profile for an account that has no user document yet.
-    await getAdminDb().collection("users").doc(uid).update({ language: parsed.data.language, languageUpdatedAt: Date.now() });
+    await usersCol().doc(uid).update({ language: parsed.data.language, languageUpdatedAt: Date.now() });
   } catch (err) {
     if ((err as { code?: number | string }).code === 5) return NextResponse.json({ error: "Profile not ready" }, { status: 409 });
     throw err;

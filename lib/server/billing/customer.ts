@@ -2,6 +2,7 @@ import "server-only";
 import type { Firestore } from "firebase-admin/firestore";
 import type Stripe from "stripe";
 import { appEnv } from "./flags";
+import { usersCol } from "@/lib/server/repos/collections";
 
 /**
  * One Stripe Customer per user (S4-05, PAY-5). Checkout used to be given only `customer_email`, so every purchase left Stripe
@@ -44,7 +45,7 @@ async function findByUid(stripe: StripeLike, uid: string): Promise<string | null
 
 /** Stores `id` unless another id was stored in the meantime (or replaces `replacing`, a stored id Stripe no longer knows). Returns the winner. */
 async function remember(db: Firestore, uid: string, id: string, replacing: string | null): Promise<string> {
-  const ref = db.collection("users").doc(uid);
+  const ref = usersCol(db).doc(uid);
   return db.runTransaction(async (tx) => {
     const current = (await tx.get(ref)).data()?.stripeCustomerId;
     if (typeof current === "string" && current && current !== replacing) return current;
@@ -59,7 +60,7 @@ export async function ensureStripeCustomer(
   user: { uid: string; email?: string | null; name?: string | null },
 ): Promise<string> {
   const { uid } = user;
-  const stored = (await db.collection("users").doc(uid).get()).data()?.stripeCustomerId;
+  const stored = (await usersCol(db).doc(uid).get()).data()?.stripeCustomerId;
   const storedId = typeof stored === "string" && stored ? stored : null;
   if (storedId && (await stillExists(stripe, storedId, uid))) return storedId;
 

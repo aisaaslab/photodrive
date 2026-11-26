@@ -1,8 +1,7 @@
 import "server-only";
 // Server-only helper (import from server components / API routes only).
 import { unstable_cache } from "next/cache";
-import { getAdminDb } from "@/lib/firebase/admin";
-import { SITE_SETTINGS_DOC } from "@/lib/site-settings";
+import { siteSettingsDoc } from "@/lib/server/repos/collections";
 
 /** Cache tag — bust it after saving so changes reach the site right away. */
 export const SITE_SETTINGS_TAG = "site-settings";
@@ -55,7 +54,7 @@ const DEFAULTS: TrackingIds = {
 export async function readTrackingIds(): Promise<TrackingIds> {
   const out = { ...DEFAULTS };
   try {
-    const snap = await getAdminDb().doc(SITE_SETTINGS_DOC).get();
+    const snap = await siteSettingsDoc().get();
     const data = snap.exists ? snap.data() : undefined;
     for (const field of Object.keys(DEFAULTS) as TrackingField[]) {
       const stored = data?.[field];

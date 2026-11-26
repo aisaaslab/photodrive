@@ -1,6 +1,6 @@
 import "server-only";
 // Server-only helper (import from API routes only — never from client code).
-import { getAdminDb } from "@/lib/firebase/admin";
+import { promoCodesCol } from "@/lib/server/repos/collections";
 
 /**
  * Free-code access rules, managed in the back office (Admin → Promo codes).
@@ -16,7 +16,6 @@ import { getAdminDb } from "@/lib/firebase/admin";
  *   3. the length of the plan that was chosen (previous behavior)
  */
 
-export const PROMO_COLLECTION = "promoCodes";
 export const MIN_ACCESS_DAYS = 1;
 export const MAX_ACCESS_DAYS = 3650; // 10 years
 
@@ -41,7 +40,7 @@ export async function resolveAccessDays(
   const key = normalizeCode(code);
   if (key) {
     try {
-      const snap = await getAdminDb().collection(PROMO_COLLECTION).doc(key).get();
+      const snap = await promoCodesCol().doc(key).get();
       if (snap.exists && snap.data()?.active !== false) {
         const days = validAccessDays(snap.data()?.accessDays);
         if (days) return { days, source: "back_office" };

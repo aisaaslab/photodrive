@@ -5,11 +5,12 @@ import { fulfilCheckoutSession, UnmatchedPayment } from "./fulfil";
 import { isSessionSettled } from "./stripe";
 import { notifyAdmin } from "@/lib/server/notify/admin";
 import type { Logger } from "@/lib/server/log";
+import { paymentsCol, systemStateDoc } from "@/lib/server/repos/collections";
 
 export const RECONCILE_WINDOW_MS = 48 * 60 * 60 * 1000;
 /** Consecutive runs that had to heal (or could not) before the operator is alerted. */
 export const ALERT_AFTER_RUNS = 2;
-const STATE_DOC = ["system_state", "reconcile-payments"] as const;
+const STATE_NAME = "reconcile-payments";
 const MAX_PAGES = 20; // 2000 sessions in 48 h is far beyond this shop's volume
 
 export type ReconcileSummary = {
@@ -71,7 +72,7 @@ export async function reconcilePayments({
         continue;
       }
       s.checked++;
-      if ((await db.collection("payments").doc(session.id).get()).exists) {
+      if ((await paymentsCol(db).doc(session.id).get()).exists) {
         s.alreadyFulfilled++;
         continue;
       }
@@ -101,7 +102,7 @@ export async function reconcilePayments({
   }
 
   // "Repeatedly > 0": one heal is normal (a webhook hiccup); the same on consecutive runs is not.
-  const stateRef = db.collection(STATE_DOC[0]).doc(STATE_DOC[1]);
+  const stateRef = systemStateDoc(STATE_NAME, db);
   const prior = (await stateRef.get()).data() as { streak?: number; alerted?: boolean } | undefined;
   const bad = problems.length > 0;
   const streak = bad ? (prior?.streak ?? 0) + 1 : 0;

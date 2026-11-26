@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAdminDb } from "@/lib/firebase/admin";
 import { getUidFromRequest, isAdmin } from "@/lib/firebase/admin-guard";
 import { revalidateTag } from "next/cache";
 import {
-  SITE_SETTINGS_DOC,
   getSiteSettings,
   validateSupportEmail,
 } from "@/lib/site-settings";
@@ -13,6 +11,7 @@ import {
   validateTrackingId,
   type TrackingField,
 } from "@/lib/tracking-settings";
+import { siteSettingsDoc } from "@/lib/server/repos/collections";
 
 const TRACKING_FIELDS: TrackingField[] = ["gtmId", "googleAdsId", "metaPixelId"];
 
@@ -53,7 +52,7 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: "Nothing to update" }, { status: 400 });
   }
 
-  await getAdminDb().doc(SITE_SETTINGS_DOC).set(
+  await siteSettingsDoc().set(
     { ...update, updatedAt: Date.now(), updatedBy: uid },
     { merge: true }
   );

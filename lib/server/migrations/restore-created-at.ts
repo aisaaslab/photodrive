@@ -1,6 +1,7 @@
 import "server-only";
 import type { Firestore } from "firebase-admin/firestore";
 import { Timestamp } from "firebase-admin/firestore";
+import { usersCol } from "@/lib/server/repos/collections";
 
 /**
  * S4-01: restore sign-up dates that the sign-in bug reset. Until it was fixed, every sign-in overwrote `users/{uid}.createdAt` with
@@ -66,7 +67,7 @@ export function planRestore(
 
 /** Reads every profile (only the fields needed). */
 export async function readProfiles(db: Firestore) {
-  const snap = await db.collection("users").select("email", "createdAt").get();
+  const snap = await usersCol(db).select("email", "createdAt").get();
   return snap.docs.map((d) => ({ uid: d.id, email: (d.get("email") as string | undefined) ?? null, createdAt: d.get("createdAt") as StoredCreatedAt }));
 }
 
@@ -80,7 +81,7 @@ export async function applyRestore(db: Firestore, changes: RestoreChange[]): Pro
     const batch = db.batch();
     for (const c of changes.slice(i, i + 400)) {
       const ms = Date.parse(c.to);
-      batch.update(db.collection("users").doc(c.uid), { createdAt: c.as === "number" ? ms : Timestamp.fromMillis(ms) });
+      batch.update(usersCol(db).doc(c.uid), { createdAt: c.as === "number" ? ms : Timestamp.fromMillis(ms) });
     }
     await batch.commit();
     written += Math.min(400, changes.length - i);

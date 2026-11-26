@@ -6,6 +6,7 @@ import { LIFETIME_SENTINEL, YEAR_MS } from "@/lib/shared/billing-access";
 import { extendUserAccess } from "@/lib/server/billing/extend";
 import { parseJson } from "@/lib/server/http";
 import { AdminSubscriptionBody } from "@/lib/shared/schemas/admin";
+import { usersCol } from "@/lib/server/repos/collections";
 
 /**
  * Admin-only: manage a user's subscription manually.
@@ -22,7 +23,7 @@ export async function POST(req: NextRequest) {
   if (!body.ok) return body.response;
   const { uid, action, planId } = body.data;
 
-  const ref = getAdminDb().collection("users").doc(uid);
+  const ref = usersCol().doc(uid);
 
   if (action === "assign_plan") {
     if (!planId) return NextResponse.json({ error: "Missing planId" }, { status: 400 });

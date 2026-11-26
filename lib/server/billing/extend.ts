@@ -1,6 +1,7 @@
 import "server-only";
 import type { Firestore } from "firebase-admin/firestore";
 import { computeExpiry } from "@/lib/shared/billing-access";
+import { usersCol } from "@/lib/server/repos/collections";
 
 /**
  * Admin-side counterpart of fulfilCheckoutSession: adds `grantedMs` of access to a user with the
@@ -12,7 +13,7 @@ export async function extendUserAccess(
   uid: string,
   { grantedMs, fields = {}, now = Date.now() }: { grantedMs: number; fields?: Record<string, unknown>; now?: number },
 ): Promise<number> {
-  const ref = db.collection("users").doc(uid);
+  const ref = usersCol(db).doc(uid);
   return db.runTransaction(async (tx) => {
     const snap = await tx.get(ref);
     const expiresAt = computeExpiry({

@@ -23,7 +23,7 @@
   - Files: `lib/server/auth.ts`, `lib/server/http.ts`, all routes listed in STR-2
   - Done when: `grep -r "verifyIdToken" app` finds no route-level copies.
   - Refs: STR-2
-- [ ] **S5-05** · M · Repositories in `lib/server/repos/*` for users, galleries, plans, payments, selections, demos; collection names only there; types in `lib/firestore/types.ts` match stored data (`GalleryDoc`, `UserDoc`, `PaymentDoc`, `StripeEventDoc`).
+- [x] **S5-05** · M · Repositories in `lib/server/repos/*` for users, galleries, plans, payments, selections, demos; collection names only there; types in `lib/firestore/types.ts` match stored data (`GalleryDoc`, `UserDoc`, `PaymentDoc`, `StripeEventDoc`).
   - Depends: S5-04
   - Done when: no `collection("…")` string literals outside `lib/server/repos` and `scripts/`; no `as unknown as GalleryDoc[]`.
   - Refs: STR-3

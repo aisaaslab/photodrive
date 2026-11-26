@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAdminDb } from "@/lib/firebase/admin";
 import { getUidFromRequest, isAdmin } from "@/lib/firebase/admin-guard";
 import { listAllPlans, normalizePlanInput } from "@/lib/plans";
+import { plansCol } from "@/lib/server/repos/collections";
 
 /** GET: all plans (admin back office — includes private + inactive). */
 export async function GET(req: NextRequest) {
@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
   }
 
   const now = Date.now();
-  const ref = await getAdminDb().collection("plans").add({
+  const ref = await plansCol().add({
     ...input,
     currency: "usd",
     createdAt: now,

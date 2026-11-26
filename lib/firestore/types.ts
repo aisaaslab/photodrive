@@ -4,8 +4,13 @@ export interface GalleryDoc {
   name: string;
   slug: string;
   folderId: string;
-  passwordHash?: string;
-  password?: string;
+  passwordHash?: string | null;
+  /** Legacy plaintext copy; cleared by scripts/migrations/seal-legacy-passwords.ts (S4-04). Owners see the decrypted value here. */
+  password?: string | null;
+  /** The password sealed for the owner's reminder (AES-256-GCM, lib/gallery/password-vault.ts). Never sent to a browser. */
+  passwordEnc?: string | null;
+  /** When the password last changed; unlock cookies issued before it stop working. */
+  pwChangedAt?: number;
   // Public (no password) or private (password required), decision D18. Galleries created before this
   // existed have none: derive it with galleryVisibility() (lib/gallery/visibility.ts).
   visibility?: "public" | "private";
@@ -59,9 +64,17 @@ export interface UserDoc {
   email: string;
   name: string;
   photoURL?: string;
-  createdAt: number;
+  /** Set once, at sign-up (S4-01). A Firestore Timestamp when the browser created the profile, a number when an admin did. */
+  createdAt: number | { toMillis(): number };
   subscriptionStatus?: "active" | "expired" | "none";
   subscriptionExpiresAt?: number;
+  /** Granted by an administrator rather than bought. */
+  compGranted?: boolean;
+  /** How access was obtained. */
+  subscriptionSource?: "paid" | "free_code";
+  promoCode?: string;
+  /** Which renewal reminders were e-mailed, by kind, with the time sent. */
+  remindersSent?: Record<string, number>;
   stripeCustomerId?: string;
   // Snapshot of the plan currently assigned/purchased (kept even if the plan
   // document is later deleted, so history still renders).

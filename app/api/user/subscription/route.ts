@@ -1,8 +1,8 @@
 import { route } from "@/lib/server/http";
 import { NextRequest, NextResponse } from "next/server";
-import { getAdminDb } from "@/lib/firebase/admin";
 import { isAdmin, requireUser } from "@/lib/server/auth";
 import { billingFulfilV2 } from "@/lib/server/billing/flags";
+import { usersCol } from "@/lib/server/repos/collections";
 
 export const GET = route("user.subscription.get", async (req: NextRequest) => {
   const auth = await requireUser(req);
@@ -14,7 +14,7 @@ export const GET = route("user.subscription.get", async (req: NextRequest) => {
     return NextResponse.json({ isActive: true, status: "admin", expiresAt: null });
   }
 
-  const snap = await getAdminDb().collection("users").doc(uid).get();
+  const snap = await usersCol().doc(uid).get();
   const data = snap.data();
 
   const status = data?.subscriptionStatus ?? "none";

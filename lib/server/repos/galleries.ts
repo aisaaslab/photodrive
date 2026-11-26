@@ -1,5 +1,7 @@
 import "server-only";
-import type { Firestore } from "firebase-admin/firestore";
+import type { DocumentData, Firestore } from "firebase-admin/firestore";
+import type { GalleryDoc } from "@/lib/firestore/types";
+import { forOwner } from "@/lib/gallery/password-vault";
 
 /**
  * Deleting galleries (S4-02, SEC-4). A gallery's client favourites live in a separate collection, `gallery_selections/{galleryId}`,
@@ -58,3 +60,13 @@ export async function deleteUserGalleries(db: Firestore, uid: string): Promise<C
   const snap = await db.collection("galleries").where("photographerId", "==", uid).get();
   return deleteGalleriesCascade(db, snap.docs.map((d) => d.id));
 }
+
+/** A gallery as an owner or administrator sees it: the sealed password is replaced by its decrypted value and `visibility` is always present. */
+export type OwnerGallery = ReturnType<typeof forOwner<GalleryDoc>>;
+
+/** Shapes a stored gallery document for an authenticated owner/admin response, newest first when sorted with `newestFirst`. */
+export function ownerGalleryOf(d: { id: string; data(): DocumentData }): OwnerGallery {
+  return forOwner({ ...(d.data() as Omit<GalleryDoc, "id">), id: d.id });
+}
+
+export const newestFirst = (a: { createdAt?: number }, b: { createdAt?: number }) => Number(b.createdAt ?? 0) - Number(a.createdAt ?? 0);

@@ -9,7 +9,8 @@ import { hashPassword } from "@/lib/gallery/password";
 import { planCreate } from "@/lib/gallery/visibility";
 import { sealPassword, forOwner } from "@/lib/gallery/password-vault";
 import { isAdmin } from "@/lib/firebase/admin-guard";
-import type { GalleryDoc } from "@/lib/firestore/types";
+import { newestFirst, ownerGalleryOf } from "@/lib/server/repos/galleries";
+import { galleriesCol, gallerySelectionsCol, usersCol } from "@/lib/server/repos/collections";
 
 export const POST = route("galleries.post", async (req: NextRequest) => {
   const auth = await requireUser(req);
@@ -18,7 +19,7 @@ export const POST = route("galleries.post", async (req: NextRequest) => {
 
   // Paywall enforced server-side — the client-side subscription check alone is bypassable.
   if (!isAdmin(uid)) {
-    const userSnap = await getAdminDb().collection("users").doc(uid).get();
+    const userSnap = await usersCol().doc(uid).get();
     const u = userSnap.data();
     const active = u?.subscriptionStatus === "active" && (u?.subscriptionExpiresAt ?? 0) > Date.now();
     if (!active) {
@@ -100,7 +101,7 @@ export const POST = route("galleries.post", async (req: NextRequest) => {
     updatedAt: now,
   };
 
-  const ref = await getAdminDb().collection("galleries").add(data);
+  const ref = await galleriesCol().add(data);
 
   return NextResponse.json(forOwner({ id: ref.id, ...data }), { status: 201 });
 });
@@ -110,17 +111,13 @@ export const GET = route("galleries.get", async (req: NextRequest) => {
   if (!auth.ok) return auth.response;
   const uid = auth.user.uid;
 
-  const snap = await getAdminDb()
-    .collection("galleries")
+  const snap = await galleriesCol()
     .where("photographerId", "==", uid)
     .get();
 
-  // Cast on the map result, not on the whole chain: .sort() runs on the
-  // intermediate array, which TypeScript infers as { id: string } alone.
   // Reading never writes. A legacy plaintext password (if the one-off migration has not run yet) is still shown to its owner by
   // forOwner; scripts/migrations/seal-legacy-passwords.ts seals and clears them.
-  const raw = snap.docs.map((d) => forOwner({ id: d.id, ...(d.data() as Record<string, unknown>) }));
-  const galleries = (raw as unknown as GalleryDoc[]).sort((a, b) => Number(b.createdAt ?? 0) - Number(a.createdAt ?? 0));
+  const galleries = snap.docs.map(ownerGalleryOf).sort(newestFirst);
 
   // Attach each gallery's client-selection summary (favorites count + last
   // change) so the dashboard can badge cards without opening every selection.
@@ -129,7 +126,7 @@ export const GET = route("galleries.get", async (req: NextRequest) => {
   const CHUNK = 300;
   for (let i = 0; i < galleries.length; i += CHUNK) {
     const part = galleries.slice(i, i + CHUNK);
-    const snaps = await db.getAll(...part.map((g) => db.collection("gallery_selections").doc(g.id)));
+    const snaps = await db.getAll(...part.map((g) => gallerySelectionsCol(db).doc(g.id)));
     snaps.forEach((s, idx) => {
       if (!s.exists) return;
       const d = s.data() ?? {};

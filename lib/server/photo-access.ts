@@ -4,6 +4,7 @@ import { isAdmin, verifyBearer } from "@/lib/server/auth";
 import { fetchDriveFolder } from "@/lib/drive/client";
 import { verifyGalleryToken } from "@/lib/gallery/session";
 import { isPrivate } from "@/lib/gallery/visibility";
+import { demoGalleriesCol, galleriesCol } from "@/lib/server/repos/collections";
 
 /**
  * Per-visitor allowances shared by the photo proxy and the media route. Generous on purpose: when Google's CDN fails (proxy) or a
@@ -26,7 +27,7 @@ export type ProxyGallery = {
 /** Looks the id up as a gallery, then as a live demo. Null when neither exists (or the demo has expired). */
 export async function loadProxyGallery(id: string, now = Date.now()): Promise<ProxyGallery | null> {
   const db = getAdminDb();
-  const gal = await db.collection("galleries").doc(id).get();
+  const gal = await galleriesCol(db).doc(id).get();
   if (gal.exists) {
     const g = gal.data()!;
     if (typeof g.folderId !== "string" || !g.folderId) return null;
@@ -39,7 +40,7 @@ export async function loadProxyGallery(id: string, now = Date.now()): Promise<Pr
       pwChangedAt: typeof g.pwChangedAt === "number" ? g.pwChangedAt : 0,
     };
   }
-  const demo = await db.collection("demo_galleries").doc(id).get();
+  const demo = await demoGalleriesCol(db).doc(id).get();
   if (!demo.exists) return null;
   const d = demo.data()!;
   if (typeof d.folderId !== "string" || !d.folderId) return null;

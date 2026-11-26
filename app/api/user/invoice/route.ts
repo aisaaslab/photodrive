@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAdminDb } from "@/lib/firebase/admin";
 import { getUidFromRequest } from "@/lib/firebase/admin-guard";
 import { getStripe, StripeConfigError } from "@/lib/server/billing/stripe";
 import { clientIp, getRateLimiter, rateLimitHeaders } from "@/lib/server/rate-limit";
 import { requestLogger } from "@/lib/server/log";
+import { paymentsCol } from "@/lib/server/repos/collections";
 
 /**
  * Link to the Stripe invoice for one of the signed-in user's own payments (S4-06). `?session=cs_...` names the payment (the id the
@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
   if (!/^cs_(test|live)_[A-Za-z0-9]{10,200}$/.test(sessionId)) return NextResponse.json({ error: "Invalid request" }, { status: 400 });
 
   const notFound = () => NextResponse.json({ error: "No invoice for this payment" }, { status: 404 });
-  const payment = (await getAdminDb().collection("payments").doc(sessionId).get()).data();
+  const payment = (await paymentsCol().doc(sessionId).get()).data();
   if (!payment || payment.uid !== uid) return notFound();
 
   let stripe;
@@ -41,7 +41,7 @@ export async function GET(req: NextRequest) {
       const session = await stripe.checkout.sessions.retrieve(sessionId);
       invoiceId = typeof session.invoice === "string" ? session.invoice : (session.invoice?.id ?? null);
       if (!invoiceId) return notFound();
-      await getAdminDb().collection("payments").doc(sessionId).set({ invoiceId }, { merge: true });
+      await paymentsCol().doc(sessionId).set({ invoiceId }, { merge: true });
     }
     const invoice = await stripe.invoices.retrieve(invoiceId);
     if (!invoice.hosted_invoice_url) return notFound();

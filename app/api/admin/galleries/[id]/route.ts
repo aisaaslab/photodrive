@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { parseJson } from "@/lib/server/http";
 import { GalleryBody } from "@/lib/shared/schemas/galleries";
-import { getAdminDb } from "@/lib/firebase/admin";
 import { getUidFromRequest, isAdmin } from "@/lib/firebase/admin-guard";
 import { hashPassword } from "@/lib/gallery/password";
 import { planUpdate } from "@/lib/gallery/visibility";
 import { sealPassword, forOwner } from "@/lib/gallery/password-vault";
 import { extractFolderId } from "@/lib/drive/url-parser";
+import { galleriesCol } from "@/lib/server/repos/collections";
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const uid = await getUidFromRequest(req);
@@ -27,7 +27,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   }
   // Same public/private rules as the owner (D18): private needs a password, public has none.
   if (body.visibility !== undefined || body.password !== undefined || body.removePassword !== undefined) {
-    const current = await getAdminDb().collection("galleries").doc(id).get();
+    const current = await galleriesCol().doc(id).get();
     if (!current.exists) return NextResponse.json({ error: "Not found" }, { status: 404 });
     const plan = planUpdate(current.data() ?? {}, {
       visibility: body.visibility, password: body.password, removePassword: body.removePassword,
@@ -57,8 +57,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     if (key in body) update[key] = normUrl(body[key]);
   }
 
-  await getAdminDb().collection("galleries").doc(id).update(update);
-  const doc = await getAdminDb().collection("galleries").doc(id).get();
+  await galleriesCol().doc(id).update(update);
+  const doc = await galleriesCol().doc(id).get();
   return NextResponse.json(forOwner({ id: doc.id, ...(doc.data() as Record<string, unknown>) }));
 }
 
@@ -67,6 +67,6 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
   if (!isAdmin(uid)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   const { id } = await params;
-  await getAdminDb().collection("galleries").doc(id).delete();
+  await galleriesCol().doc(id).delete();
   return NextResponse.json({ ok: true });
 }

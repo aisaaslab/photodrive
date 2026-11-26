@@ -3,6 +3,7 @@ import type { Firestore } from "firebase-admin/firestore";
 import { APP_URL } from "@/lib/branding";
 import { notifyAdmin } from "@/lib/server/notify/admin";
 import type { Logger } from "@/lib/server/log";
+import { paymentsCol, stripeEventsCol, systemStateDoc } from "@/lib/server/repos/collections";
 
 /**
  * Items an operator has to look at (S2-16): Stripe events that ended in `needs_review` (unmatched payment, partial refund,
@@ -20,8 +21,8 @@ const str = (v: unknown) => (typeof v === "string" && v ? v : null);
 
 export async function listOpenReviewItems(db: Firestore): Promise<{ events: ReviewEvent[]; payments: ReviewPayment[] }> {
   const [eventsSnap, paymentsSnap] = await Promise.all([
-    db.collection("stripe_events").where("status", "==", "needs_review").get(),
-    db.collection("payments").where("needsReview", "==", true).get(),
+    stripeEventsCol(db).where("status", "==", "needs_review").get(),
+    paymentsCol(db).where("needsReview", "==", true).get(),
   ]);
   const events = eventsSnap.docs
     .filter((d) => !d.data().resolvedAt)
@@ -49,7 +50,7 @@ export async function markReviewed(
   db: Firestore,
   { kind, id, by, note, now = Date.now() }: { kind: "event" | "payment"; id: string; by: string; note?: string; now?: number },
 ): Promise<ReviewResult> {
-  const ref = db.collection(kind === "event" ? "stripe_events" : "payments").doc(id);
+  const ref = (kind === "event" ? stripeEventsCol(db) : paymentsCol(db)).doc(id);
   return db.runTransaction(async (tx): Promise<ReviewResult> => {
     const snap = await tx.get(ref);
     if (!snap.exists) return "not_found";
@@ -66,7 +67,7 @@ export async function markReviewed(
 // Daily digest
 // ---------------------------------------------------------------------------------------------
 
-const STATE = ["system_state", "needs-review-digest"] as const;
+const STATE_NAME = "needs-review-digest";
 export const DIGEST_MIN_GAP_MS = 20 * 60 * 60 * 1000;
 const MAX_LISTED = 25;
 
@@ -83,7 +84,7 @@ export async function sendReviewDigest(
   log: Logger,
   { now = Date.now() }: { now?: number } = {},
 ): Promise<DigestResult> {
-  const stateRef = db.collection(STATE[0]).doc(STATE[1]);
+  const stateRef = systemStateDoc(STATE_NAME, db);
   const last = ((await stateRef.get()).data()?.lastSentAt as number | undefined) ?? 0;
   if (now - last < DIGEST_MIN_GAP_MS) return "skipped_recent";
 

@@ -2,6 +2,7 @@ import "server-only";
 import type { Firestore } from "firebase-admin/firestore";
 import type { PaymentDoc, PaymentStatus } from "@/lib/firestore/types";
 import { DAY_MS, computeExpiry, periodMs, revokeGrant } from "@/lib/shared/billing-access";
+import { paymentsCol, usersCol } from "@/lib/server/repos/collections";
 
 /** The grant is in effect (as opposed to taken back). Payments before S1-03 have no status. */
 const grantInEffect = (s: PaymentDoc["status"]) => s === undefined || s === "fulfilled" || s === "partially_refunded";
@@ -22,7 +23,7 @@ export type AdjustResult =
   | { result: "revoked" | "restored" | "status_only" | "flagged"; status: PaymentStatus; uid: string; legacy?: boolean };
 
 type Ctx = { now: number };
-const paymentRef = (db: Firestore, id: string) => db.collection("payments").doc(id);
+const paymentRef = (db: Firestore, id: string) => paymentsCol(db).doc(id);
 
 /**
  * Take back a payment's grant (refund, dispute opened) and set its status. If the grant was
@@ -39,7 +40,7 @@ export async function revokePayment(
     const snap = await tx.get(paymentRef(db, paymentId));
     if (!snap.exists) return { result: "missing" };
     const pay = snap.data() as PaymentDoc;
-    const userRef = db.collection("users").doc(pay.uid);
+    const userRef = usersCol(db).doc(pay.uid);
     const userSnap = await tx.get(userRef);
 
     if (pay.status === to || pay.status === "refunded" || (pay.status === "dispute_lost" && to !== "dispute_lost")) {
@@ -86,7 +87,7 @@ export async function restorePayment(db: Firestore, paymentId: string, { now }: 
     const pay = snap.data() as PaymentDoc;
     if (pay.status !== "disputed") return { result: "noop", status: pay.status };
 
-    const userRef = db.collection("users").doc(pay.uid);
+    const userRef = usersCol(db).doc(pay.uid);
     const userSnap = await tx.get(userRef);
     const current = userSnap.data()?.subscriptionExpiresAt as number | undefined;
     const expiresAt = computeExpiry({ now, currentExpiresAt: current, grantedMs: pay.revokedMs ?? 0 });

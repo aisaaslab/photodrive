@@ -1,9 +1,8 @@
 import "server-only";
 // Server-only helper (import from API routes only — never from client code).
-import { getAdminDb } from "@/lib/firebase/admin";
+import { siteSettingsDoc } from "@/lib/server/repos/collections";
 
 export const DEFAULT_SUPPORT_EMAIL = "support@photodrive.co";
-export const SITE_SETTINGS_DOC = "settings/site";
 
 export type SiteSettings = {
   supportEmail: string;
@@ -28,7 +27,7 @@ function isValidEmail(v: string): boolean {
  */
 export async function getSupportEmail(): Promise<string> {
   try {
-    const snap = await getAdminDb().doc(SITE_SETTINGS_DOC).get();
+    const snap = await siteSettingsDoc().get();
     const stored = snap.exists
       ? ((snap.data()?.supportEmail as string | undefined) ?? "")
       : "";
@@ -45,7 +44,7 @@ export async function getSiteSettings(adminUid?: string | null): Promise<SiteSet
   let updatedAt: number | undefined;
   let updatedBy: string | null | undefined;
   try {
-    const snap = await getAdminDb().doc(SITE_SETTINGS_DOC).get();
+    const snap = await siteSettingsDoc().get();
     if (snap.exists) {
       updatedAt = snap.data()?.updatedAt as number | undefined;
       updatedBy = (snap.data()?.updatedBy as string | undefined) ?? null;

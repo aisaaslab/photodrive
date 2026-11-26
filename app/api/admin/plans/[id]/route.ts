@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAdminDb } from "@/lib/firebase/admin";
 import { getUidFromRequest, isAdmin } from "@/lib/firebase/admin-guard";
 import { normalizePlanInput } from "@/lib/plans";
+import { plansCol } from "@/lib/server/repos/collections";
 
 /** PATCH: update a plan (full replace of the editable fields). */
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -9,7 +9,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   if (!isAdmin(uid)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   const { id } = await params;
-  const docRef = getAdminDb().collection("plans").doc(id);
+  const docRef = plansCol().doc(id);
   const existing = await docRef.get();
   if (!existing.exists) {
     return NextResponse.json({ error: "Plan not found" }, { status: 404 });
@@ -53,7 +53,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
   if (!isAdmin(uid)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   const { id } = await params;
-  const docRef = getAdminDb().collection("plans").doc(id);
+  const docRef = plansCol().doc(id);
   const existing = await docRef.get();
   if (!existing.exists) {
     return NextResponse.json({ error: "Plan not found" }, { status: 404 });

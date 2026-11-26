@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAdminDb } from "@/lib/firebase/admin";
 import { getUidFromRequest, isAdmin } from "@/lib/firebase/admin-guard";
+import { contactMessagesCol } from "@/lib/server/repos/collections";
 
 /** GET: latest contact-form messages for the admin inbox. */
 export async function GET(req: NextRequest) {
@@ -11,8 +11,7 @@ export async function GET(req: NextRequest) {
     Number(req.nextUrl.searchParams.get("limit") || 50) || 50,
     200
   );
-  const snap = await getAdminDb()
-    .collection("contactMessages")
+  const snap = await contactMessagesCol()
     .orderBy("createdAt", "desc")
     .limit(limit)
     .get();

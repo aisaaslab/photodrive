@@ -1,5 +1,4 @@
 import { notFound } from "next/navigation";
-import { getAdminDb } from "@/lib/firebase/admin";
 import { fetchDriveFolder } from "@/lib/drive/client";
 import { MasonryGrid } from "@/components/gallery/MasonryGrid";
 import { GalleryStatus } from "@/components/gallery/GalleryStatus";
@@ -8,6 +7,7 @@ import { CountdownBanner } from "./CountdownBanner";
 import { ExpiredScreen } from "./ExpiredScreen";
 import { DemoTitle } from "./DemoTitle";
 import { APP_NAME } from "@/lib/branding";
+import { demoGalleriesCol } from "@/lib/server/repos/collections";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -16,7 +16,7 @@ interface Props {
 export default async function DemoPage({ params }: Props) {
   const { id } = await params;
 
-  const doc = await getAdminDb().collection("demo_galleries").doc(id).get();
+  const doc = await demoGalleriesCol().doc(id).get();
   if (!doc.exists) notFound();
 
   const data = doc.data() as {

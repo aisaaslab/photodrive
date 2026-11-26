@@ -9,6 +9,7 @@ import { formatMoney } from "@/lib/shared/money";
 import { userLanguage } from "@/lib/server/user-language";
 import type { Logger } from "@/lib/server/log";
 import { renderNotice, type NoticeKind } from "./templates";
+import { customerNoticesCol, usersCol } from "@/lib/server/repos/collections";
 
 /**
  * Customer e-mails about payment events (S2-14, D17).
@@ -32,7 +33,6 @@ export type NoticeInput = {
 
 export type NoticeResult = "sent" | "skipped_duplicate" | "skipped_no_email" | "skipped_no_user" | "failed";
 
-const COLLECTION = "customer_notices";
 /** A claim younger than this is assumed to be a call that is still sending; older means it crashed. */
 const PENDING_MS = 2 * 60 * 1000;
 
@@ -44,7 +44,7 @@ export async function sendCustomerNotice(
 ): Promise<NoticeResult> {
   const id = `${input.kind}__${input.refId}`;
   try {
-    const userSnap = await db.collection("users").doc(input.uid).get();
+    const userSnap = await usersCol(db).doc(input.uid).get();
     if (!userSnap.exists) return "skipped_no_user";
     const user = userSnap.data()!;
     const to = typeof user.email === "string" ? user.email.trim() : "";
@@ -55,7 +55,7 @@ export async function sendCustomerNotice(
 
     // Claim the message. Already sent: stop. Being sent right now by another call (a recent "pending" claim): stop, or the
     // customer would get it twice. Failed earlier, or a "pending" claim old enough to be a crashed attempt: try again.
-    const ref = db.collection(COLLECTION).doc(id);
+    const ref = customerNoticesCol(db).doc(id);
     const claim = await db.runTransaction(async (tx) => {
       const snap = await tx.get(ref);
       const prior = snap.data();

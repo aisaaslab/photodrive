@@ -1,6 +1,7 @@
 import "server-only";
 import type { Firestore } from "firebase-admin/firestore";
 import type { PlanDoc } from "@/lib/firestore/types";
+import { plansCol } from "@/lib/server/repos/collections";
 
 export const DEFAULT_PLAN_ID = "default-annual";
 
@@ -43,7 +44,7 @@ export async function seedDefaultPlan(
   db: Firestore,
   { apply = false, now = Date.now() }: { apply?: boolean; now?: number } = {},
 ): Promise<SeedResult> {
-  const snap = await db.collection("plans").get();
+  const snap = await plansCol(db).get();
   const ids = snap.docs.map((d) => d.id);
   if (ids.includes(DEFAULT_PLAN_ID)) return { action: "skip", reason: "already_seeded", existingPlanIds: ids };
   if (ids.length > 0) return { action: "skip", reason: "other_plans_exist", existingPlanIds: ids };
@@ -51,7 +52,7 @@ export async function seedDefaultPlan(
   const plan = defaultPlan(now);
   if (apply) {
     const { id, ...data } = plan;
-    await db.collection("plans").doc(id).create(data);
+    await plansCol(db).doc(id).create(data);
   }
   return { action: "create", applied: apply, plan };
 }

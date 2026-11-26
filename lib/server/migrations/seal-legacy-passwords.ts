@@ -2,6 +2,7 @@ import "server-only";
 import type { Firestore } from "firebase-admin/firestore";
 import { verifyPassword } from "@/lib/gallery/password";
 import { openPassword, sealPassword } from "@/lib/gallery/password-vault";
+import { galleriesCol } from "@/lib/server/repos/collections";
 
 /**
  * S4-04: remove the legacy plaintext gallery passwords. Old galleries stored the password in plaintext (`password`) next to the
@@ -79,7 +80,7 @@ export const reportOf = (plan: SealPlan) => ({
 
 /** Reads only the fields the plan needs. */
 export async function readGalleries(db: Firestore) {
-  const snap = await db.collection("galleries").select("password", "passwordEnc", "passwordHash", "photographerId").get();
+  const snap = await galleriesCol(db).select("password", "passwordEnc", "passwordHash", "photographerId").get();
   return snap.docs.map((d) => ({ id: d.id, data: d.data() as GalleryData }));
 }
 
@@ -92,7 +93,7 @@ export type ApplyResult = { changed: number; skippedChanged: number };
 export async function applySeal(db: Firestore, items: PlannedSeal[]): Promise<ApplyResult> {
   const result: ApplyResult = { changed: 0, skippedChanged: 0 };
   for (const item of items) {
-    const ref = db.collection("galleries").doc(item.id);
+    const ref = galleriesCol(db).doc(item.id);
     const done = await db.runTransaction(async (tx) => {
       const snap = await tx.get(ref);
       if (!snap.exists || snap.get("password") !== item.secret.plain) return false;

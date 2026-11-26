@@ -3,6 +3,7 @@ import { getAdminAuth, getAdminDb } from "@/lib/firebase/admin";
 import type { PlanInterval } from "@/lib/firestore/types";
 import { getStripe } from "@/lib/server/billing/stripe";
 import { resolveAccessDays } from "@/lib/promo-codes";
+import { paymentsCol, plansCol, usersCol } from "@/lib/server/repos/collections";
 
 const MONTH_MS = 30 * 24 * 60 * 60 * 1000;
 const YEAR_MS = 365 * 24 * 60 * 60 * 1000;
@@ -78,14 +79,14 @@ export async function activateSubscription(opts: {
     subscriptionSource: isFree ? "free_code" : "paid",
     ...(promoCode ? { promoCode } : {}),
   };
-  const userRef = db.collection("users").doc(opts.uid);
+  const userRef = usersCol(db).doc(opts.uid);
 
   // Resolve plan details (name) for display; a deleted plan falls back to the
   // metadata interval only.
   let planName: string | null = null;
   if (opts.planId) {
     try {
-      const snap = await db.collection("plans").doc(opts.planId).get();
+      const snap = await plansCol(db).doc(opts.planId).get();
       planName = (snap.data()?.name as string | undefined) ?? null;
     } catch {
       planName = null;
@@ -106,7 +107,7 @@ export async function activateSubscription(opts: {
   };
 
   if (opts.sessionId) {
-    const paymentRef = db.collection("payments").doc(opts.sessionId);
+    const paymentRef = paymentsCol(db).doc(opts.sessionId);
     // Transaction on the payment doc: it only exists once a delivery has
     // fully processed, so it doubles as the idempotency key.
     await db.runTransaction(async (tx) => {

@@ -1,5 +1,6 @@
 import "server-only";
 import type { Firestore } from "firebase-admin/firestore";
+import { demoGalleriesCol } from "@/lib/server/repos/collections";
 
 /** A demo gallery works for 10 minutes. */
 export const DEMO_LIFETIME_MS = 10 * 60 * 1000;
@@ -17,7 +18,7 @@ export async function cleanupExpiredDemos(db: Firestore, now: number = Date.now(
   const cutoff = now - DEMO_GRACE_MS;
   let deleted = 0;
   for (let i = 0; i < MAX_BATCHES; i++) {
-    const snap = await db.collection("demo_galleries").where("expiresAt", "<", cutoff).limit(BATCH).get();
+    const snap = await demoGalleriesCol(db).where("expiresAt", "<", cutoff).limit(BATCH).get();
     if (snap.empty) break;
     const batch = db.batch();
     snap.docs.forEach((d) => batch.delete(d.ref));

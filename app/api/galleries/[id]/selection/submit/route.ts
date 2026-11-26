@@ -7,6 +7,7 @@ import { APP_URL } from "@/lib/branding";
 import { clientIp, getRateLimiter, rateLimitHeaders } from "@/lib/server/rate-limit";
 import { parseJson } from "@/lib/server/http";
 import { SelectionSubmitBody } from "@/lib/shared/schemas/public";
+import { galleriesCol, gallerySelectionsCol, usersCol } from "@/lib/server/repos/collections";
 
 export const runtime = "nodejs";
 
@@ -54,7 +55,7 @@ export async function POST(
   if (email && !isValidEmail(email)) return NextResponse.json({ error: "Please enter a valid email address." }, { status: 400 });
 
   const db = getAdminDb();
-  const galSnap = await db.collection("galleries").doc(id).get();
+  const galSnap = await galleriesCol(db).doc(id).get();
   if (!galSnap.exists) return NextResponse.json({ error: "Not found" }, { status: 404 });
   const gallery = galSnap.data()!;
 
@@ -67,7 +68,7 @@ export async function POST(
     }
   }
 
-  const selRef = db.collection("gallery_selections").doc(id);
+  const selRef = gallerySelectionsCol(db).doc(id);
   const selSnap = await selRef.get();
   const items: { id: string; name: string }[] = selSnap.exists ? (selSnap.data()?.items ?? []) : [];
   if (items.length === 0) return NextResponse.json({ error: "No photos selected." }, { status: 400 });
@@ -83,7 +84,7 @@ export async function POST(
   let emailed = false;
   try {
     let to = "";
-    const userSnap = await db.collection("users").doc(String(gallery.photographerId)).get();
+    const userSnap = await usersCol(db).doc(String(gallery.photographerId)).get();
     to = typeof userSnap.data()?.email === "string" ? userSnap.data()!.email : "";
     if (!to) to = (await getAdminAuth().getUser(String(gallery.photographerId))).email ?? "";
     if (to) {

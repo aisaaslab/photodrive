@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAdminDb } from "@/lib/firebase/admin";
 import { getUidFromRequest, isAdmin } from "@/lib/firebase/admin-guard";
-import { PROMO_COLLECTION, normalizeCode, validAccessDays, MAX_ACCESS_DAYS } from "@/lib/promo-codes";
+import { normalizeCode, validAccessDays, MAX_ACCESS_DAYS } from "@/lib/promo-codes";
+import { paymentsCol, promoCodesCol } from "@/lib/server/repos/collections";
 
 const CODE_RE = /^[A-Z0-9_-]{2,40}$/;
 
@@ -16,8 +17,8 @@ export async function GET(req: NextRequest) {
 
   const db = getAdminDb();
   const [rulesSnap, paymentsSnap] = await Promise.all([
-    db.collection(PROMO_COLLECTION).get(),
-    db.collection("payments").get(),
+    promoCodesCol(db).get(),
+    paymentsCol(db).get(),
   ]);
 
   // Redemptions = free ($0) checkouts per code.
@@ -75,7 +76,7 @@ export async function POST(req: NextRequest) {
   }
   const note = typeof body.note === "string" ? body.note.trim().slice(0, 200) : "";
 
-  const ref = getAdminDb().collection(PROMO_COLLECTION).doc(code);
+  const ref = promoCodesCol().doc(code);
   if ((await ref.get()).exists) {
     return NextResponse.json({ error: "A rule for this code already exists." }, { status: 409 });
   }

@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAdminDb } from "@/lib/firebase/admin";
 import { hashPassword, verifyPassword } from "@/lib/gallery/password";
 import { signGalleryToken } from "@/lib/gallery/session";
 import { clientIp, getRateLimiter, rateLimitHeaders } from "@/lib/server/rate-limit";
 import { requestLogger } from "@/lib/server/log";
 import { parseJson } from "@/lib/server/http";
 import { VerifyPasswordBody } from "@/lib/shared/schemas/public";
+import { galleriesCol } from "@/lib/server/repos/collections";
 
 // Verified against when the gallery does not exist or has no password, so every outcome costs one real bcrypt
 // compare and the response time does not reveal which galleries exist. Created once, on first use.
@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
   const lock = await limiter.isLocked(who);
   if (lock.locked) return LOCKED(lock.retryAfterSec);
 
-  const snap = await getAdminDb().collection("galleries").where("slug", "==", slug).limit(1).get();
+  const snap = await galleriesCol().where("slug", "==", slug).limit(1).get();
   const gallery = snap.empty ? null : snap.docs[0];
   const data = gallery?.data();
   const hash = typeof data?.passwordHash === "string" ? data.passwordHash : null;

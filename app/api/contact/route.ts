@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createHash } from "crypto";
-import { getAdminDb } from "@/lib/firebase/admin";
 import { getSupportEmail, type ContactMessageDoc } from "@/lib/site-settings";
 import { clientIp, getRateLimiter, rateLimitHeaders } from "@/lib/server/rate-limit";
 import { parseJson } from "@/lib/server/http";
 import { ContactBody } from "@/lib/shared/schemas/public";
+import { contactMessagesCol } from "@/lib/server/repos/collections";
 
 export const runtime = "nodejs";
 
@@ -138,7 +138,7 @@ export async function POST(req: NextRequest) {
     read: false,
     emailed,
   };
-  await getAdminDb().collection("contactMessages").add(doc);
+  await contactMessagesCol().add(doc);
 
   return NextResponse.json({ ok: true });
 }

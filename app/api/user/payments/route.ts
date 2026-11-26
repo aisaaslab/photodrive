@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAdminDb } from "@/lib/firebase/admin";
 import { isAdmin } from "@/lib/firebase/admin-guard";
 import { getUidFromRequest } from "@/lib/firebase/admin-guard";
+import { paymentsCol } from "@/lib/server/repos/collections";
 
 /**
  * Payment history for the signed-in user, read from the `payments` collection
@@ -16,8 +16,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ payments: [] });
   }
 
-  const snap = await getAdminDb()
-    .collection("payments")
+  const snap = await paymentsCol()
     .where("uid", "==", uid)
     .orderBy("activatedAt", "desc")
     .limit(20)

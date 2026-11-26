@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Timestamp } from "firebase-admin/firestore";
-import { getAdminDb } from "@/lib/firebase/admin";
 import { extractFolderId } from "@/lib/drive/url-parser";
 import { clientIp, getRateLimiter, rateLimitHeaders } from "@/lib/server/rate-limit";
 import { DEMO_GRACE_MS, DEMO_LIFETIME_MS } from "@/lib/server/cleanup";
 import { parseJson } from "@/lib/server/http";
 import { DemoCreateBody } from "@/lib/shared/schemas/public";
+import { demoGalleriesCol } from "@/lib/server/repos/collections";
 
 /**
  * Creates a 10-minute demo gallery from a Drive folder, for visitors without an account.
@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
 
   const now = Date.now();
   const expiresAt = now + DEMO_LIFETIME_MS;
-  const ref = await getAdminDb().collection("demo_galleries").add({
+  const ref = await demoGalleriesCol().add({
     folderId,
     createdAt: now,
     expiresAt,

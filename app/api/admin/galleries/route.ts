@@ -1,23 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAdminAuth, getAdminDb } from "@/lib/firebase/admin";
+import { getAdminAuth } from "@/lib/firebase/admin";
 import { getUidFromRequest, isAdmin } from "@/lib/firebase/admin-guard";
-import type { GalleryDoc } from "@/lib/firestore/types";
-import { forOwner } from "@/lib/gallery/password-vault";
+import { galleriesCol, usersCol } from "@/lib/server/repos/collections";
+import { newestFirst, ownerGalleryOf } from "@/lib/server/repos/galleries";
 
 export async function GET(req: NextRequest) {
   const uid = await getUidFromRequest(req);
   if (!isAdmin(uid)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
-  const snap = await getAdminDb().collection("galleries").get();
-  // Cast on the map result, not on the whole chain: .sort() runs on the
-  // intermediate array, which TypeScript infers as { id: string } alone.
+  const snap = await galleriesCol().get();
   // Passwords are stored sealed; decrypt for the admin view.
-  const sealed = await Promise.all(
-    snap.docs.map(async (d) =>
-      forOwner({ id: d.id, ...(d.data() as Record<string, unknown>) })
-    )
-  );
-  const galleries = (sealed as unknown as GalleryDoc[]).sort((a, b) => Number(b.createdAt ?? 0) - Number(a.createdAt ?? 0));
+  const galleries = snap.docs.map(ownerGalleryOf).sort(newestFirst);
 
   // Fetch user info for all unique photographer IDs. Firestore `name` wins
   // over Auth displayName — it's what the user can edit in Account settings.
@@ -28,7 +21,7 @@ export async function GET(req: NextRequest) {
       try {
         const [user, userDoc] = await Promise.all([
           getAdminAuth().getUser(pid),
-          getAdminDb().collection("users").doc(pid).get(),
+          usersCol().doc(pid).get(),
         ]);
         const fsName = typeof userDoc.data()?.name === "string" ? userDoc.data()?.name : "";
         userMap[pid] = {

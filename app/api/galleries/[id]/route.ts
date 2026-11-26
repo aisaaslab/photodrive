@@ -10,9 +10,10 @@ import { sealPassword, forOwner } from "@/lib/gallery/password-vault";
 import { extractFolderId } from "@/lib/drive/url-parser";
 import { validTitleFont, validTitleColor, validTitleSize } from "@/lib/gallery/title-style";
 import { validCoverPos } from "@/lib/gallery/cover-position";
+import { galleriesCol } from "@/lib/server/repos/collections";
 
 async function getGalleryForOwner(id: string, uid: string) {
-  const ref = getAdminDb().collection("galleries").doc(id);
+  const ref = galleriesCol().doc(id);
   const snap = await ref.get();
   if (!snap.exists) return null;
   const data = snap.data()!;

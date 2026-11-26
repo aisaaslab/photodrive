@@ -6,6 +6,7 @@ import { getStripe, isSessionSettled } from "@/lib/server/billing/stripe";
 import { resolveAccessDays } from "@/lib/promo-codes";
 import type { FulfilSource, PaymentDoc, PlanInterval } from "@/lib/firestore/types";
 import { DAY_MS, computeExpiry, periodMs } from "@/lib/shared/billing-access";
+import { paymentsCol, plansCol, usersCol } from "@/lib/server/repos/collections";
 
 export type FulfilResult =
   /** Money not collected yet (async method still processing, unpaid, expired). No access change. */
@@ -63,7 +64,7 @@ async function resolveUid(session: Stripe.Checkout.Session): Promise<string | nu
 
   const customerId = idOf(session.customer);
   if (customerId) {
-    const byCustomer = await getAdminDb().collection("users").where("stripeCustomerId", "==", customerId).limit(2).get();
+    const byCustomer = await usersCol().where("stripeCustomerId", "==", customerId).limit(2).get();
     if (byCustomer.size === 1) return byCustomer.docs[0].id;
   }
 
@@ -105,8 +106,8 @@ export async function fulfilCheckoutSession(
   if (!uid) throw new UnmatchedPayment(session.id);
 
   const db = getAdminDb();
-  const paymentRef = db.collection("payments").doc(session.id);
-  const userRef = db.collection("users").doc(uid);
+  const paymentRef = paymentsCol(db).doc(session.id);
+  const userRef = usersCol(db).doc(uid);
 
   const interval = (session.metadata?.interval as PlanInterval | undefined) ?? null;
   const planId = session.metadata?.planId || null;
@@ -124,7 +125,7 @@ export async function fulfilCheckoutSession(
   let planName: string | null = null;
   if (planId) {
     try {
-      planName = ((await db.collection("plans").doc(planId).get()).data()?.name as string | undefined) ?? null;
+      planName = ((await plansCol(db).doc(planId).get()).data()?.name as string | undefined) ?? null;
     } catch {
       planName = null;
     }

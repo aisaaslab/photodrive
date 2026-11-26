@@ -3,6 +3,7 @@ import type { Firestore } from "firebase-admin/firestore";
 import type { PaymentDoc } from "@/lib/firestore/types";
 import { DAY_MS, isLifetime } from "@/lib/shared/billing-access";
 import { replayPayments } from "./backfill";
+import { auditLogCol, paymentsCol, usersCol } from "@/lib/server/repos/collections";
 
 /**
  * Back-fill APPLY (S2-08). Writes only for rows the owner explicitly approved, and only ever RAISES an account's
@@ -132,10 +133,10 @@ export async function applyBackfill(
 
     try {
       const outcome = await db.runTransaction(async (tx): Promise<ApplyResult> => {
-        const userRef = db.collection("users").doc(row.uid);
+        const userRef = usersCol(db).doc(row.uid);
         const [userSnap, paymentsSnap] = await Promise.all([
           tx.get(userRef),
-          tx.get(db.collection("payments").where("uid", "==", row.uid)),
+          tx.get(paymentsCol(db).where("uid", "==", row.uid)),
         ]);
         if (!userSnap.exists) return { uid: row.uid, outcome: "skipped_user_missing" };
         const user = userSnap.data()!;
@@ -159,7 +160,7 @@ export async function applyBackfill(
         const status = expected > now ? "active" : (user.subscriptionStatus ?? "expired");
         tx.set(userRef, { subscriptionExpiresAt: expected, subscriptionStatus: status }, { merge: true });
         // Deterministic id: if this exact correction was already recorded, the create fails and nothing is applied twice.
-        tx.create(db.collection("audit_log").doc(`backfill-${row.uid}-${expected}`), {
+        tx.create(auditLogCol(db).doc(`backfill-${row.uid}-${expected}`), {
           at: now,
           actorUid: ACTOR,
           action: "backfill_extend_expiry",

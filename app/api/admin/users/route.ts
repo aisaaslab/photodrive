@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAdminAuth, getAdminDb } from "@/lib/firebase/admin";
+import { getAdminAuth } from "@/lib/firebase/admin";
 import { getUidFromRequest, isAdmin } from "@/lib/firebase/admin-guard";
 import { assignPlanToUser, getPlanById } from "@/lib/plans";
-import type { GalleryDoc } from "@/lib/firestore/types";
-import { forOwner } from "@/lib/gallery/password-vault";
 import { accessSourceOf, latestPaymentByUid, paymentFlagsByUid } from "@/lib/access-source";
+import { galleriesCol, paymentsCol, usersCol } from "@/lib/server/repos/collections";
+import { ownerGalleryOf } from "@/lib/server/repos/galleries";
 
 export async function GET(req: NextRequest) {
   const uid = await getUidFromRequest(req);
@@ -12,20 +12,14 @@ export async function GET(req: NextRequest) {
 
   const [listUsersResult, galleriesSnap, paymentsSnap] = await Promise.all([
     getAdminAuth().listUsers(1000),
-    getAdminDb().collection("galleries").get(),
-    getAdminDb().collection("payments").get(),
+    galleriesCol().get(),
+    paymentsCol().get(),
   ]);
   const latestPayment = latestPaymentByUid(paymentsSnap.docs);
   const paymentFlags = paymentFlagsByUid(paymentsSnap.docs);
 
-  // Firestore returns untyped documents, so the shape is asserted rather than
-  // inferred — spreading Record<string, unknown> yields just { id } to tsc.
   // Passwords are stored sealed; decrypt for the admin view.
-  const galleries = (await Promise.all(
-    galleriesSnap.docs.map(async (d) =>
-      forOwner({ id: d.id, ...(d.data() as Record<string, unknown>) })
-    )
-  )) as unknown as GalleryDoc[];
+  const galleries = galleriesSnap.docs.map(ownerGalleryOf);
 
   // Count galleries per photographer
   const galleryCounts: Record<string, number> = {};
@@ -42,7 +36,7 @@ export async function GET(req: NextRequest) {
   // Fetch subscription data from Firestore for all users. The Firestore
   // `name` is also preferred for displayName — it's the source of truth the
   // user can edit in Account settings (Auth displayName is the Google name).
-  const userDocs = await getAdminDb().collection("users").get();
+  const userDocs = await usersCol().get();
   const subMap: Record<string, { status: string; expiresAt: number; comp: boolean; source?: unknown; promoCode?: string; name?: string; planId?: string; planName?: string; planInterval?: string }> = {};
   for (const doc of userDocs.docs) {
     const d = doc.data();
@@ -176,8 +170,7 @@ export async function POST(req: NextRequest) {
   }
 
   // Firestore profile (mirrors what upsertUser creates on first login).
-  await getAdminDb()
-    .collection("users")
+  await usersCol()
     .doc(created.uid)
     .set({ uid: created.uid, email, name: displayName, createdAt: Date.now() });
 
