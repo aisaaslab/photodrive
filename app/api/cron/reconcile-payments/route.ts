@@ -1,21 +1,13 @@
-import { timingSafeEqual } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { getAdminDb } from "@/lib/firebase/admin";
 import { billingFulfilV2 } from "@/lib/server/billing/flags";
 import { reconcilePayments } from "@/lib/server/billing/reconcile";
 import { getStripe, StripeConfigError } from "@/lib/server/billing/stripe";
 import { requestLogger } from "@/lib/server/log";
+import { cronAuthorised } from "@/lib/server/cron-auth";
 
 // Listing and fulfilling a day or two of sessions is quick, but allow headroom on slow Stripe calls.
 export const maxDuration = 60;
-
-function authorised(req: NextRequest): boolean | null {
-  const secret = process.env.CRON_SECRET?.trim();
-  if (!secret) return null; // not configured: fail closed
-  const given = Buffer.from(req.headers.get("authorization") ?? "");
-  const expected = Buffer.from(`Bearer ${secret}`);
-  return given.length === expected.length && timingSafeEqual(given, expected);
-}
 
 /**
  * Hourly reconciliation (Vercel Cron, see vercel.json). Vercel sends `Authorization: Bearer $CRON_SECRET`
@@ -24,7 +16,7 @@ function authorised(req: NextRequest): boolean | null {
 export async function GET(req: NextRequest) {
   const log = requestLogger(req, "cron.reconcile-payments");
 
-  const ok = authorised(req);
+  const ok = cronAuthorised(req);
   if (ok === null) {
     log.error("CRON_SECRET is not set: refusing to run");
     return NextResponse.json({ error: "Cron is not configured" }, { status: 500 });

@@ -276,6 +276,22 @@ export default function AdminUsersPage() {
     }
   };
 
+  // Mark a flagged payment as reviewed (S2-16): it stops being flagged and drops out of the daily digest.
+  const markPaymentReviewed = async (uid: string, sessionId: string) => {
+    if (!user) return;
+    const token = await user.getIdToken();
+    const res = await fetch("/api/admin/review", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ kind: "payment", id: sessionId }),
+    });
+    if (res.ok || res.status === 409) {
+      setUsers((prev) =>
+        prev.map((u) => (u.uid === uid ? { ...u, paymentFlags: u.paymentFlags.map((f) => (f.sessionId === sessionId ? { ...f, needsReview: false } : f)) } : u)),
+      );
+    }
+  };
+
   const galleriesFor = (uid: string) => galleries.filter((g) => g.photographerId === uid);
 
   const sourceCounts = {
@@ -495,6 +511,15 @@ export default function AdminUsersPage() {
                             {f.needsReview && f.status !== "fulfilled" && <span className="text-amber-300"> · needs review</span>}
                             <span className="block text-stone-500 font-mono mt-0.5">{f.sessionId}</span>
                             {f.reviewNote && <span className="block text-stone-500 mt-0.5">{f.reviewNote}</span>}
+                            {f.needsReview && (
+                              <button
+                                type="button"
+                                onClick={() => markPaymentReviewed(u.uid, f.sessionId)}
+                                className="mt-1 text-xs font-semibold text-amber-300 underline underline-offset-2 hover:text-amber-200"
+                              >
+                                Mark reviewed
+                              </button>
+                            )}
                           </li>
                         ))}
                       </ul>

@@ -56,7 +56,7 @@
   - Files: `app/dashboard/account/page.tsx`, `app/dashboard/page.tsx`, `lib/i18n`, the payments API the account page reads
   - Done when: each status renders correctly; a refunded customer sees why their access shrank without contacting support.
   - Refs: G16
-- [ ] **S2-16** · S · Operator alert channels beyond the immediate e-mail (S2-03): Sentry alert when S0-06 exists, and a daily digest e-mail of open `needs_review` events and payments through the cron infrastructure of S2-04; counts also feed the Overview "needs attention" numbers (S8-04).
+- [~] **S2-16** · S · Operator alert channels beyond the immediate e-mail (S2-03): Sentry alert when S0-06 exists, and a daily digest e-mail of open `needs_review` events and payments through the cron infrastructure of S2-04; counts also feed the Overview "needs attention" numbers (S8-04).
   - Depends: S2-03, S2-04, S0-06
   - Files: `app/api/cron/needs-review-digest/route.ts`, `lib/server/notify/admin.ts`
   - Done when: an old unresolved needs_review item appears in the next digest and not in one after it is resolved; the Sentry alert fires once per event.
