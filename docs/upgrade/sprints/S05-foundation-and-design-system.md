@@ -38,7 +38,7 @@
 - [x] **S5-08** · M · Split `MasonryGrid` (677 lines): grid, selection, download-all, favourites hooks.
   - Files: `components/gallery/MasonryGrid.tsx`
   - Done when: no file > 300 lines; gallery regression list passes.
-- [ ] **S5-09** · M · Split `NewGalleryForm` (654 lines): sections + form hook with the zod schema shared with the API.
+- [x] **S5-09** · M · Split `NewGalleryForm` (654 lines): sections + form hook with the zod schema shared with the API.
   - Files: `components/dashboard/NewGalleryForm.tsx`
   - Done when: no file > 300 lines; create/edit flows pass.
 - [x] **S5-10** · M · Split `Lightbox` (571 lines) and `CoverPickerModal` (475 lines).

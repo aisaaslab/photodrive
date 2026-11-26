@@ -261,6 +261,50 @@ const clean = (s) => String(s ?? "").replace(/\s+/g, " ").replace(/\d{1,2} [A-Z]
   step("38 signed out", { url: new URL(page.url()).pathname });
 
 
+  // ===== STAGE3: a photographer with no subscription =====
+  await ctx.clearCookies();
+  await page.evaluate(() => { localStorage.clear(); sessionStorage.clear(); indexedDB.databases?.().then((dbs) => dbs.forEach((d) => indexedDB.deleteDatabase(d.name))); });
+  await page.goto(`${BASE}/login`, { waitUntil: "load" });
+  await page.fill("input[type=email]", "unpaid@example.com");
+  await page.fill("input[type=password]", "test-password-1");
+  await page.locator("label:has(input[type=checkbox])").first().click({ position: { x: 8, y: 8 } });
+  await page.click("button:has-text('Sign in'):not(:has-text('Google'))");
+  await page.waitForURL(/dashboard/);
+  await page.waitForTimeout(1500);
+  step("39 unpaid photographer: dashboard", { header: await headerFacts(), titles: await titles(), text: clean(await page.innerText("body")).slice(0, 260) });
+  await page.click("button:has-text('New Gallery')");
+  await page.waitForTimeout(400);
+  await page.fill('input[placeholder^="e.g. Anna"]', "Wedding Day");
+  await page.fill('input[placeholder^="https://drive"]', "https://drive.google.com/drive/folders/1AbCdEfGhIjKlMnOpQrStUvWxYz012345");
+  await page.fill('textarea[placeholder^="A few words"]', "A lovely day");
+  await page.fill('input[placeholder="City, Country"]', "Rhodes");
+  await page.locator('[role="radio"]:has-text("Private")').click();
+  await page.fill('input[placeholder="Gallery password"]', "paywall-pass-1");
+  await page.locator("button:has-text('Instagram')").click();
+  await page.fill('input[placeholder^="https://instagram"]', "https://instagram.com/wedding");
+  await page.click("button:has-text('Create Gallery')");
+  await page.waitForSelector("text=/Subscri|Buy|plan/i", { timeout: 20000 });
+  await page.waitForTimeout(1200);
+  step("40 unpaid: the payment step replaces the form", { requests: takeRequests(), text: clean(await page.innerText("body")).slice(0, 500), buttons: await page.$$eval("button", (els) => els.map((e) => e.textContent.trim().replace(/\s+/g, " ").slice(0, 40)).filter(Boolean)) });
+  step("41 unpaid: the plan list", await page.evaluate(() => [...document.querySelectorAll("button[aria-pressed]")].map((b) => ({ text: b.textContent.replace(/\s+/g, " ").trim(), pressed: b.getAttribute("aria-pressed") }))));
+  await page.locator("text=/back to|Back/i").first().click();
+  await page.waitForTimeout(400);
+  step("42 unpaid: back to the form keeps what was typed", await page.evaluate(() => [...document.querySelectorAll("form input, form textarea")].map((e) => `${e.type}:${e.placeholder}=${e.type === "password" ? "***" + e.value.length : e.value}`)));
+  await page.click("button:has-text('Create Gallery')");
+  await page.waitForTimeout(2500);
+  await page.locator("button:has-text('Buy'), button:has-text('Subscribe'), button:has-text('Get')").first().click();
+  await page.waitForTimeout(1500);
+  step("43 unpaid: checkout is attempted (payments are not configured here) and the form is kept for after payment", {
+    text: clean(await page.innerText("body")).slice(0, 300),
+    pending: await page.evaluate(() => JSON.parse(localStorage.getItem("pending_gallery") || "null")),
+  });
+  // after payment the dashboard restores the form and creates the gallery by itself; here the subscription never becomes active
+  await page.goto(`${BASE}/dashboard?gallery=pending`, { waitUntil: "load" });
+  await page.waitForTimeout(1800);
+  step("44 unpaid: the restored form after payment", await page.evaluate(() => [...document.querySelectorAll("form input, form textarea")].map((e) => `${e.type}:${e.placeholder}=${e.type === "password" ? "***" + e.value.length : e.value}`)));
+  await page.waitForSelector("text=/Subscri|Buy|plan/i", { timeout: 30000 });
+  step("45 unpaid: still not active, so the payment step is shown again", { requests: takeRequests().map((r) => r.method + " " + r.path), pending: await page.evaluate(() => localStorage.getItem("pending_gallery") !== null) });
+
   console.log(JSON.stringify(out, null, 1));
   await browser.close();
 })().catch((e) => { console.error("SNAPSHOT FAILED:", e.message.split("\n").slice(0, 4).join(" | ")); process.exit(1); });

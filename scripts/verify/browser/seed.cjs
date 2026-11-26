@@ -7,6 +7,8 @@ const EMAIL = "photographer@example.com";
 const PASSWORD = "test-password-1";
 
 // A photographer in the Auth emulator (so the app's own login form works), with an active subscription.
+const UNPAID = { id: "photographer2", email: "unpaid@example.com" };
+
 async function ensurePhotographer() {
   const host = process.env.FIREBASE_AUTH_EMULATOR_HOST || "127.0.0.1:9099";
   // The emulator's project-level endpoint (authorised by the fixed "owner" bearer) accepts a chosen user id; the public sign-up one does not.
@@ -15,6 +17,12 @@ async function ensurePhotographer() {
     body: JSON.stringify({ email: EMAIL, password: PASSWORD, localId: OWNER, displayName: "Test Photographer", emailVerified: true }),
   });
   if (!res.ok && !(await res.text()).includes("DUPLICATE")) throw new Error("could not create the test photographer");
+  // a second photographer with no subscription: creating a gallery must lead them to the payment step
+  const res2 = await fetch(`http://${host}/identitytoolkit.googleapis.com/v1/projects/demo-photodrive/accounts`, {
+    method: "POST", headers: { "content-type": "application/json", authorization: "Bearer owner" },
+    body: JSON.stringify({ email: UNPAID.email, password: PASSWORD, localId: UNPAID.id, displayName: "Unpaid Photographer", emailVerified: true }),
+  });
+  if (!res2.ok && !(await res2.text()).includes("DUPLICATE")) throw new Error("could not create the second test photographer");
 }
 
 (async () => {
@@ -30,6 +38,11 @@ async function ensurePhotographer() {
   await db.collection("galleries").doc("g-nodl").set({ ...base, name: "No downloads", slug: "nodltest", createdAt: Date.now() - 3 * 3600 * 1000, allowDownload: false });
   await db.collection("galleries").doc("g-pub").set({ ...base, name: "Public test", slug: "pubtest", createdAt: Date.now() - 1 * 3600 * 1000 });
   await db.collection("galleries").doc("g-big").set({ ...base, folderId: "BIGFOLDER000000000000000000000000", coverFileId: null, name: "Big gallery", slug: "bigtest", createdAt: Date.now() - 4 * 3600 * 1000 });
+  await db.collection("users").doc(UNPAID.id).set({ uid: UNPAID.id, email: UNPAID.email, name: "Unpaid Photographer", createdAt: Date.now() });
+  await db.collection("plans").doc("p-year").set({
+    name: "Yearly", description: "Everything, for a year", interval: "yearly", priceCents: 9900, currency: "eur",
+    features: ["Unlimited galleries", "Originals at full resolution"], isPublic: true, active: true, highlight: true, sortOrder: 1, createdAt: Date.now(), updatedAt: Date.now(),
+  });
   // A client's favourites and submission on the public gallery, so the photographer's "Favorites" panel has something to show.
   await db.collection("gallery_selections").doc("g-pub").set({
     galleryId: "g-pub", count: 2, updatedAt: Date.now(),
