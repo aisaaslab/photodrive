@@ -5,6 +5,7 @@ import { clientIp, getRateLimiter, rateLimitHeaders } from "@/lib/server/rate-li
 import { parseJson } from "@/lib/server/http";
 import { ContactBody } from "@/lib/shared/schemas/public";
 import { contactMessagesCol } from "@/lib/server/repos/collections";
+import { APP_NAME, mailFrom } from "@/lib/branding";
 
 export const runtime = "nodejs";
 
@@ -33,7 +34,7 @@ async function forwardViaResend(opts: {
   message: string;
 }): Promise<boolean> {
   const apiKey = process.env.RESEND_API_KEY;
-  const from = process.env.CONTACT_FROM_EMAIL || "PhotoDrive Contact <no-reply@photodrive.co>";
+  const from = process.env.CONTACT_FROM_EMAIL || mailFrom(`${APP_NAME} Contact`);
   if (!apiKey) return false;
   try {
     const res = await fetch("https://api.resend.com/emails", {

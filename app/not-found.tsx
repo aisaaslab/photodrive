@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import { useLanguage } from "@/lib/i18n";
@@ -7,7 +7,7 @@ import { APP_NAME } from "@/lib/branding";
 
 /**
  * Shown for any unmatched route, and for the notFound() calls in the gallery
- * and demo pages â€” so a client who opens a deleted or mistyped gallery link
+ * and demo pages — so a client who opens a deleted or mistyped gallery link
  * lands somewhere branded and in their own language, instead of on the
  * framework's default white English page.
  */

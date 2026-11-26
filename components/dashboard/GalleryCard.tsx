@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { galleryVisibility, isPrivate, type Visibility } from "@/lib/gallery/visibility";
 import { useState, useEffect, useRef } from "react";
@@ -14,6 +14,7 @@ import { useToast } from "@/components/ui/Toast";
 import { LOCALES } from "@/lib/i18n";
 import { coverObjectPosition } from "@/lib/gallery/cover-position";
 import { proxyUrl } from "@/lib/drive/proxy-url";
+import { zipToBlob, type ZipEntry } from "@/lib/shared/zip";
 
 interface Props {
   gallery: GalleryDoc;
@@ -142,8 +143,7 @@ export function GalleryCard({ gallery, onDelete, onUpdate }: Props) {
     if (selZipping || selPhotos.length === 0) return;
     setSelZipping(true);
     try {
-      const { default: JSZip } = await import("jszip");
-      const zip = new JSZip();
+      const entries: ZipEntry[] = [];
       // The owner's originals are authorised by sign-in (the gallery may have downloads turned off for visitors).
       const token = await user?.getIdToken();
       const headers: HeadersInit = token ? { Authorization: `Bearer ${token}` } : {};
@@ -155,7 +155,7 @@ export function GalleryCard({ gallery, onDelete, onUpdate }: Props) {
           batch.map(async (p) => {
             try {
               const res = await fetch(proxyUrl(gallery.id, p.id, "full"), { headers });
-              if (res.ok) zip.file(p.name || `${p.id}.jpg`, await res.blob());
+              if (res.ok) entries.push({ name: p.name || `${p.id}.jpg`, blob: await res.blob() });
             } catch {
               // skip
             }
@@ -163,7 +163,7 @@ export function GalleryCard({ gallery, onDelete, onUpdate }: Props) {
         );
       }
       // STORE: no recompression (photos are already compressed).
-      const content = await zip.generateAsync({ type: "blob", compression: "STORE" });
+      const content = await zipToBlob(entries);
       const a = document.createElement("a");
       a.href = URL.createObjectURL(content);
       a.download = `${gallery.name || "selection"}.zip`;

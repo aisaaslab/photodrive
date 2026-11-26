@@ -1,4 +1,4 @@
-﻿import { ImageResponse } from "next/og";
+import { ImageResponse } from "next/og";
 import { APP_NAME, APP_DOMAIN, APP_TAGLINE, APP_DESCRIPTION } from "@/lib/branding";
 
 export const alt = `${APP_NAME}, ${APP_TAGLINE}`;

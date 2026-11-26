@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useCallback, useRef, useState } from "react";
 import { DriveFile } from "@/lib/drive/types";

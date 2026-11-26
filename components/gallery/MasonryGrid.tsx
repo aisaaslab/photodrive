@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect, useRef } from "react";
 import { DriveFile, DriveFolder } from "@/lib/drive/types";
@@ -8,6 +8,7 @@ import { SendSelectionModal } from "./SendSelectionModal";
 import { nanoid } from "nanoid";
 import { useLanguage } from "@/lib/i18n";
 import { proxyUrl } from "@/lib/drive/proxy-url";
+import { zipToBlob, type ZipEntry } from "@/lib/shared/zip";
 
 interface Props {
   photos: DriveFile[];
@@ -213,9 +214,7 @@ export function MasonryGrid({ photos, subfolders = [], galleryId, allowDownload 
     setZipping(true);
     setZipProgress(0);
     try {
-      // Loaded on demand so the ~100KB zip library isn't shipped on every gallery view.
-      const { default: JSZip } = await import("jszip");
-      const zip = new JSZip();
+      const entries: ZipEntry[] = [];
       // Fetch in small batches instead of all at once: hundreds of parallel
       // full-size requests overwhelm the browser/connection and look "stuck".
       // A failed file is skipped rather than aborting the whole download.
@@ -228,7 +227,7 @@ export function MasonryGrid({ photos, subfolders = [], galleryId, allowDownload 
             const photo = photos.find((p) => p.id === id);
             try {
               const res = await fetch(photo?.urls?.full ?? proxyUrl(galleryId, id, "full"));
-              if (res.ok) zip.file(photo?.name ?? `${id}.jpg`, await res.blob());
+              if (res.ok) entries.push({ name: photo?.name ?? `${id}.jpg`, blob: await res.blob() });
             } catch {
               // skip this file, keep the rest
             }
@@ -236,9 +235,8 @@ export function MasonryGrid({ photos, subfolders = [], galleryId, allowDownload 
           })
         );
       }
-      // STORE = no recompression. Photos/videos are already compressed, so
-      // deflating them just burns CPU/time for almost no size gain.
-      const content = await zip.generateAsync({ type: "blob", compression: "STORE" });
+      // Stored, not compressed: photos/videos are already compressed (see lib/shared/zip.ts).
+      const content = await zipToBlob(entries);
       const a = document.createElement("a");
       a.href = URL.createObjectURL(content);
       a.download = "photos.zip";

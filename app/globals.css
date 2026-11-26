@@ -1,4 +1,4 @@
-﻿@import "tailwindcss";
+@import "tailwindcss";
 
 /* Landing-page design tokens (utilities: bg-primary, text-ink, text-body, ...) */
 @theme {
@@ -144,7 +144,7 @@ body {
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
-/* Brand teal gradient (brightâ†’mid) â€” pops on the dark owner UI */
+/* Brand teal gradient (bright→mid) — pops on the dark owner UI */
 .text-rose-gradient {
   background: linear-gradient(135deg, #2dabe0 0%, #17509e 60%);
   -webkit-background-clip: text;
@@ -170,7 +170,7 @@ body {
   100% { transform: translateX(300%); }
 }
 
-/* Aurora background â€” recolored from rose to brand teal (bright for dark bg) */
+/* Aurora background — recolored from rose to brand teal (bright for dark bg) */
 @keyframes aurora1 {
   0%   { transform: translate(0%, 0%) scale(1); opacity: 0.85; }
   25%  { transform: translate(18%, -20%) scale(1.25); opacity: 1; }
@@ -232,7 +232,7 @@ body {
   animation: aurora3 14s ease-in-out infinite;
 }
 
-/* Aurora for light/white backgrounds (client gallery) â€” deep teal, very soft */
+/* Aurora for light/white backgrounds (client gallery) — deep teal, very soft */
 .aurora-bg-light {
   position: fixed;
   inset: 0;

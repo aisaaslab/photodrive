@@ -1,4 +1,5 @@
 import "server-only";
+import { mailFrom } from "@/lib/branding";
 // Server-only helper (import from API routes only — never from client code).
 
 /**
@@ -14,7 +15,7 @@ export async function sendEmail(opts: {
   text: string;
   replyTo?: string;
 }): Promise<boolean> {
-  const from = process.env.CONTACT_FROM_EMAIL || "PhotoDrive <no-reply@photodrive.co>";
+  const from = process.env.CONTACT_FROM_EMAIL || mailFrom();
 
   const apiKey = process.env.RESEND_API_KEY;
   if (apiKey) {

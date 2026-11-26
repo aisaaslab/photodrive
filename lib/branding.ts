@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Central branding configuration.
  *
  * All app-wide identity (name, domain, support email, owner legal info)
@@ -17,7 +17,7 @@ export const APP_URL =
 /**
  * Slogan on the social link-preview image (app/opengraph-image.tsx), i.e. the
  * card people see when your link is pasted into a chat or a post. Two short
- * sentences render best â€” the image puts the second one on its own line.
+ * sentences render best — the image puts the second one on its own line.
  */
 export const APP_TAGLINE =
   process.env.NEXT_PUBLIC_APP_TAGLINE || "Share your work. Beautifully.";
@@ -35,9 +35,15 @@ export const APP_DESCRIPTION =
  */
 export const SUPPORT_EMAIL = "support@photodrive.co";
 
+/** Sender address for e-mail the app sends when CONTACT_FROM_EMAIL is not set. The only other place the domain is written is SUPPORT_EMAIL. */
+export const NO_REPLY_EMAIL = "no-reply@photodrive.co";
+
+/** `Name <no-reply@...>`, the default `From` for outgoing e-mail. */
+export const mailFrom = (label: string = APP_NAME): string => `${label} <${NO_REPLY_EMAIL}>`;
+
 // These three appear verbatim on the public Terms and Privacy pages, which are
 // legal documents naming the business operator. Fill them in via .env.local
-// before going live â€” shipping the placeholders would publish wrong details.
+// before going live — shipping the placeholders would publish wrong details.
 export const OWNER_NAME =
   process.env.NEXT_PUBLIC_OWNER_NAME || "Your Company Name";
 
@@ -49,7 +55,7 @@ export const OWNER_ADDRESS =
 
 /**
  * Local tax authority, if your jurisdiction requires naming one on public terms
- * (Greece requires one, for example). Leave it unset and the row is not shown â€”
+ * (Greece requires one, for example). Leave it unset and the row is not shown —
  * most countries, including the US, have no equivalent to state.
  */
 export const OWNER_TAX_OFFICE = process.env.NEXT_PUBLIC_OWNER_TAX_OFFICE || "";

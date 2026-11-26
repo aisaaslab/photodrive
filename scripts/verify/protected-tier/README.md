@@ -24,4 +24,6 @@ npx next start -p 3997 &
 NODE_PATH=$(npm root -g) node scripts/verify/protected-tier/browser.cjs          # Playwright (preinstalled globally in the cloud sandbox)
 ```
 
+Also `NODE_PATH=$(npm root -g) node scripts/verify/protected-tier/zip.cjs` checks, in the same setup, that selecting photos and pressing "Download (.zip)" yields a valid zip in the browser (public gallery through the proxy, private gallery through the signed URLs).
+
 Prints one PASS/FAIL line per check. On staging, run the same page checks by hand against a real private gallery (S3-11).

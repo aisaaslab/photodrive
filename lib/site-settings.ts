@@ -1,8 +1,9 @@
 import "server-only";
 // Server-only helper (import from API routes only — never from client code).
 import { siteSettingsDoc } from "@/lib/server/repos/collections";
+import { SUPPORT_EMAIL } from "@/lib/branding";
 
-export const DEFAULT_SUPPORT_EMAIL = "support@photodrive.co";
+export const DEFAULT_SUPPORT_EMAIL = SUPPORT_EMAIL;
 
 export type SiteSettings = {
   supportEmail: string;
