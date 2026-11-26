@@ -4,6 +4,7 @@ import { verifyGalleryToken } from "@/lib/gallery/session";
 import { isPrivate } from "@/lib/gallery/visibility";
 import { sendEmail, escapeHtml } from "@/lib/email";
 import { APP_URL } from "@/lib/branding";
+import { clientIp, getRateLimiter, rateLimitHeaders } from "@/lib/server/rate-limit";
 
 export const runtime = "nodejs";
 
@@ -17,22 +18,9 @@ export const runtime = "nodejs";
  * gallery cookie, and it is rate-limited per IP + gallery.
  */
 
-const WINDOW_MS = 10 * 60 * 1000;
+// At most 5 submissions per 10 minutes per visitor and gallery, counted in the shared store (S3-06).
 const MAX_PER_WINDOW = 5;
-const hits = new Map<string, number[]>();
-
-function rateLimited(key: string): boolean {
-  const now = Date.now();
-  const arr = (hits.get(key) ?? []).filter((t) => now - t < WINDOW_MS);
-  if (arr.length >= MAX_PER_WINDOW) return true;
-  arr.push(now);
-  hits.set(key, arr);
-  return false;
-}
-
-function clientIp(req: NextRequest): string {
-  return req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || req.headers.get("x-real-ip") || "unknown";
-}
+const WINDOW_SEC = 10 * 60;
 
 const isValidEmail = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v);
 
@@ -42,8 +30,12 @@ export async function POST(
 ) {
   const { id } = await params;
 
-  if (rateLimited(`${clientIp(req)}:${id}`)) {
-    return NextResponse.json({ error: "Too many requests. Please try again in a few minutes." }, { status: 429 });
+  const limit = await getRateLimiter().limit({ name: "selection-submit", id: `${clientIp(req)}|${id}`, limit: MAX_PER_WINDOW, windowSec: WINDOW_SEC });
+  if (!limit.allowed) {
+    return NextResponse.json(
+      { error: "Too many requests. Please try again in a few minutes." },
+      { status: 429, headers: rateLimitHeaders(limit) },
+    );
   }
 
   let body: Record<string, unknown>;

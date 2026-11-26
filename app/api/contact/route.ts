@@ -2,29 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { createHash } from "crypto";
 import { getAdminDb } from "@/lib/firebase/admin";
 import { getSupportEmail, type ContactMessageDoc } from "@/lib/site-settings";
+import { clientIp, getRateLimiter, rateLimitHeaders } from "@/lib/server/rate-limit";
 
 export const runtime = "nodejs";
 
-const WINDOW_MS = 10 * 60 * 1000;
+// At most 5 messages per 10 minutes per visitor, counted in the shared store (S3-06): the per-instance Map this
+// replaced reset on every cold start and was not shared between serverless instances.
 const MAX_PER_WINDOW = 5;
-const hits = new Map<string, number[]>();
-
-function clientIp(req: NextRequest): string {
-  return (
-    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
-    req.headers.get("x-real-ip") ||
-    "unknown"
-  );
-}
-
-function rateLimited(ip: string): boolean {
-  const now = Date.now();
-  const arr = (hits.get(ip) ?? []).filter((t) => now - t < WINDOW_MS);
-  if (arr.length >= MAX_PER_WINDOW) return true;
-  arr.push(now);
-  hits.set(ip, arr);
-  return false;
-}
+const WINDOW_SEC = 10 * 60;
 
 function isValidEmail(v: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v);
@@ -109,10 +94,11 @@ async function forwardViaSmtp(opts: {
  */
 export async function POST(req: NextRequest) {
   const ip = clientIp(req);
-  if (rateLimited(ip)) {
+  const limit = await getRateLimiter().limit({ name: "contact", id: ip, limit: MAX_PER_WINDOW, windowSec: WINDOW_SEC });
+  if (!limit.allowed) {
     return NextResponse.json(
       { error: "Too many messages. Please try again in a few minutes." },
-      { status: 429 }
+      { status: 429, headers: rateLimitHeaders(limit) }
     );
   }
 

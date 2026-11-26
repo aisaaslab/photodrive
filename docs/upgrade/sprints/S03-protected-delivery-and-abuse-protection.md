@@ -34,7 +34,7 @@
   - Files: `app/api/gallery/verify-password/route.ts`
   - Done when: tests prove lockout, bad-body 400, `Secure` flag.
   - Refs: SEC-2, SEC-3
-- [ ] **S3-06** · S · Replace the in-memory limiters in contact and selection-submit with the shared limiter.
+- [x] **S3-06** · S · Replace the in-memory limiters in contact and selection-submit with the shared limiter.
   - Depends: S3-01
   - Files: `app/api/contact/route.ts`, `app/api/galleries/[id]/selection/submit/route.ts`
   - Done when: both `Map`s are gone; limits verified.
