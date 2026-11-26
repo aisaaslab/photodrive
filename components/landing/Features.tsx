@@ -15,7 +15,7 @@ function Mosaic({ items, offset }: { items: readonly (readonly [number, string])
     <div className={cn("flex min-w-0 flex-1 flex-col gap-3.5 sm:max-w-[190px]", offset && "pt-8 sm:pt-12")}>
       {items.map(([n, h]) => (
         <div key={n} className={cn("relative overflow-hidden rounded-2xl", h)}>
-          <Image src={`/landing/gallery-${n}.jpg`} alt="" fill sizes="190px" className="object-cover" />
+          <Image src={`/landing/gallery-${n}.webp`} alt="" fill sizes="190px" className="object-cover" />
         </div>
       ))}
     </div>

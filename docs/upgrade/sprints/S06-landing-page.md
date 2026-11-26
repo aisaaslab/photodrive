@@ -40,7 +40,7 @@
   - Done when: demo creation works end to end; frames match the S6-00 addendum.
 - [ ] **S6-10** · M · i18n: add the new strings in six languages (see brief), reuse existing keys; screenshot review of every section at 1440/1024/390 in EL, EN, NL, DE, ES, IT.
   - Done when: no clipping, overflow or untranslated keys; `i18n:check` green.
-- [ ] **S6-11** · M · Responsive build per the brief's breakpoints (and the S6-00 mobile frames) and an accessibility pass: contrast AA, visible focus, keyboard operation, reduced motion, landmarks, alt text.
+- [x] **S6-11** · M · Responsive build per the brief's breakpoints (and the S6-00 mobile frames) and an accessibility pass: contrast AA, visible focus, keyboard operation, reduced motion, landmarks, alt text.
   - Done when: axe/Lighthouse accessibility ≥ 95; manual keyboard walkthrough recorded.
 - [ ] **S6-12** · M · SEO and performance: metadata, restyled `opengraph-image.tsx`, JSON-LD (Organization, SoftwareApplication, FAQPage), `sizes` and priority on images, analytics (`SiteAnalytics`, tracking IDs, `trackPurchase`) unchanged; Lighthouse targets met.
   - Files: `app/page.tsx`, `app/opengraph-image.tsx`, `app/sitemap.ts`

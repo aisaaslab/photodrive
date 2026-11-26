@@ -13,7 +13,7 @@ export function Hero({ t }: { t: Translations }) {
   const h = t.landing.hero;
   return (
     <section id="top" className="relative isolate overflow-hidden bg-canvas">
-      <Image src="/landing/hero.jpg" alt="" fill priority sizes="100vw" quality={80} className="-z-20 object-cover object-[60%_center]" />
+      <Image src="/landing/hero.webp" alt="" fill priority sizes="100vw" quality={80} className="-z-20 object-cover object-[60%_center]" />
       <div
         aria-hidden className="absolute inset-0 -z-10"
         style={{ backgroundImage: "linear-gradient(180deg, rgba(6,8,12,0) 40%, rgb(6,8,12) 100%), linear-gradient(90deg, rgba(6,8,12,0.92) 0%, rgba(6,8,12,0.55) 60%, rgba(6,8,12,0.25) 100%)" }}

@@ -10,7 +10,8 @@ import { Pricing } from "@/components/landing/Pricing";
 import { TryIt } from "@/components/landing/TryIt";
 import { Video } from "@/components/landing/Video";
 import { Why } from "@/components/landing/Why";
-import { Faq } from "@/components/landing/Faq";
+import { Faq, landingFaq } from "@/components/landing/Faq";
+import { JsonLd } from "@/components/landing/JsonLd";
 import { FinalCta } from "@/components/landing/FinalCta";
 import { Footer } from "@/components/landing/Footer";
 import { getPublicPlans } from "@/lib/server/public-plans";
@@ -25,6 +26,7 @@ export default async function NewLandingPage() {
   const [{ dictionary: t }, plans] = await Promise.all([getLanguage(), getPublicPlans()]);
   return (
     <div className="relative bg-canvas font-display text-fg">
+      <JsonLd t={t} plans={plans} faq={landingFaq(t).map(({ question, answer }) => ({ question, answer }))} />
       <NavBar />
       <main>
         <Hero t={t} />

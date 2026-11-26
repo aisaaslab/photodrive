@@ -1,50 +1,30 @@
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
 import { ImageResponse } from "next/og";
-import { APP_NAME, APP_DOMAIN, APP_TAGLINE, APP_DESCRIPTION } from "@/lib/branding";
+import { APP_NAME, APP_DOMAIN, APP_DESCRIPTION } from "@/lib/branding";
+import { en } from "@/lib/i18n/dictionaries/en";
 
-export const alt = `${APP_NAME}, ${APP_TAGLINE}`;
+export const alt = `${APP_NAME}, ${APP_DESCRIPTION}`;
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
-// The tagline renders as two lines in two colours. Split on the last sentence
-// break so "Share your work. Beautifully." keeps its original look; a tagline
-// with no second sentence simply renders as one line.
-const m = APP_TAGLINE.trim().match(/^(.*[.!?])\s+(\S.*)$/);
-const taglineLine1 = m ? m[1] : APP_TAGLINE;
-const taglineLine2 = m ? m[2] : "";
-
-// Social link-preview image (auto-generated). Clean white + deep teal brand.
-export default function OpengraphImage() {
+// Social link-preview image in the Cinematic Dark style of the landing page (S6-12): the original logo, the headline in two lines
+// (the second in the accent colour), and the descriptor with the domain.
+export default async function OpengraphImage() {
+  const logo = `data:image/png;base64,${(await readFile(join(process.cwd(), "public", "logo-light.png"))).toString("base64")}`;
   return new ImageResponse(
     (
       <div
         style={{
-          width: "100%",
-          height: "100%",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          background: "#ffffff",
-          fontFamily: "sans-serif",
+          width: "100%", height: "100%", display: "flex", flexDirection: "column", justifyContent: "center",
+          padding: "0 90px", background: "#06080c", fontFamily: "sans-serif",
+          backgroundImage: "radial-gradient(ellipse 80% 60% at 85% 0%, rgba(45,171,224,0.28), rgba(6,8,12,0) 70%)",
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: 18, marginBottom: 40 }}>
-          <div style={{ width: 30, height: 30, borderRadius: 9999, background: "#17509e" }} />
-          <div style={{ fontSize: 46, fontWeight: 700, color: "#1f2937", letterSpacing: "-0.02em" }}>
-            {APP_NAME}
-          </div>
-        </div>
-        <div style={{ display: "flex", fontSize: 84, fontWeight: 700, color: "#262626", letterSpacing: "-0.03em" }}>
-          {taglineLine1}
-        </div>
-        {taglineLine2 ? (
-          <div style={{ display: "flex", fontSize: 84, fontWeight: 700, color: "#17509e", letterSpacing: "-0.03em" }}>
-            {taglineLine2}
-          </div>
-        ) : null}
-        <div style={{ display: "flex", marginTop: 44, fontSize: 26, color: "#6b7280" }}>
-          {APP_DESCRIPTION} · {APP_DOMAIN}
-        </div>
+        <img src={logo} alt="" width={330} height={90} style={{ marginBottom: 56 }} />
+        <div style={{ display: "flex", fontSize: 66, fontWeight: 800, color: "#f5f7fa", letterSpacing: "-0.03em", lineHeight: 1.05 }}>{en.hero.title1}</div>
+        <div style={{ display: "flex", fontSize: 66, fontWeight: 800, color: "#2dabe0", letterSpacing: "-0.03em", lineHeight: 1.05 }}>{en.hero.title2}</div>
+        <div style={{ display: "flex", marginTop: 40, fontSize: 28, color: "#9aa6b6" }}>{APP_DESCRIPTION} · {APP_DOMAIN}</div>
       </div>
     ),
     { ...size }

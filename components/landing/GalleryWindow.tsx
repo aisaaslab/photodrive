@@ -38,7 +38,7 @@ export function GalleryWindow({ t }: { t: Translations }) {
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:gap-4">
             {PHOTOS.map((n) => (
               <div key={n} className={cn("relative h-[150px] overflow-hidden rounded-[14px] sm:h-[200px] lg:h-[300px]", n > 4 && "hidden sm:block")}>
-                <Image src={`/landing/gallery-${n}.jpg`} alt="" fill sizes="(min-width: 1024px) 270px, (min-width: 640px) 22vw, 45vw" className="object-cover" />
+                <Image src={`/landing/gallery-${n}.webp`} alt="" fill sizes="(min-width: 1024px) 270px, (min-width: 640px) 22vw, 45vw" className="object-cover" />
               </div>
             ))}
           </div>

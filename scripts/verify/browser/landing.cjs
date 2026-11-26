@@ -79,6 +79,31 @@ const check = (name, ok, extra = "") => { console.log(`${ok ? "PASS" : "FAIL"} $
     await ctx.close();
   }
 
+  // Keyboard walkthrough: Tab through the whole page; every stop must be a real control, be visible, and show a focus indicator
+  {
+    const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 }, extraHTTPHeaders: { "Accept-Language": "en" }, reducedMotion: "reduce" });
+    const page = await ctx.newPage();
+    await page.goto(BASE + PATH, { waitUntil: "networkidle" });
+    const stops = [];
+    for (let i = 0; i < 90; i++) {
+      await page.keyboard.press("Tab");
+      const info = await page.evaluate(() => {
+        const el = document.activeElement; if (!el || el === document.body) return null;
+        const cs = getComputedStyle(el); const r = el.getBoundingClientRect();
+        const name = (el.getAttribute("aria-label") || (el.labels && el.labels[0] ? el.labels[0].textContent : "") || el.textContent || el.getAttribute("href") || "").trim().replace(/\s+/g, " ").slice(0, 40);
+        return { tag: el.tagName, name, ring: cs.boxShadow !== "none" || (cs.outlineStyle !== "none" && parseFloat(cs.outlineWidth) > 0), visible: r.width > 0 && r.height > 0 };
+      });
+      if (!info) break;
+      stops.push(info);
+      if (stops.length > 3 && stops[0].name === info.name && i > 5) break;
+    }
+    // The native video controls draw their own focus indicators, which the page cannot read; everything the page owns must show a ring.
+    const bad = stops.filter((s) => s.tag !== "VIDEO" && (!s.ring || !s.visible || !s.name));
+    check(`keyboard: ${stops.length} Tab stops, each a visible control with a name and a focus ring`, stops.length >= 25 && bad.length === 0, bad.map((b) => `${b.tag}:${b.name || "(no name)"}${b.ring ? "" : " (no ring)"}`).slice(0, 5).join(" | "));
+    check("keyboard: nothing but links, buttons and the form field takes focus", stops.every((s) => ["A", "BUTTON", "INPUT", "VIDEO"].includes(s.tag)), [...new Set(stops.map((s) => s.tag))].join(","));
+    await ctx.close();
+  }
+
   // Try it (demo form), tutorial video, and "Why PhotoDrive"
   {
     const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 }, extraHTTPHeaders: { "Accept-Language": "en" } });
