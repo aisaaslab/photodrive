@@ -9,5 +9,6 @@ const bcrypt = require("bcryptjs");
   await db.collection("galleries").doc("g-priv").set({ ...base, name: "Private test", slug: "privtest", visibility: "private", passwordHash: await bcrypt.hash("hunter2", 10), pwChangedAt: 0 });
   await db.collection("galleries").doc("g-nodl").set({ ...base, name: "No downloads", slug: "nodltest", allowDownload: false });
   await db.collection("galleries").doc("g-pub").set({ ...base, name: "Public test", slug: "pubtest" });
+  await db.collection("galleries").doc("g-big").set({ ...base, folderId: "BIGFOLDER000000000000000000000000", coverFileId: null, name: "Big gallery", slug: "bigtest" });
   console.log("seeded");
 })();

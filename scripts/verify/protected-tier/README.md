@@ -26,4 +26,6 @@ NODE_PATH=$(npm root -g) node scripts/verify/protected-tier/browser.cjs         
 
 Also `NODE_PATH=$(npm root -g) node scripts/verify/protected-tier/zip.cjs` checks, in the same setup, that selecting photos and pressing "Download (.zip)" yields a valid zip in the browser (public gallery through the proxy, private gallery through the signed URLs).
 
+**Behaviour snapshot** (`gallery-snapshot.cjs`): records 33 observable facts about the public gallery page (tab counts, search, sort, folders, show-more, selection mode, favourites persisted through the server, and the lightbox: counter, keys, zoom, thumbnail strip, slideshow, video) as JSON. It uses the seeded `bigtest` gallery (130 files and a subfolder, served by `fake-drive.cjs`). Reset the emulator and reseed before each run (the favourites step writes), then compare two runs with `diff`: identical output means a refactor changed nothing a visitor can see. Used for S5-08 and S5-10.
+
 Prints one PASS/FAIL line per check. On staging, run the same page checks by hand against a real private gallery (S3-11).
