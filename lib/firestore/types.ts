@@ -68,6 +68,10 @@ export interface UserDoc {
   planId?: string;
   planName?: string;
   planInterval?: PlanInterval;
+  // Preferred language (one of the six app languages), stored by PUT /api/user/language so the server can write
+  // to the user in it (S2-13). Server-written only (firestore.rules); read it with userLanguage().
+  language?: "el" | "en" | "nl" | "de" | "es" | "it";
+  languageUpdatedAt?: number;
 }
 
 /** Billing period of a payment plan. */

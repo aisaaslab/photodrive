@@ -1,7 +1,7 @@
 /** S2-09: refunded / disputed / needs-review payments are visible on the admin users page. */
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
-import { clearEmulators, testAuth, testDb } from "../helpers/db";
+import { clearEmulators, testAuth } from "../helpers/db";
 import { seedPayment, seedUser } from "../helpers/seed";
 import { paymentFlagSeverity, paymentFlagsByUid } from "@/lib/access-source";
 

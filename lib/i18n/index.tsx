@@ -2,7 +2,8 @@
 
 import { createContext, useContext, useState, useEffect } from "react";
 
-export type Lang = "el" | "en" | "nl" | "de" | "es" | "it";
+import type { Lang } from "./languages";
+export type { Lang };
 
 /** BCP-47 locale per UI language, for Intl date/number formatting. */
 export const LOCALES: Record<Lang, string> = {

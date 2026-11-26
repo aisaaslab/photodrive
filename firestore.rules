@@ -17,7 +17,8 @@ service cloud.firestore {
 
     // Fields only the server (Admin SDK) is allowed to set.
     function locked() {
-      return ['subscriptionStatus', 'subscriptionExpiresAt', 'compGranted', 'stripeCustomerId'];
+      // `language` is written only by PUT /api/user/language, which validates it against the six app languages.
+      return ['subscriptionStatus', 'subscriptionExpiresAt', 'compGranted', 'stripeCustomerId', 'language', 'languageUpdatedAt'];
     }
 
     match /users/{uid} {

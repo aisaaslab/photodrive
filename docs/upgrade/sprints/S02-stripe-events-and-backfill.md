@@ -41,7 +41,7 @@
 - [ ] **S2-10** · M · Test-mode evidence for refund, dispute and async-failure scenarios (Stripe CLI triggers), recorded with event ids.
   - Files: `docs/upgrade/evidence/S2.md`
   - Done when: all scenarios pass in staging.
-- [ ] **S2-13** · S · Persist the user's preferred language on `users/{uid}.language` (set from the app on login and when the language is switched while signed in, through a small authenticated endpoint validated against the six languages) so server-sent messages can use it. Also needed by S9-03.
+- [x] **S2-13** · S · Persist the user's preferred language on `users/{uid}.language` (set from the app on login and when the language is switched while signed in, through a small authenticated endpoint validated against the six languages) so server-sent messages can use it. Also needed by S9-03.
   - Files: `app/api/user/language/route.ts`, `components/auth/AuthProvider.tsx` (or the language provider), `lib/firestore/types.ts`, `firestore.rules` (`locked()`)
   - Done when: switching language while signed in updates the user document; invalid values are rejected; tests.
   - Refs: G16, D17
