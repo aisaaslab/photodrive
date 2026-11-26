@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAdminAuth, getAdminDb } from "@/lib/firebase/admin";
 import { getUidFromRequest, isAdmin } from "@/lib/firebase/admin-guard";
+import { deleteUserGalleries } from "@/lib/server/repos/galleries";
 
 /**
  * Admin-only: permanently delete a user account.
@@ -8,7 +9,7 @@ import { getUidFromRequest, isAdmin } from "@/lib/firebase/admin-guard";
  * Works directly — no need to revoke/ban first. Removes:
  * - the Firebase Auth account (sign-in disabled immediately),
  * - the Firestore `users/{uid}` profile / subscription doc,
- * - all galleries owned by the user.
+ * - all galleries owned by the user, with their client favourites and submissions.
  */
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ uid: string }> }) {
   const adminUid = await getUidFromRequest(req);
@@ -43,10 +44,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ u
 
   // Owned galleries.
   try {
-    const snap = await db.collection("galleries").where("photographerId", "==", uid).get();
-    const batch = db.batch();
-    snap.docs.forEach((d) => batch.delete(d.ref));
-    await batch.commit();
+    await deleteUserGalleries(db, uid); // with their client favourites and submissions (S4-02)
   } catch (err) {
     console.error("[admin users] delete galleries failed", err);
   }

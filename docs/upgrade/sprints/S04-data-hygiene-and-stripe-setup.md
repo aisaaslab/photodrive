@@ -12,7 +12,7 @@
   - Files: `lib/firestore/users.ts`, `components/auth/AuthProvider.tsx`, `scripts/migrations/restore-created-at.ts`
   - Done when: signing in twice leaves `createdAt` unchanged (test); script report reviewed.
   - Refs: SEC-4
-- [ ] **S4-02** · M · Cascade deletes: `deleteGalleryCascade(galleryId)` and account deletion remove `gallery_selections` (and any legacy `favorites`); batched; tests.
+- [x] **S4-02** · M · Cascade deletes: `deleteGalleryCascade(galleryId)` and account deletion remove `gallery_selections` (and any legacy `favorites`); batched; tests.
   - Files: `app/api/galleries/[id]/route.ts`, `app/api/user/delete/route.ts`, `lib/server/repos/galleries.ts`
   - Done when: no orphaned selection documents after delete (emulator test).
   - Refs: SEC-4
@@ -48,3 +48,7 @@
 
 - Creating Stripe customers for existing users must not duplicate customers (search by `metadata.uid` first).
 - `createdAt` restoration changes dates shown in admin; review the dry-run output.
+
+## Parking lot
+
+- Orphaned `gallery_selections` from galleries/accounts deleted before S4-02: a dry-run-first sweep script (report, owner review, then delete). Found while doing S4-02.

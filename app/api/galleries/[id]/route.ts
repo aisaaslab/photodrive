@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { parseJson } from "@/lib/server/http";
+import { deleteGalleryCascade } from "@/lib/server/repos/galleries";
 import { GalleryBody } from "@/lib/shared/schemas/galleries";
 import { getAdminAuth, getAdminDb } from "@/lib/firebase/admin";
 import { hashPassword } from "@/lib/gallery/password";
@@ -129,6 +130,7 @@ export async function DELETE(
   const gallery = await getGalleryForOwner(id, uid);
   if (!gallery) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  await gallery.ref.delete();
+  // The gallery and its client favourites / submission go together.
+  await deleteGalleryCascade(getAdminDb(), id);
   return NextResponse.json({ ok: true });
 }
