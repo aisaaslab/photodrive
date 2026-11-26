@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+import { parseJson } from "@/lib/server/http";
+import { GalleryBody } from "@/lib/shared/schemas/galleries";
 import { getAdminAuth, getAdminDb } from "@/lib/firebase/admin";
 import { hashPassword } from "@/lib/gallery/password";
 import { planUpdate } from "@/lib/gallery/visibility";
@@ -38,14 +40,9 @@ export async function PATCH(
   const gallery = await getGalleryForOwner(id, uid);
   if (!gallery) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  let body: Record<string, unknown>;
-  try {
-    const parsed = await req.json();
-    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) throw new Error("not an object");
-    body = parsed as Record<string, unknown>;
-  } catch {
-    return NextResponse.json({ error: "Invalid request" }, { status: 400 });
-  }
+  const parsedBody = await parseJson(req, GalleryBody);
+  if (!parsedBody.ok) return parsedBody.response;
+  const body = parsedBody.data;
   const updates: Record<string, unknown> = { updatedAt: Date.now() };
 
   if (body.name) updates.name = body.name;

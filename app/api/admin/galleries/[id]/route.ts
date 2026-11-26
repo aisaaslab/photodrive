@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+import { parseJson } from "@/lib/server/http";
+import { GalleryBody } from "@/lib/shared/schemas/galleries";
 import { getAdminDb } from "@/lib/firebase/admin";
 import { getUidFromRequest, isAdmin } from "@/lib/firebase/admin-guard";
 import { hashPassword } from "@/lib/gallery/password";
@@ -11,14 +13,9 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   if (!isAdmin(uid)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   const { id } = await params;
-  let body: Record<string, unknown>;
-  try {
-    const parsed = await req.json();
-    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) throw new Error("not an object");
-    body = parsed as Record<string, unknown>;
-  } catch {
-    return NextResponse.json({ error: "Invalid request" }, { status: 400 });
-  }
+  const parsedBody = await parseJson(req, GalleryBody);
+  if (!parsedBody.ok) return parsedBody.response;
+  const body = parsedBody.data;
   const { name, driveUrl } = body as { name?: string; driveUrl?: string };
 
   const update: Record<string, unknown> = { updatedAt: Date.now() };

@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+import { parseJson } from "@/lib/server/http";
+import { SelectionToggleBody } from "@/lib/shared/schemas/public";
 import { getAdminAuth, getAdminDb } from "@/lib/firebase/admin";
 
 const COLLECTION = "gallery_selections";
@@ -45,17 +47,9 @@ export async function POST(
 ) {
   const { id } = await params;
 
-  let body: { action?: string; item?: Item };
-  try {
-    body = await req.json();
-  } catch {
-    return NextResponse.json({ error: "Invalid body" }, { status: 400 });
-  }
-
-  const { action, item } = body;
-  if (!item || typeof item.id !== "string" || (action !== "add" && action !== "remove")) {
-    return NextResponse.json({ error: "Bad request" }, { status: 400 });
-  }
+  const body = await parseJson(req, SelectionToggleBody);
+  if (!body.ok) return body.response;
+  const { action, item } = body.data;
 
   const db = getAdminDb();
   const galSnap = await db.collection("galleries").doc(id).get();

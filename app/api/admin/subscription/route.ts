@@ -4,6 +4,8 @@ import { getUidFromRequest, isAdmin } from "@/lib/firebase/admin-guard";
 import { assignPlanToUser, getPlanById } from "@/lib/plans";
 import { LIFETIME_SENTINEL, YEAR_MS } from "@/lib/server/billing/access";
 import { extendUserAccess } from "@/lib/server/billing/extend";
+import { parseJson } from "@/lib/server/http";
+import { AdminSubscriptionBody } from "@/lib/shared/schemas/admin";
 
 /**
  * Admin-only: manage a user's subscription manually.
@@ -16,10 +18,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  const { uid, action, planId } = await req.json();
-  if (!uid || !action) {
-    return NextResponse.json({ error: "Missing uid or action" }, { status: 400 });
-  }
+  const body = await parseJson(req, AdminSubscriptionBody, { message: "Missing or invalid uid or action" });
+  if (!body.ok) return body.response;
+  const { uid, action, planId } = body.data;
 
   const ref = getAdminDb().collection("users").doc(uid);
 
@@ -52,8 +53,6 @@ export async function POST(req: NextRequest) {
       },
       { merge: true }
     );
-  } else {
-    return NextResponse.json({ error: "Unknown action" }, { status: 400 });
   }
 
   return NextResponse.json({ ok: true });

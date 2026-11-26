@@ -153,7 +153,7 @@ describe("request validation", () => {
     for (const [body, raw] of bad) {
       const res = await call(body, ip, raw);
       expect(res.status, JSON.stringify(body) ?? raw).toBe(400);
-      expect(await res.json()).toEqual({ error: "Invalid request" });
+      expect(await res.json()).toMatchObject({ error: "Invalid request" }); // the shared 400 (S3-09) may also list the field names
     }
     expect(get).not.toHaveBeenCalled(); // rejected before touching the database
   });

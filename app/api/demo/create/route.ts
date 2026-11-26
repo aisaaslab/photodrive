@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Timestamp } from "firebase-admin/firestore";
-import { z } from "zod";
 import { getAdminDb } from "@/lib/firebase/admin";
 import { extractFolderId } from "@/lib/drive/url-parser";
 import { clientIp, getRateLimiter, rateLimitHeaders } from "@/lib/server/rate-limit";
 import { DEMO_GRACE_MS, DEMO_LIFETIME_MS } from "@/lib/server/cleanup";
-
-const Body = z.object({ driveUrl: z.string().min(1).max(500) });
+import { parseJson } from "@/lib/server/http";
+import { DemoCreateBody } from "@/lib/shared/schemas/public";
 
 /**
  * Creates a 10-minute demo gallery from a Drive folder, for visitors without an account.
@@ -24,16 +23,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Too many requests" }, { status: 429, headers: rateLimitHeaders(attempts) });
   }
 
-  let json: unknown;
-  try {
-    json = await req.json();
-  } catch {
-    return NextResponse.json({ error: "Invalid request" }, { status: 400 });
-  }
-  const parsed = Body.safeParse(json);
-  if (!parsed.success) return NextResponse.json({ error: "driveUrl is required" }, { status: 400 });
+  const body = await parseJson(req, DemoCreateBody);
+  if (!body.ok) return body.response;
 
-  const folderId = extractFolderId(parsed.data.driveUrl);
+  const folderId = extractFolderId(body.data.driveUrl);
   if (!folderId) {
     return NextResponse.json({ error: "Invalid Google Drive folder URL" }, { status: 400 });
   }

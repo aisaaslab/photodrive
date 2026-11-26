@@ -5,6 +5,8 @@ import { isPrivate } from "@/lib/gallery/visibility";
 import { sendEmail, escapeHtml } from "@/lib/email";
 import { APP_URL } from "@/lib/branding";
 import { clientIp, getRateLimiter, rateLimitHeaders } from "@/lib/server/rate-limit";
+import { parseJson } from "@/lib/server/http";
+import { SelectionSubmitBody } from "@/lib/shared/schemas/public";
 
 export const runtime = "nodejs";
 
@@ -38,12 +40,9 @@ export async function POST(
     );
   }
 
-  let body: Record<string, unknown>;
-  try {
-    body = await req.json();
-  } catch {
-    return NextResponse.json({ error: "Invalid request." }, { status: 400 });
-  }
+  const parsedBody = await parseJson(req, SelectionSubmitBody);
+  if (!parsedBody.ok) return parsedBody.response;
+  const body = parsedBody.data;
 
   // Honeypot — bots fill this hidden field, humans don't.
   if (String(body.website ?? "").trim() !== "") return NextResponse.json({ ok: true });

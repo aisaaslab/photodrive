@@ -46,7 +46,7 @@
   - Files: `next.config.ts`
   - Done when: headers visible on all routes; CSP report endpoint receives no violations for normal flows in staging.
   - Refs: SEC-3
-- [ ] **S3-09** · M · Input validation with zod: shared `parseJson()` helper and schemas for verify-password, demo/create, contact, galleries POST/PATCH, selection routes; consistent 400 payloads.
+- [x] **S3-09** · M · Input validation with zod: shared `parseJson()` helper and schemas for verify-password, demo/create, contact, galleries POST/PATCH, selection routes; consistent 400 payloads.
   - Files: `lib/shared/schemas/*`, `lib/server/http.ts` (first version)
   - Done when: no unguarded `req.json()` remains in the listed routes.
   - Refs: SEC-3

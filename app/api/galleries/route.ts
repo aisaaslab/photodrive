@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+import { parseJson } from "@/lib/server/http";
+import { GalleryBody } from "@/lib/shared/schemas/galleries";
 import { getAdminAuth, getAdminDb } from "@/lib/firebase/admin";
 import { extractFolderId } from "@/lib/drive/url-parser";
 import { generateSlug } from "@/lib/gallery/slug";
@@ -33,14 +35,9 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  let body: Record<string, unknown>;
-  try {
-    const parsed = await req.json();
-    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) throw new Error("not an object");
-    body = parsed as Record<string, unknown>;
-  } catch {
-    return NextResponse.json({ error: "Invalid request" }, { status: 400 });
-  }
+  const parsedBody = await parseJson(req, GalleryBody);
+  if (!parsedBody.ok) return parsedBody.response;
+  const body = parsedBody.data;
   const { name, driveUrl } = body as { name?: string; driveUrl?: string };
 
   if (!name || !driveUrl) {

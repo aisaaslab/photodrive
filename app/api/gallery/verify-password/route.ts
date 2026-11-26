@@ -1,16 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { z } from "zod";
 import { getAdminDb } from "@/lib/firebase/admin";
 import { hashPassword, verifyPassword } from "@/lib/gallery/password";
 import { signGalleryToken } from "@/lib/gallery/session";
 import { clientIp, getRateLimiter, rateLimitHeaders } from "@/lib/server/rate-limit";
 import { requestLogger } from "@/lib/server/log";
-
-/** What a visitor may send. Bounded so a huge body or password cannot be used to burn CPU in bcrypt. */
-const BodySchema = z.object({
-  slug: z.string().trim().min(1).max(200),
-  password: z.string().min(1).max(200),
-});
+import { parseJson } from "@/lib/server/http";
+import { VerifyPasswordBody } from "@/lib/shared/schemas/public";
 
 // Verified against when the gallery does not exist or has no password, so every outcome costs one real bcrypt
 // compare and the response time does not reveal which galleries exist. Created once, on first use.
@@ -35,15 +30,9 @@ const LOCKED = (retryAfterSec: number) =>
 export async function POST(req: NextRequest) {
   const log = requestLogger(req, "gallery.verify-password");
 
-  let json: unknown;
-  try {
-    json = await req.json();
-  } catch {
-    return NextResponse.json({ error: "Invalid request" }, { status: 400 });
-  }
-  const parsed = BodySchema.safeParse(json);
-  if (!parsed.success) return NextResponse.json({ error: "Invalid request" }, { status: 400 });
-  const { slug, password } = parsed.data;
+  const body = await parseJson(req, VerifyPasswordBody);
+  if (!body.ok) return body.response;
+  const { slug, password } = body.data;
 
   const limiter = getRateLimiter();
   const ip = clientIp(req);

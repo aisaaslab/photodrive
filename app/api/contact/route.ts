@@ -3,6 +3,8 @@ import { createHash } from "crypto";
 import { getAdminDb } from "@/lib/firebase/admin";
 import { getSupportEmail, type ContactMessageDoc } from "@/lib/site-settings";
 import { clientIp, getRateLimiter, rateLimitHeaders } from "@/lib/server/rate-limit";
+import { parseJson } from "@/lib/server/http";
+import { ContactBody } from "@/lib/shared/schemas/public";
 
 export const runtime = "nodejs";
 
@@ -102,12 +104,9 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  let body: Record<string, unknown>;
-  try {
-    body = await req.json();
-  } catch {
-    return NextResponse.json({ error: "Invalid request." }, { status: 400 });
-  }
+  const parsedBody = await parseJson(req, ContactBody);
+  if (!parsedBody.ok) return parsedBody.response;
+  const body = parsedBody.data;
 
   const name = String(body.name ?? "").trim().slice(0, 100);
   const email = String(body.email ?? "").trim().toLowerCase().slice(0, 254);
