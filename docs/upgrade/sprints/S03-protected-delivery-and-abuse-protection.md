@@ -38,7 +38,7 @@
   - Depends: S3-01
   - Files: `app/api/contact/route.ts`, `app/api/galleries/[id]/selection/submit/route.ts`
   - Done when: both `Map`s are gone; limits verified.
-- [ ] **S3-07** · M · Demo limit and cleanup: rolling 3 per 24 h per IP via the limiter (drop the all-time query); store `expiresAtTs` (Timestamp) and enable a Firestore TTL policy; fallback cleanup cron `/api/cron/cleanup`.
+- [x] **S3-07** · M · Demo limit and cleanup: rolling 3 per 24 h per IP via the limiter (drop the all-time query); store `expiresAtTs` (Timestamp) and enable a Firestore TTL policy; fallback cleanup cron `/api/cron/cleanup`.
   - Depends: S3-01
   - Files: `app/api/demo/create/route.ts`, `app/api/cron/cleanup/route.ts`, `vercel.json`
   - Done when: a person is not blocked forever; expired demos disappear.

@@ -223,6 +223,20 @@ describe("sendCustomerNotice", () => {
     expect(sendEmail).toHaveBeenCalledTimes(1);
   });
 
+  it("a message another call is sending right now is not sent again, but a stale claim (a crashed attempt) is retried", async () => {
+    await seedUser("u1");
+    const claim = (updatedAt: number) =>
+      testDb().collection("customer_notices").doc("refund_full__cs_dup").set({ kind: "refund_full", refId: "cs_dup", uid: "u1", status: "pending", attempts: 1, updatedAt });
+    const NOW = Date.UTC(2026, 10, 26);
+    await claim(NOW - 30_000); // claimed 30 s ago: still sending
+    expect(await sendCustomerNotice(testDb(), input, log, NOW)).toBe("skipped_duplicate");
+    expect(sendEmail).not.toHaveBeenCalled();
+    await claim(NOW - 5 * 60_000); // claimed 5 minutes ago: the sender must have crashed
+    expect(await sendCustomerNotice(testDb(), input, log, NOW)).toBe("sent");
+    expect(sendEmail).toHaveBeenCalledTimes(1);
+    expect(await notices()).toMatchObject([{ status: "sent", attempts: 2 }]);
+  });
+
   it("tries again after a failure, and stops once it has been sent", async () => {
     await seedUser("u1");
     sendEmail.mockResolvedValueOnce(false);

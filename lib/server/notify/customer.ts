@@ -32,6 +32,8 @@ export type NoticeInput = {
 export type NoticeResult = "sent" | "skipped_duplicate" | "skipped_no_email" | "skipped_no_user" | "failed";
 
 const COLLECTION = "customer_notices";
+/** A claim younger than this is assumed to be a call that is still sending; older means it crashed. */
+const PENDING_MS = 2 * 60 * 1000;
 
 export async function sendCustomerNotice(
   db: Firestore,
@@ -50,12 +52,15 @@ export async function sendCustomerNotice(
       return "skipped_no_email";
     }
 
-    // Claim the message. If it exists and was sent, stop; if it exists but failed earlier, try again.
+    // Claim the message. Already sent: stop. Being sent right now by another call (a recent "pending" claim): stop, or the
+    // customer would get it twice. Failed earlier, or a "pending" claim old enough to be a crashed attempt: try again.
     const ref = db.collection(COLLECTION).doc(id);
     const claim = await db.runTransaction(async (tx) => {
       const snap = await tx.get(ref);
-      if (snap.exists && snap.data()?.status === "sent") return null;
-      const attempts = ((snap.data()?.attempts as number | undefined) ?? 0) + 1;
+      const prior = snap.data();
+      if (prior?.status === "sent") return null;
+      if (prior?.status === "pending" && now - ((prior.updatedAt as number | undefined) ?? 0) < PENDING_MS) return null;
+      const attempts = ((prior?.attempts as number | undefined) ?? 0) + 1;
       tx.set(ref, { kind: input.kind, refId: input.refId, uid: input.uid, status: "pending", attempts, updatedAt: now }, { merge: true });
       return attempts;
     });
