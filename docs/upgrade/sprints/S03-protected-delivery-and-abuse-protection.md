@@ -50,13 +50,13 @@
   - Files: `lib/shared/schemas/*`, `lib/server/http.ts` (first version)
   - Done when: no unguarded `req.json()` remains in the listed routes.
   - Refs: SEC-3
-- [ ] **S3-10** · S · Security regression tests: foreign file id denied; `full` denied when downloads are off; protected media denied without cookie; expired/forged signature denied; lockout works; rate limits hold.
+- [x] **S3-10** · S · Security regression tests: foreign file id denied; `full` denied when downloads are off; protected media denied without cookie; expired/forged signature denied; lockout works; rate limits hold.
   - Depends: S3-02 … S3-05
   - Done when: tests run in CI.
 - [ ] **S3-11** · S · Measure and decide: Drive API quota and hosting bandwidth for protected galleries before/after (sample galleries of 100 / 500 / 1,000 photos); record numbers and whether the protected tier is enabled by default or per gallery.
   - Files: `docs/upgrade/evidence/S3.md`
   - Done when: D15 final choice recorded in the decision log.
-- [ ] **S3-12** · S · Document the protection model (what is and is not protected) in `docs/security-model.md` and a short FAQ/Help entry source text in English for translation.
+- [~] **S3-12** · S · Document the protection model (what is and is not protected) in `docs/security-model.md` and a short FAQ/Help entry source text in English for translation.
   - Done when: reviewed by the owner.
 
 ## Risks and notes
