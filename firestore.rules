@@ -1,6 +1,6 @@
 rules_version = '2';
 
-// Galleroo Firestore security rules.
+// PhotoDrive Firestore security rules.
 //
 // All gallery / subscription writes happen on the SERVER via the Firebase
 // Admin SDK, which BYPASSES these rules. So the public gallery page, the
@@ -17,8 +17,18 @@ service cloud.firestore {
 
     // Fields only the server (Admin SDK) is allowed to set.
     function locked() {
-      // `language` is written only by PUT /api/user/language, which validates it against the six app languages.
-      return ['subscriptionStatus', 'subscriptionExpiresAt', 'compGranted', 'stripeCustomerId', 'language', 'languageUpdatedAt'];
+      // Everything about access and billing, written only by the server. A user can edit their own profile (name, photo) but must never
+      // be able to grant, extend or relabel their own access.
+      //   subscriptionStatus, subscriptionExpiresAt, compGranted  — the access itself
+      //   stripeCustomerId                                        — links the account to Stripe
+      //   planId, planName, planInterval                          — the plan label shown in the app and admin
+      //   subscriptionSource, promoCode                           — how access was obtained (paid, free code, comp)
+      //   remindersSent                                           — which renewal reminders were e-mailed
+      //   language, languageUpdatedAt                             — written only by PUT /api/user/language, which validates it
+      //                                                             against the six app languages
+      return ['subscriptionStatus', 'subscriptionExpiresAt', 'compGranted', 'stripeCustomerId',
+              'planId', 'planName', 'planInterval', 'subscriptionSource', 'promoCode', 'remindersSent',
+              'language', 'languageUpdatedAt'];
     }
 
     match /users/{uid} {
