@@ -14,6 +14,9 @@ type Payment = {
   amountTotal: number | null;
   currency: string | null;
   activatedAt: number | null;
+  // What became of the payment (S2-15); paid unless refunded, disputed or lost in a dispute.
+  status?: "fulfilled" | "refunded" | "partially_refunded" | "disputed" | "dispute_lost";
+  refundedAmount?: number | null;
 };
 
 // (amounts are formatted with formatMoney, in the viewer's language)
@@ -195,7 +198,7 @@ export default function AccountPage() {
         ) : (
           <ul className="divide-y divide-white/[0.06]">
             {payments.map((p) => (
-              <li key={p.sessionId} className="py-3 first:pt-0 last:pb-0 flex items-center justify-between gap-3">
+              <li key={p.sessionId} className="py-3 first:pt-0 last:pb-0 flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5">
                 <div>
                   <p className="text-sm text-white font-medium">{a.annualLicense}</p>
                   <p className="text-xs text-white/50">
@@ -204,13 +207,28 @@ export default function AccountPage() {
                 </div>
                 <div className="flex items-center gap-2.5 shrink-0">
                   <span className="text-sm text-white font-semibold">{formatAmount(p, LOCALES[lang])}</span>
-                  <span className="inline-flex items-center gap-1 bg-emerald-500/10 text-emerald-400 text-xs font-semibold px-2 py-0.5 rounded-full border border-emerald-500/20">
-                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-                    </svg>
-                    {a.paymentPaid}
-                  </span>
+                  {(!p.status || p.status === "fulfilled") ? (
+                    <span className="inline-flex items-center gap-1 bg-emerald-500/10 text-emerald-400 text-xs font-semibold px-2 py-0.5 rounded-full border border-emerald-500/20">
+                      <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                      </svg>
+                      {a.paymentPaid}
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center bg-amber-500/10 text-amber-300 text-xs font-semibold px-2 py-0.5 rounded-full border border-amber-500/20">
+                      {p.status === "refunded" ? a.paymentRefunded : p.status === "partially_refunded" ? a.paymentPartlyRefunded : p.status === "disputed" ? a.paymentDisputed : a.paymentDisputeLost}
+                    </span>
+                  )}
                 </div>
+                {p.status && p.status !== "fulfilled" && (
+                  <p className="basis-full text-xs text-white/60 leading-relaxed">
+                    {(p.status === "refunded" ? a.paymentRefundedNote
+                      : p.status === "partially_refunded" ? a.paymentPartlyRefundedNote
+                        : p.status === "disputed" ? a.paymentDisputedNote
+                          : a.paymentDisputeLostNote
+                    ).replace("{amount}", p.refundedAmount != null ? formatMoney(p.refundedAmount, p.currency ?? "usd", LOCALES[lang]) : "")}
+                  </p>
+                )}
               </li>
             ))}
           </ul>

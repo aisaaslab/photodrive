@@ -9,6 +9,7 @@ import { NewGalleryForm } from "@/components/dashboard/NewGalleryForm";
 import { GalleryList } from "@/components/dashboard/GalleryList";
 import { GalleryDoc } from "@/lib/firestore/types";
 import { useToast } from "@/components/ui/Toast";
+import { PaymentNotice } from "@/components/dashboard/PaymentNotice";
 
 type SortOption = "newest" | "oldest" | "name_asc" | "name_desc";
 
@@ -190,6 +191,9 @@ export default function DashboardPage() {
           {t.dashboard.newGallery}
         </button>
       </div>
+
+      {/* A refund or dispute that reduced or paused access (S2-15) */}
+      <PaymentNotice />
 
       {/* Subscription status — a visible nudge instead of tiny grey text, so an
           expiring or expired plan is never a surprise. */}

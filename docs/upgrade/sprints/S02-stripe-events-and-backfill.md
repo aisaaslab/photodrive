@@ -51,7 +51,7 @@
   - Done when: tests for each event, six languages render, a replayed event sends nothing twice, a failing mail provider does not change the webhook response; copy reviewed.
   - Note: decide in D17 whether Stripe's own refund receipt e-mails stay on (recommended: yes). Expired (abandoned) Checkout Sessions get no e-mail.
   - Refs: G16
-- [ ] **S2-15** · M · Customer in-app notices: the Account page payments list shows each payment's status (`refunded`, `partially refunded`, `disputed`, `dispute lost`) with a plain-language explanation, and the dashboard shows a banner when access was reduced or paused because of a refund or dispute. Six languages.
+- [~] **S2-15** · M · Customer in-app notices: the Account page payments list shows each payment's status (`refunded`, `partially refunded`, `disputed`, `dispute lost`) with a plain-language explanation, and the dashboard shows a banner when access was reduced or paused because of a refund or dispute. Six languages.
   - Depends: S2-02
   - Files: `app/dashboard/account/page.tsx`, `app/dashboard/page.tsx`, `lib/i18n`, the payments API the account page reads
   - Done when: each status renders correctly; a refunded customer sees why their access shrank without contacting support.

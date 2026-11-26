@@ -30,6 +30,10 @@ export async function GET(req: NextRequest) {
       amountTotal: typeof data.amountTotal === "number" ? data.amountTotal : null,
       currency: typeof data.currency === "string" ? data.currency : null,
       activatedAt: typeof data.activatedAt === "number" ? data.activatedAt : null,
+      // What became of the payment (S2-15). Payments from before refunds were handled have no status: they are plain paid ones.
+      status: ["refunded", "partially_refunded", "disputed", "dispute_lost"].includes(data.status) ? data.status : "fulfilled",
+      refundedAmount: typeof data.refundedAmount === "number" ? data.refundedAmount : null,
+      changedAt: typeof data.revokedAt === "number" ? data.revokedAt : null,
     };
   });
 
