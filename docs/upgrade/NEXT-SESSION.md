@@ -77,4 +77,6 @@ Reconcile any task whose checkbox disagrees with the code before continuing.
 - The most important defects: **PAY-1** (returning customers locked out by the "already paid" guard in `app/api/stripe/checkout/route.ts`) and **PAY-2** (no extra time when paying while active, `lib/stripe/activate.ts`). Start with S0 → S1.
 - Photos load from Google's CDN and the Drive folder is public by design; the PDF's "protected photos" promise needs decision **D15**.
 - The dark landing mock-up (Concept B) omits the demo form, tutorial video and trust section: see `02-landing-design-brief.md`.
-- The language preference lives in `localStorage` today; server rendering the landing page needs a cookie (S5-06).
+- The language is now chosen on the server (cookie, then `Accept-Language`, then English; S5-06 done). Every page is dynamic because of it (D16).
+- Owner decisions of 2026-11-26: the main market is **English / United States** (D19); the user area gets a **full redesign designed in code**, no Figma frames (D9); the landing page follows the approved Figma file (`02-landing-design-brief.md`).
+- **Figma from the cloud sandbox:** the Figma MCP tools work (metadata, variables, design context, inline screenshots), but the sandbox network blocks `www.figma.com` downloads, so the hero and gallery photos and other exported assets cannot be fetched. Before S6 implementation, either the owner adds the exported images to the repo or allows that host for the environment (their decision).
