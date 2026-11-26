@@ -259,7 +259,7 @@ export default function HomePage() {
           >
             <span className="text-gradient">{t.hero.title1}</span>
             <br />
-            <em className="not-italic text-rose-gradient">{t.hero.title2}</em>
+            <em className="not-italic text-brand-gradient">{t.hero.title2}</em>
           </h1>
 
           <p className="animate-fade-up delay-2 text-base sm:text-lg text-white max-w-2xl mx-auto leading-relaxed mb-10">
@@ -342,7 +342,7 @@ export default function HomePage() {
               style={{ fontFamily: "var(--font-brand), sans-serif" }}
             >
               {t.what.title1}{" "}
-              <em className="not-italic text-rose-gradient">{t.what.title2}</em>
+              <em className="not-italic text-brand-gradient">{t.what.title2}</em>
             </h2>
             <p className="text-white text-lg sm:text-xl max-w-2xl mx-auto leading-relaxed">
               {t.what.p1}
@@ -379,7 +379,7 @@ export default function HomePage() {
               style={{ fontFamily: "var(--font-brand), sans-serif" }}
             >
               {t.how.title1}{" "}
-              <em className="not-italic text-rose-gradient">{t.how.title2}</em>
+              <em className="not-italic text-brand-gradient">{t.how.title2}</em>
             </h2>
             <p className="mt-4 text-white text-lg max-w-xl mx-auto leading-relaxed text-balance">
               {t.how.subtitle}
@@ -603,7 +603,7 @@ export default function HomePage() {
           >
             <span className="text-gradient">{t.cta.title1}</span>
             <br />
-            <em className="not-italic text-rose-gradient">{t.cta.title2}</em>
+            <em className="not-italic text-brand-gradient">{t.cta.title2}</em>
           </h2>
           <p className="text-white text-lg mb-10 leading-relaxed max-w-lg mx-auto text-balance">
             {t.cta.subtitle}

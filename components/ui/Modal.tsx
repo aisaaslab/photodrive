@@ -94,7 +94,7 @@ export function Modal({ onClose, ariaLabel, children, className = "", dismissOnB
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-canvas/70 backdrop-blur-sm animate-fade-in motion-reduce:animate-none"
       onClick={dismissOnBackdrop ? () => onCloseRef.current() : undefined}
     >
       <div
@@ -104,7 +104,7 @@ export function Modal({ onClose, ariaLabel, children, className = "", dismissOnB
         aria-label={ariaLabel}
         tabIndex={-1}
         onClick={(e) => e.stopPropagation()}
-        className={`outline-none animate-scale-in ${className}`}
+        className={`outline-none animate-scale-in motion-reduce:animate-none ${className}`}
       >
         {children}
       </div>

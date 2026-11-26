@@ -8,14 +8,14 @@
 
 ## Tasks
 
-- [ ] **S5-01** · S · Resolve D1/D8/D9/D16; confirm **Manrope Greek glyph coverage** (render Greek, uppercase and accented samples); decide Manrope vs IBM Plex Sans; plan `next/font` subsets.
+- [x] **S5-01** · S · Resolve D1/D8/D9/D16; confirm **Manrope Greek glyph coverage** (render Greek, uppercase and accented samples); decide Manrope vs IBM Plex Sans; plan `next/font` subsets.
   - Files: `app/layout.tsx`, `00-proposal-traceability-and-decisions.md`
   - Done when: decisions logged; font choice proven with a screenshot of Greek text.
-- [ ] **S5-02** · M · Design tokens from `02-landing-design-brief.md` in Tailwind v4 `@theme` (colours, radii, spacing, shadows, font); semantic utility names; keep existing pages visually stable; remove the misleading `rose` naming.
+- [x] **S5-02** · M · Design tokens from `02-landing-design-brief.md` in Tailwind v4 `@theme` (colours, radii, spacing, shadows, font); semantic utility names; keep existing pages visually stable; remove the misleading `rose` naming.
   - Files: `app/globals.css`, `app/layout.tsx`
   - Done when: tokens documented; existing pages render unchanged (spot-check list).
   - Refs: STR-7
-- [ ] **S5-03** · L · UI primitives in `components/ui/`: `Button`, `Pill`, `Chip`, `Card`, `IconTile`, `Input`, `Toggle`, `Accordion`, `Badge`, `Tabs`, `SectionHeader` (+ existing `Modal`, `Toast` restyled); variants with `clsx` + `tailwind-merge`; a `/dev/ui` kitchen-sink page (not in production builds).
+- [x] **S5-03** · L · UI primitives in `components/ui/`: `Button`, `Pill`, `Chip`, `Card`, `IconTile`, `Input`, `Toggle`, `Accordion`, `Badge`, `Tabs`, `SectionHeader` (+ existing `Modal`, `Toast` restyled); variants with `clsx` + `tailwind-merge`; a `/dev/ui` kitchen-sink page (not in production builds).
   - Depends: S5-02
   - Done when: every primitive has states (hover, focus, disabled) shown on `/dev/ui`.
 - [x] **S5-04** · M · Shared server layer: `lib/server/auth.ts` (`requireUser`, `requireAdmin`), `lib/server/http.ts` (`route()` wrapper with auth, zod parse, error mapping, Sentry capture, request id); migrate the 9 duplicated routes and remove `getUid` copies.

@@ -1,7 +1,62 @@
 @import "tailwindcss";
 
-/* Landing-page design tokens (utilities: bg-primary, text-ink, text-body, ...) */
+/*
+ * Design tokens (S5-02). The approved "Cinematic Dark" design (docs/upgrade/02-landing-design-brief.md, Figma file
+ * Aq966rDz8wrtnqVsk5esPB) is the source; docs/upgrade/design-tokens.md lists every token and the breakpoints.
+ * Names are semantic, never a colour name: bg-canvas, bg-surface, border-line, text-fg, text-fg-soft, bg-accent, ...
+ */
 @theme {
+  /* Cinematic Dark palette */
+  --color-canvas: #06080c;        /* page background; text on accent buttons */
+  --color-surface: #0d1219;       /* cards, window body */
+  --color-surface-2: #141b26;     /* raised cards, highlighted plan, title bars, chips */
+  --color-line: #222c3a;          /* 1px borders and dividers */
+  --color-fg: #f5f7fa;            /* headings and primary text */
+  --color-fg-soft: #bdc4d1;       /* body text on dark */
+  --color-fg-muted: #9aa6b6;      /* secondary text */
+  --color-accent: #2dabe0;        /* primary actions, icons, highlights */
+  --color-accent-deep: #17509e;   /* connectors, secondary accents */
+  --color-accent-soft: #0e2a3c;   /* icon tiles, eyebrow pill */
+  --color-accent-hi: #5b8cff;     /* end of the headline gradient */
+  --color-glass: rgb(255 255 255 / 0.09);   /* glass buttons and badges */
+  --color-scrim: rgb(0 0 0 / 0.5);          /* buttons over photography */
+  --color-danger: #f87171;
+  --color-success-bright: #34d399;
+
+  /* Typeface: Manrope for the new design; IBM Plex Sans stays until the user area is re-skinned (S5-12) */
+  --font-display: "Manrope Variable", "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  /* Radii: cards 24, panels 32, tiles 12, pills fully round */
+  --radius-tile: 0.75rem;
+  --radius-card: 1.5rem;
+  --radius-panel: 2rem;
+  --radius-pill: 99px;
+
+  /* Shadows */
+  --shadow-glow: 0 0 0 1px rgb(45 171 224 / 0.35), 0 20px 60px -20px rgb(45 171 224 / 0.45);
+  --shadow-window: 0 40px 120px -30px rgb(0 0 0 / 0.7);
+  --shadow-chip: 0 12px 32px -12px rgb(0 0 0 / 0.6);
+
+  /* Page width: 1280 content inside the 1440 canvas (80px gutters on desktop, 16px on a phone) */
+  --container-page: 80rem;
+
+  /* Type scale: fluid between 390 and 1440. Utilities: text-h1, text-h2, text-h2-compact, text-lead, text-body */
+  --text-h1: clamp(2.5rem, 1.2rem + 5.6vw, 5rem);
+  --text-h1--line-height: 1.05;
+  --text-h1--letter-spacing: -0.03em;
+  --text-h1--font-weight: 800;
+  --text-h2: clamp(2rem, 1rem + 3.2vw, 3.5rem);
+  --text-h2--line-height: 1.08;
+  --text-h2--letter-spacing: -0.025em;
+  --text-h2--font-weight: 800;
+  --text-h2-compact: clamp(1.75rem, 1rem + 2.4vw, 3rem);
+  --text-h2-compact--line-height: 1.1;
+  --text-h2-compact--letter-spacing: -0.025em;
+  --text-h2-compact--font-weight: 800;
+  --text-lead: clamp(1.0625rem, 0.95rem + 0.4vw, 1.1875rem);
+  --text-lead--line-height: 1.6;
+
+  /* Legacy light palette used by the pages not yet re-skinned (S5-12 / S6-13 retire these) */
   --color-primary: #2563eb;
   --color-primary-dark: #1d4ed8;
   --color-ink: #0f172a;
@@ -145,8 +200,16 @@ body {
   background-clip: text;
 }
 /* Brand teal gradient (bright→mid) — pops on the dark owner UI */
-.text-rose-gradient {
+.text-brand-gradient {
   background: linear-gradient(135deg, #2dabe0 0%, #17509e 60%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* The approved design's headline gradient: accent to a lighter blue, left to right (hero line 2 only) */
+.text-accent-gradient {
+  background: linear-gradient(90deg, var(--color-accent) 0%, var(--color-accent-hi) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -170,7 +233,7 @@ body {
   100% { transform: translateX(300%); }
 }
 
-/* Aurora background — recolored from rose to brand teal (bright for dark bg) */
+/* Aurora background in brand teal (bright for dark bg) */
 @keyframes aurora1 {
   0%   { transform: translate(0%, 0%) scale(1); opacity: 0.85; }
   25%  { transform: translate(18%, -20%) scale(1.25); opacity: 1; }

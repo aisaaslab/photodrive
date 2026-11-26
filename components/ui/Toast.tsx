@@ -1,6 +1,8 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
+import { AlertCircle, Check } from "lucide-react";
+import { cn } from "@/lib/ui/cn";
 
 /**
  * Tiny toast system for dashboard feedback ("Link copied", "Changes saved"…).
@@ -51,21 +53,14 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
         {toasts.map((t) => (
           <div
             key={t.id}
-            className={`pointer-events-auto flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-medium shadow-2xl backdrop-blur-md animate-scale-in ${
-              t.kind === "error"
-                ? "bg-red-950/90 border-red-500/30 text-red-200"
-                : "bg-[#111111]/95 border-white/15 text-white"
-            }`}
-          >
-            {t.kind === "error" ? (
-              <svg className="w-4 h-4 text-red-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
-              </svg>
-            ) : (
-              <svg className="w-4 h-4 text-emerald-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-              </svg>
+            className={cn(
+              "pointer-events-auto flex items-center gap-2.5 rounded-pill border px-5 py-3 text-sm font-semibold shadow-chip backdrop-blur-md animate-scale-in motion-reduce:animate-none",
+              t.kind === "error" ? "border-danger/40 bg-surface-2/95 text-fg" : "border-line bg-surface-2/95 text-fg",
             )}
+          >
+            {t.kind === "error"
+              ? <AlertCircle aria-hidden className="size-4 shrink-0 text-danger" />
+              : <Check aria-hidden strokeWidth={2.5} className="size-4 shrink-0 text-success-bright" />}
             {t.message}
           </div>
         ))}
