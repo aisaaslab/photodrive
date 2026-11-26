@@ -8,6 +8,6 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 This repository is mid-way through a planned upgrade (payments fixes, security, new landing page,
 admin rebuild, new features). The plan, decisions, sprint tasks and live status are in
-`docs/upgrade/`. **Start at `docs/upgrade/README.md` and `docs/upgrade/NEXT-SESSION.md`** before
+`docs/upgrade/`. **Start at `docs/upgrade/HANDOFF.md` (current state and next steps), then `docs/upgrade/README.md` and `docs/upgrade/NEXT-SESSION.md`** before
 changing code, work one task at a time, and update the task checkbox in the same change
 (`node docs/upgrade/tools/status.mjs done <TASK-ID>`).

@@ -1,5 +1,7 @@
 # Starting or resuming work in a new session
 
+> **Latest state of the work and the next steps are in [`HANDOFF.md`](HANDOFF.md).** Read it first; this file holds the standing rules.
+
 This repository is in the middle of a planned upgrade. Everything a fresh session needs is in
 `docs/upgrade/`. Do not rely on chat history: it is not available.
 
