@@ -6,7 +6,7 @@ import { extractFolderId } from "@/lib/drive/url-parser";
 import { generateSlug } from "@/lib/gallery/slug";
 import { hashPassword } from "@/lib/gallery/password";
 import { planCreate } from "@/lib/gallery/visibility";
-import { sealPassword, forOwner, migrateLegacyPassword } from "@/lib/gallery/password-vault";
+import { sealPassword, forOwner } from "@/lib/gallery/password-vault";
 import { isAdmin } from "@/lib/firebase/admin-guard";
 import type { GalleryDoc } from "@/lib/firestore/types";
 
@@ -125,15 +125,9 @@ export async function GET(req: NextRequest) {
 
   // Cast on the map result, not on the whole chain: .sort() runs on the
   // intermediate array, which TypeScript infers as { id: string } alone.
-  // Legacy galleries stored the password in plaintext; seal it the first time
-  // it is read, then expose the decrypted value to the owner only.
-  const raw = await Promise.all(
-    snap.docs.map(async (d) =>
-      forOwner(
-        await migrateLegacyPassword(d.ref, { id: d.id, ...(d.data() as Record<string, unknown>) })
-      )
-    )
-  );
+  // Reading never writes. A legacy plaintext password (if the one-off migration has not run yet) is still shown to its owner by
+  // forOwner; scripts/migrations/seal-legacy-passwords.ts seals and clears them.
+  const raw = snap.docs.map((d) => forOwner({ id: d.id, ...(d.data() as Record<string, unknown>) }));
   const galleries = (raw as unknown as GalleryDoc[]).sort((a, b) => Number(b.createdAt ?? 0) - Number(a.createdAt ?? 0));
 
   // Attach each gallery's client-selection summary (favorites count + last

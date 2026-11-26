@@ -56,30 +56,11 @@ type Doc = Record<string, unknown>;
 /**
  * Shape a stored gallery for an authenticated owner/admin response: strips the
  * sealed value and exposes `password` (decrypted, or the legacy plaintext that
- * hasn't been migrated yet, or null).
+ * hasn't been migrated yet, or null). The legacy fallback stays until scripts/migrations/seal-legacy-passwords.ts has run in
+ * production (S4-04); reading never writes.
  */
 export function forOwner<T extends Doc>(data: T): Omit<T, "passwordEnc"> & { password: string | null; visibility: Visibility } {
   const { passwordEnc, ...rest } = data;
   const legacy = typeof data.password === "string" ? data.password : null;
   return { ...rest, password: openPassword(passwordEnc) ?? legacy, visibility: galleryVisibility(data) };
-}
-
-/**
- * One-time, lazy migration: seal any legacy plaintext `password` and clear it.
- * Called wherever owners/admins list galleries, so old data cleans itself up
- * the first time it's read. Returns the (possibly updated) data.
- */
-export async function migrateLegacyPassword<T extends Doc>(
-  ref: FirebaseFirestore.DocumentReference,
-  data: T
-): Promise<T> {
-  if (typeof data.password !== "string" || !data.password) return data;
-  if (!data.passwordEnc) {
-    const passwordEnc = sealPassword(data.password);
-    await ref.update({ passwordEnc, password: null });
-    return { ...data, passwordEnc, password: null };
-  }
-  // Already sealed; just drop the plaintext copy.
-  await ref.update({ password: null });
-  return { ...data, password: null };
 }

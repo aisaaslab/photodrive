@@ -20,7 +20,7 @@
   - Files: `firestore.rules`, `tests/rules/*.test.ts`
   - Done when: client attempts to write any locked field are denied in tests.
   - Refs: SEC-7
-- [ ] **S4-04** · M · Legacy plaintext passwords: one-off migration script (seal and clear), then remove the migrate-on-read writes from list endpoints; keep `forOwner` fallback until the script has run in production.
+- [~] **S4-04** · M · Legacy plaintext passwords: one-off migration script (seal and clear), then remove the migrate-on-read writes from list endpoints; keep `forOwner` fallback until the script has run in production.
   - Files: `scripts/migrations/seal-legacy-passwords.ts`, `lib/gallery/password-vault.ts`, `app/api/galleries/route.ts`, `app/api/admin/users/route.ts`
   - Done when: no read endpoint writes to Firestore; migration report shows zero plaintext left.
   - Refs: SEC-8

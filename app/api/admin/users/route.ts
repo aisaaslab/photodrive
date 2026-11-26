@@ -3,7 +3,7 @@ import { getAdminAuth, getAdminDb } from "@/lib/firebase/admin";
 import { getUidFromRequest, isAdmin } from "@/lib/firebase/admin-guard";
 import { assignPlanToUser, getPlanById } from "@/lib/plans";
 import type { GalleryDoc } from "@/lib/firestore/types";
-import { forOwner, migrateLegacyPassword } from "@/lib/gallery/password-vault";
+import { forOwner } from "@/lib/gallery/password-vault";
 import { accessSourceOf, latestPaymentByUid, paymentFlagsByUid } from "@/lib/access-source";
 
 export async function GET(req: NextRequest) {
@@ -20,11 +20,10 @@ export async function GET(req: NextRequest) {
 
   // Firestore returns untyped documents, so the shape is asserted rather than
   // inferred — spreading Record<string, unknown> yields just { id } to tsc.
-  // Passwords are stored sealed; decrypt for the admin view (and lazily seal
-  // any legacy plaintext copy the first time it's read).
+  // Passwords are stored sealed; decrypt for the admin view.
   const galleries = (await Promise.all(
     galleriesSnap.docs.map(async (d) =>
-      forOwner(await migrateLegacyPassword(d.ref, { id: d.id, ...(d.data() as Record<string, unknown>) }))
+      forOwner({ id: d.id, ...(d.data() as Record<string, unknown>) })
     )
   )) as unknown as GalleryDoc[];
 
