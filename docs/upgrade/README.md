@@ -89,6 +89,6 @@ All other decisions have a recommended default in the decision log and can proce
 ## Important facts for anyone continuing this work
 
 - Next.js is **16.2.1**; `AGENTS.md` says its APIs differ from older versions. Read `node_modules/next/dist/docs/` before using routing, caching, metadata or request-interception features.
-- The Figma file title says "Galleroo"; the product name used in the UI and proposal is **PhotoDrive** (D1).
+- The Figma file title still carries the product's earlier name; the product name used in the UI and proposal is **PhotoDrive** (D1).
 - Prices in the Figma mock-up are samples; real plans come from the admin back office.
 - The audit was done by reading code; it has **not** been compared with live Stripe, Sentry or Firestore data. S1/S2 start by proving PAY-1/PAY-2 and PAY-7 with data.

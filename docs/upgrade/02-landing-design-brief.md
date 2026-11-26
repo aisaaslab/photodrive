@@ -6,7 +6,7 @@ the mock-up does not cover.
 
 ## Figma references
 
-- File: https://www.figma.com/design/Aq966rDz8wrtnqVsk5esPB (title reads "Galleroo — Landing Page Redesign Proposal"; the UI says **PhotoDrive**, see D1)
+- File: https://www.figma.com/design/Aq966rDz8wrtnqVsk5esPB (its title still carries the product's earlier name; the UI says **PhotoDrive**, see D1)
 - Page **B · Cinematic Dark** (page id `2:4`), full page frame `5:13`, 1440 px wide.
 - Use the Figma MCP (`get_design_context`, `get_screenshot`) on these node ids. Access requires
   the owner's Figma account/connector.

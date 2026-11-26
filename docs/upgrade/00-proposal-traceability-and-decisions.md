@@ -81,7 +81,7 @@ reference the decision ID in commit messages.
 
 | ID | Decision | Options | Recommended default | Needed by | Status |
 |---|---|---|---|---|---|
-| **D1** | Product name in UI and email | PhotoDrive (current default, used in the proposal and Figma) · Galleroo (README/package/email templates) | **PhotoDrive**; centralise in `lib/branding.ts`, no hard-coded copies | S5 | Default |
+| **D1** | Product name in UI and email | PhotoDrive (current default, used in the proposal and Figma) · the project's earlier working name (README, package, e-mail templates; all now replaced) | **PhotoDrive**; centralise in `lib/branding.ts`, no hard-coded copies | S5 | Default |
 | **D2** | Real plans and prices | Mock-up values ($12/month, $99/year) are samples; real plans live in admin | Landing renders whatever public plans exist; no prices in code | S6 | Default |
 | **D3** | What happens to galleries when the owner's plan lapses | (a) stay live forever (today) · (b) live during a grace period (e.g. 14 days), then a polite "temporarily unavailable" page; nothing deleted; restored on renewal · (c) offline immediately | **(b)**, but **the landing "Why PhotoDrive" copy must change first** ("link stays live… doesn't expire", "no automatic charges") | S9-01 | **Open** |
 | **D4** | "Right currency per visitor" | (A) show each plan in its own currency, formatted for the visitor's locale · (B) plans carry several currency prices · (C) Stripe Adaptive Pricing | **(A)** now; keep the money util compatible with (B) | S6-02 | Default |

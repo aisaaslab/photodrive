@@ -16,7 +16,7 @@
   - Files: `app/api/galleries/[id]/route.ts`, `app/api/user/delete/route.ts`, `lib/server/repos/galleries.ts`
   - Done when: no orphaned selection documents after delete (emulator test).
   - Refs: SEC-4
-- [x] **S4-03** · S · Firestore rules: add `planId`, `planName`, `planInterval`, `subscriptionSource`, `promoCode`, `remindersSent` to `locked()`; rules unit tests (`@firebase/rules-unit-testing`); update the stale "Galleroo" comment.
+- [x] **S4-03** · S · Firestore rules: add `planId`, `planName`, `planInterval`, `subscriptionSource`, `promoCode`, `remindersSent` to `locked()`; rules unit tests (`@firebase/rules-unit-testing`); update the stale comment that used the product's earlier name.
   - Files: `firestore.rules`, `tests/rules/*.test.ts`
   - Done when: client attempts to write any locked field are denied in tests.
   - Refs: SEC-7

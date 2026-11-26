@@ -1,5 +1,5 @@
 You are helping me install and deploy a Next.js 16 SaaS application called
-Galleroo that I have just purchased. I am not a developer. The complete
+PhotoDrive that I have just purchased. I am not a developer. The complete
 documentation is in README.md in this folder — read it before you start,
 especially Steps 1 through 18.
 
@@ -116,19 +116,19 @@ STAGE 2 — GOOGLE DRIVE API KEY
      gcloud services enable drive.googleapis.com apikeys.googleapis.com --project MY-PROJECT-ID
 5. Create the key already restricted to Drive, choosing the key id yourself so
    you can read it back later:
-     gcloud services api-keys create --project MY-PROJECT-ID --key-id=galleroo-drive-key --display-name="Galleroo Drive" --api-target=service=drive.googleapis.com
+     gcloud services api-keys create --project MY-PROJECT-ID --key-id=photodrive-drive-key --display-name="PhotoDrive Drive" --api-target=service=drive.googleapis.com
    Always pass `--api-target`. Without it this command silently creates an
    unrestricted key that works against every Google API.
    Do NOT try to capture the key value from this command's output — it prints
    to the error stream, not the normal one, and scripting around that fails
    silently.
 6. Read the value back with a separate command and write it into `.env.local`:
-     gcloud services api-keys get-key-string galleroo-drive-key --project MY-PROJECT-ID --format="value(keyString)"
+     gcloud services api-keys get-key-string photodrive-drive-key --project MY-PROJECT-ID --format="value(keyString)"
    That value goes into GOOGLE_DRIVE_API_KEY. This is a DIFFERENT key from
    NEXT_PUBLIC_FIREBASE_API_KEY even though both start with AIza. Never mix
    them up, and never restrict the Firebase key to the Drive API.
 7. Verify:
-     gcloud services api-keys describe galleroo-drive-key --project MY-PROJECT-ID
+     gcloud services api-keys describe photodrive-drive-key --project MY-PROJECT-ID
      gcloud services list --enabled --project MY-PROJECT-ID | grep drive.googleapis.com
    Use grep here rather than a --filter expression.
 
@@ -169,7 +169,7 @@ STAGE 4 — DEPLOY TO VERCEL
    `export VERCEL_TOKEN=...` rather than into the chat, then confirm to you.
    Verify with `vercel whoami`.
 3. Link the folder without GitHub:
-     vercel link --yes --project galleroo
+     vercel link --yes --project photodrive
    `--project` is required when the name differs from the folder name.
 4. Push the environment variables. There is no bulk import — you must loop, one
    command per variable, 25 of them. Two things will destroy this if you get
@@ -207,9 +207,9 @@ STAGE 4 — DEPLOY TO VERCEL
 
 STAGE 5 — DOMAIN
 1. STOP. I buy the domain myself at a registrar. Do not purchase anything.
-2. Once I have it: `vercel domains add MYDOMAIN.com galleroo`
+2. Once I have it: `vercel domains add MYDOMAIN.com photodrive`
 3. Read back the exact DNS records I need to type:
-     vercel domains verify MYDOMAIN.com --project galleroo --format=json
+     vercel domains verify MYDOMAIN.com --project photodrive --format=json
    Do NOT tell me a hardcoded IP or `cname.vercel-dns.com` from memory — the
    values are per-project now and an old value sends me to a dead site.
 4. I type those records at my registrar. You cannot do this — Vercel's CLI can

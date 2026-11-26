@@ -44,7 +44,7 @@
 - [ ] **S5-10** · M · Split `Lightbox` (571 lines) and `CoverPickerModal` (475 lines).
   - Files: `components/gallery/Lightbox.tsx`, `components/dashboard/CoverPickerModal.tsx`
   - Done when: no file > 300 lines; keyboard navigation and cover picking unchanged.
-- [x] **S5-11** · S · Housekeeping: unify on one zip library (`client-zip` or `jszip`), delete dead `lib/firestore/favorites.ts`, strip BOMs from the 26 files, fix mojibake in `globals.css`, `not-found.tsx`, `ImageCompareSlider.tsx`, `TrustSection.tsx`, `branding.ts`; centralise brand/email defaults in `lib/branding.ts` (no hard-coded `photodrive.co`/"Galleroo" elsewhere, per D1).
+- [x] **S5-11** · S · Housekeeping: unify on one zip library (`client-zip` or `jszip`), delete dead `lib/firestore/favorites.ts`, strip BOMs from the 26 files, fix mojibake in `globals.css`, `not-found.tsx`, `ImageCompareSlider.tsx`, `TrustSection.tsx`, `branding.ts`; centralise brand/email defaults in `lib/branding.ts` (no hard-coded `photodrive.co` or earlier product name elsewhere, per D1).
   - Done when: lint/type/test green; `grep` for the old strings finds only `branding.ts`.
   - Refs: STR-8
 - [ ] **S5-12** · M · Dashboard and client-gallery token migration (D9): colours and typography via tokens only; **no layout changes**; before/after screenshots reviewed.
