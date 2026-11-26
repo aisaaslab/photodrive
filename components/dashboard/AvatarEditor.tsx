@@ -108,12 +108,12 @@ export function AvatarEditor({ onClose }: { onClose: () => void }) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in" onClick={onClose}>
-      <div className="bg-[#111111] border border-white/10 rounded-2xl shadow-2xl max-w-sm w-full animate-scale-in" onClick={(e) => e.stopPropagation()}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-canvas/70 backdrop-blur-sm animate-fade-in" onClick={onClose}>
+      <div className="bg-surface border border-line rounded-card shadow-2xl max-w-sm w-full animate-scale-in" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
-        <div className="flex items-start justify-between p-5 border-b border-white/[0.08]">
-          <h3 className="font-semibold text-white">{t.gallery.avatar}</h3>
-          <button onClick={onClose} className="text-white/50 hover:text-white transition-colors">
+        <div className="flex items-start justify-between p-5 border-b border-line">
+          <h3 className="font-semibold text-fg">{t.gallery.avatar}</h3>
+          <button onClick={onClose} className="text-fg-muted hover:text-fg transition-colors">
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
           </button>
         </div>
@@ -127,10 +127,10 @@ export function AvatarEditor({ onClose }: { onClose: () => void }) {
               <img
                 src={preview}
                 alt="Avatar preview"
-                className="w-24 h-24 rounded-full object-cover ring-2 ring-white/10"
+                className="w-24 h-24 rounded-full object-cover ring-2 ring-line"
               />
             ) : (
-              <div className="w-24 h-24 rounded-full bg-white/10 flex items-center justify-center text-2xl font-bold text-white">
+              <div className="w-24 h-24 rounded-full bg-surface-2 flex items-center justify-center text-2xl font-bold text-fg">
                 {currentName?.[0]?.toUpperCase() || "?"}
               </div>
             )}
@@ -139,7 +139,7 @@ export function AvatarEditor({ onClose }: { onClose: () => void }) {
           {/* Upload button */}
           <button
             onClick={() => fileInputRef.current?.click()}
-            className="w-full flex items-center justify-center gap-2 bg-white/[0.04] border border-white/10 rounded-xl py-2.5 text-sm text-white/80 hover:bg-white/[0.08] hover:border-white/20 transition-all"
+            className="w-full flex items-center justify-center gap-2 bg-surface border border-line rounded-xl py-2.5 text-sm text-fg-soft hover:bg-surface-2 hover:border-fg-muted/30 transition-all"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.7}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
@@ -154,16 +154,16 @@ export function AvatarEditor({ onClose }: { onClose: () => void }) {
             className="hidden"
           />
 
-          {error && <p className="text-xs text-red-400 text-center">{error}</p>}
+          {error && <p className="text-xs text-danger text-center">{error}</p>}
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-white/[0.08] flex gap-2">
+        <div className="p-4 border-t border-line flex gap-2">
           {preview && (
             <button
               onClick={handleRemove}
               disabled={saving}
-              className="flex-1 text-xs font-medium text-white/60 border border-white/10 rounded-lg py-2.5 hover:text-white hover:border-white/20 transition-colors disabled:opacity-50"
+              className="flex-1 text-xs font-medium text-fg-muted border border-line rounded-lg py-2.5 hover:text-fg hover:border-fg-muted/30 transition-colors disabled:opacity-50"
             >
               {t.gallery.removeAvatar}
             </button>
@@ -171,17 +171,17 @@ export function AvatarEditor({ onClose }: { onClose: () => void }) {
           <button
             onClick={onClose}
             disabled={saving}
-            className="flex-1 text-xs font-medium text-white/70 border border-white/10 rounded-lg py-2.5 hover:bg-white/[0.05] transition-colors disabled:opacity-50"
+            className="flex-1 text-xs font-medium text-fg-soft border border-line rounded-lg py-2.5 hover:bg-surface-2 transition-colors disabled:opacity-50"
           >
             {t.gallery.cancel}
           </button>
           <button
             onClick={handleSave}
             disabled={saving || !preview}
-            className="flex-1 text-xs font-semibold bg-white text-stone-900 rounded-lg py-2.5 hover:bg-stone-100 transition-colors disabled:opacity-50 flex items-center justify-center gap-1.5"
+            className="flex-1 text-xs font-semibold bg-accent text-canvas rounded-pill py-2.5 hover:brightness-110 transition-colors disabled:opacity-50 flex items-center justify-center gap-1.5"
           >
             {saving ? (
-              <div className="w-3.5 h-3.5 border-2 border-stone-400 border-t-stone-900 rounded-full animate-spin" />
+              <div className="w-3.5 h-3.5 border-2 border-canvas/30 border-t-canvas rounded-full animate-spin" />
             ) : (
               t.gallery.save
             )}

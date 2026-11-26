@@ -37,4 +37,8 @@ It needs the browser pointed at the emulators: build with `NEXT_PUBLIC_FIREBASE_
 
 **New landing page** (`landing.cjs`, S6): server-rendered copy in six languages, no horizontal overflow at 1440/1024/390 in every language, the phone menu, anchors and CTAs. Run with tsx: `NODE_PATH=$(npm root -g) npx tsx scripts/verify/browser/landing.cjs` against a production server on :3997; `SHOT=<dir>` saves full-page screenshots. With `WITH_PLANS=1` it also checks the pricing section against plans seeded in the emulator (run `seed.cjs`, then `seed-plans.cjs`, start the server with the emulator variables, then run it); without it, it checks the no-plans card.
 
+**Stored baselines** (`baselines/dashboard.json`, `baselines/gallery.json`): the output of the two snapshot scripts on a known-good build (dashboard baseline re-taken after the S5-12 photographer-area re-skin; its only differences from the earlier one are the language button reading "EN" and the Drive folder field having a label). To check a change: `emu-reset.sh`, `serve-emu.sh`, run the script into a file, `diff` it with the baseline. Update a baseline only on purpose, in the same commit as the UI change that explains it.
+
+**User-area screens** (`user-area-shots.cjs`): screenshots plus an axe audit (set `AXE_PATH` to an `axe.min.js`, for example from `npm pack axe-core`) of login, dashboard, settings dialog, new-gallery form, favourites modal and account at 1280 and 390.
+
 Prints one PASS/FAIL line per check. On staging, run the same page checks by hand against a real private gallery (S3-11).

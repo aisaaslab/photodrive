@@ -16,12 +16,12 @@ export default function NotFound() {
   const n = t.notFound;
 
   return (
-    <main className="bg-[#080808] text-white min-h-screen flex flex-col">
-      <div className="aurora-bg"><span /></div>
+    <main className="bg-canvas text-fg min-h-screen flex flex-col">
+      
 
-      <nav className="relative z-10 border-b border-white/[0.06] bg-[#080808]/90 backdrop-blur-xl">
+      <nav className="relative z-10 border-b border-line bg-[#080808]/90 backdrop-blur-xl">
         <div className="max-w-2xl mx-auto px-6 h-14 flex items-center justify-between">
-          <Link href="/" className="font-bold text-white" style={{ fontFamily: "var(--font-brand), sans-serif" }}>
+          <Link href="/" className="font-bold text-fg" style={{ fontFamily: "var(--font-brand), sans-serif" }}>
             {APP_NAME}
           </Link>
           <LanguageSwitcher />
@@ -30,21 +30,21 @@ export default function NotFound() {
 
       <div className="relative z-10 flex-1 flex items-center justify-center px-6 py-20">
         <div className="text-center max-w-md">
-          <p className="text-[#2dabe0] text-sm font-semibold tracking-widest uppercase mb-4">404</p>
+          <p className="text-accent text-sm font-semibold tracking-widest uppercase mb-4">404</p>
           <h1 className="text-3xl font-bold mb-3" style={{ fontFamily: "var(--font-brand), sans-serif" }}>
             {n.title}
           </h1>
-          <p className="text-stone-400 leading-relaxed mb-8">{n.body}</p>
+          <p className="text-fg-muted leading-relaxed mb-8">{n.body}</p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <Link
               href="/"
-              className="inline-flex items-center gap-2 bg-white text-stone-900 font-semibold px-6 py-3 rounded-full hover:bg-stone-100 transition-all"
+              className="inline-flex items-center gap-2 bg-accent text-canvas font-semibold px-6 py-3 rounded-pill hover:brightness-110 transition-all"
             >
               {n.back}
             </Link>
             <Link
               href="/dashboard"
-              className="inline-flex items-center gap-2 border border-white/20 text-white font-semibold px-6 py-3 rounded-full hover:bg-white/10 transition-all"
+              className="inline-flex items-center gap-2 border border-fg-muted/30 text-fg font-semibold px-6 py-3 rounded-full hover:bg-surface-2 transition-all"
             >
               {n.dashboard}
             </Link>

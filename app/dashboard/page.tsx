@@ -160,10 +160,10 @@ export default function DashboardPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-white" style={{ fontFamily: "var(--font-brand), sans-serif" }}>
+          <h1 className="text-2xl font-bold text-fg" style={{ fontFamily: "var(--font-brand), sans-serif" }}>
             {firstName ? `${t.dashboard.welcome} ${firstName}` : t.dashboard.myGalleries}
           </h1>
-          <p className="text-white/70 text-sm mt-1">
+          <p className="text-fg-soft text-sm mt-1">
             {loading
               ? ""
               : galleries.length === 0
@@ -171,9 +171,9 @@ export default function DashboardPage() {
               : `${galleries.length} ${galleries.length === 1 ? t.dashboard.gallery : t.dashboard.galleries}`}
           </p>
           {sub && (
-            <p className="text-xs text-white/40 mt-1">
+            <p className="text-xs text-fg-muted mt-1">
               {t.dashboard.subscription}{" "}
-              <span className={showRenewBanner ? "text-[#2dabe0]" : "text-white/60"}>
+              <span className={showRenewBanner ? "text-accent" : "text-fg-muted"}>
                 {planLabel ? `${planLabel} · ` : ""}
                 {isLifetime ? t.dashboard.lifetime : `${t.dashboard.activeUntil} ${expiresLabel} (${sub.daysLeft} ${t.dashboard.daysLeft})`}
               </span>
@@ -183,7 +183,7 @@ export default function DashboardPage() {
 
         <button
           onClick={() => setShowForm((v) => !v)}
-          className="shrink-0 inline-flex items-center gap-2 bg-white text-stone-900 rounded-xl px-5 py-2.5 text-sm font-semibold hover:bg-stone-100 transition-all hover:scale-[1.02] active:scale-[0.98] self-start sm:self-auto"
+          className="shrink-0 inline-flex items-center gap-2 bg-accent text-canvas rounded-pill px-5 py-2.5 text-sm font-semibold hover:brightness-110 transition-all hover:scale-[1.02] active:scale-[0.98] self-start sm:self-auto"
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
@@ -203,21 +203,21 @@ export default function DashboardPage() {
           className={`flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl border px-4 py-3 ${
             daysLeft === 0
               ? "bg-red-500/10 border-red-500/25"
-              : "bg-[#2dabe0]/10 border-[#2dabe0]/25"
+              : "bg-accent/10 border-accent/25"
           }`}
         >
           <div className="text-sm">
-            <p className={`font-semibold ${daysLeft === 0 ? "text-red-300" : "text-white"}`}>
+            <p className={`font-semibold ${daysLeft === 0 ? "text-red-300" : "text-fg"}`}>
               {daysLeft === 0 ? t.dashboard.subExpired : t.dashboard.subExpiringSoon}
               {daysLeft > 0 && (
-                <span className="font-normal text-white/60"> · {daysLeft} {t.dashboard.daysLeft}</span>
+                <span className="font-normal text-fg-muted"> · {daysLeft} {t.dashboard.daysLeft}</span>
               )}
             </p>
-            <p className="text-white/60 text-xs mt-0.5">{t.dashboard.subRenewHint}</p>
+            <p className="text-fg-muted text-xs mt-0.5">{t.dashboard.subRenewHint}</p>
           </div>
           <Link
             href="/subscribe"
-            className="shrink-0 self-start sm:self-auto bg-white text-stone-900 rounded-lg px-4 py-2 text-xs font-semibold hover:bg-stone-100 transition-colors"
+            className="shrink-0 self-start sm:self-auto bg-accent text-canvas rounded-pill px-4 py-2 text-xs font-semibold hover:brightness-110 transition-colors"
           >
             {t.dashboard.renew}
           </Link>
@@ -248,14 +248,14 @@ export default function DashboardPage() {
       )}
 
       {/* Divider */}
-      {!showForm && <div className="h-px bg-white/[0.06]" />}
+      {!showForm && <div className="h-px bg-surface-2" />}
 
       {/* Search + Sort */}
       {!loading && galleries.length > 0 && (
         <div className="flex gap-3">
           {/* Search */}
           <div className="relative flex-1">
-            <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-500 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+            <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-fg-muted pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
             </svg>
             <input
@@ -263,12 +263,12 @@ export default function DashboardPage() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder={t.dashboard.searchPlaceholder}
-              className="w-full bg-[#111111] border border-white/[0.1] rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder-stone-600 outline-none focus:border-white/25 transition-all"
+              className="w-full bg-surface border border-line rounded-xl pl-10 pr-4 py-2.5 text-sm text-fg placeholder:text-fg-muted outline-none focus:border-fg-muted/30 transition-all"
             />
             {search && (
               <button
                 onClick={() => setSearch("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-500 hover:text-white transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-fg-muted hover:text-fg transition-colors"
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -282,7 +282,7 @@ export default function DashboardPage() {
             value={sort}
             onChange={(e) => changeSort(e.target.value as SortOption)}
             aria-label={t.dashboard.sortNewest}
-            className="bg-[#111111] border border-white/[0.1] rounded-xl px-3 py-2.5 text-sm text-white outline-none focus:border-white/25 transition-all cursor-pointer"
+            className="bg-surface border border-line rounded-xl px-3 py-2.5 text-sm text-fg outline-none focus:border-fg-muted/30 transition-all cursor-pointer"
           >
             <option value="newest">{t.dashboard.sortNewest}</option>
             <option value="oldest">{t.dashboard.sortOldest}</option>
@@ -295,15 +295,15 @@ export default function DashboardPage() {
       {/* Empty search result */}
       {!loading && search && filteredAndSorted.length === 0 && galleries.length > 0 && (
         <div className="text-center py-12">
-          <p className="text-stone-500 text-sm">{t.dashboard.noResults} &quot;{search}&quot;</p>
+          <p className="text-fg-muted text-sm">{t.dashboard.noResults} &quot;{search}&quot;</p>
         </div>
       )}
 
       {/* Load error */}
       {loadError && (
         <div className="text-center py-16">
-          <p className="text-stone-500 text-sm mb-3">{t.dashboard.loadError}</p>
-          <button onClick={loadGalleries} className="text-xs text-white underline underline-offset-2">
+          <p className="text-fg-muted text-sm mb-3">{t.dashboard.loadError}</p>
+          <button onClick={loadGalleries} className="text-xs text-fg underline underline-offset-2">
             {t.dashboard.retry}
           </button>
         </div>
@@ -313,12 +313,12 @@ export default function DashboardPage() {
       {!loadError && loading ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 stagger-children">
           {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="border border-white/[0.06] rounded-2xl overflow-hidden animate-fade-up bg-white/[0.02]">
-              <div className="h-36 bg-white/[0.04] animate-pulse" />
+            <div key={i} className="border border-line rounded-card overflow-hidden animate-fade-up bg-surface">
+              <div className="h-36 bg-surface animate-pulse" />
               <div className="p-4 space-y-2.5">
-                <div className="h-4 bg-white/[0.06] rounded-lg w-3/4 animate-pulse" />
-                <div className="h-3 bg-white/[0.04] rounded w-1/2 animate-pulse" />
-                <div className="h-8 bg-white/[0.04] rounded-xl w-full mt-1 animate-pulse" />
+                <div className="h-4 bg-surface-2 rounded-lg w-3/4 animate-pulse" />
+                <div className="h-3 bg-surface rounded w-1/2 animate-pulse" />
+                <div className="h-8 bg-surface rounded-xl w-full mt-1 animate-pulse" />
               </div>
             </div>
           ))}

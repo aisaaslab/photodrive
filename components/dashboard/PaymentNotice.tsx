@@ -54,7 +54,7 @@ export function PaymentNotice() {
     <div role="status" data-dismissed={dismissed} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3">
       <p className="text-sm text-amber-100/90 leading-relaxed">{message}</p>
       <div className="flex items-center gap-3 shrink-0">
-        <Link href="/dashboard/account" className="text-xs font-semibold text-white underline underline-offset-2 hover:text-amber-200">
+        <Link href="/dashboard/account" className="text-xs font-semibold text-fg underline underline-offset-2 hover:text-amber-200">
           {d.paymentBannerDetails}
         </Link>
         <button
@@ -65,7 +65,7 @@ export function PaymentNotice() {
             } catch {}
             setDismissed((n) => n + 1);
           }}
-          className="text-xs text-white/60 hover:text-white"
+          className="text-xs text-fg-muted hover:text-fg"
         >
           {d.paymentBannerDismiss}
         </button>

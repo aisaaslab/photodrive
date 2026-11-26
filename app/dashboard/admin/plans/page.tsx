@@ -69,7 +69,7 @@ export default function AdminPlansPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-32">
-        <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+        <div className="w-5 h-5 border-2 border-fg-muted/30 border-t-white rounded-full animate-spin" />
       </div>
     );
   }
@@ -78,16 +78,16 @@ export default function AdminPlansPage() {
     <div>
       <div className="flex items-end justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-white" style={{ fontFamily: "var(--font-brand), sans-serif" }}>
+          <h1 className="text-2xl font-bold text-fg" style={{ fontFamily: "var(--font-brand), sans-serif" }}>
             Plans
           </h1>
-          <p className="text-sm text-stone-400 mt-1">
+          <p className="text-sm text-fg-muted mt-1">
             Monthly &amp; yearly payment plans. Public plans appear on the landing-page pricing section; private plans are assign-only or reachable by direct link.
           </p>
         </div>
         <button
           onClick={() => setEditorDraft({ ...emptyDraft })}
-          className="shrink-0 flex items-center gap-2 bg-[#17509e] text-white text-sm font-semibold px-4 py-2.5 rounded-xl hover:bg-[#103a75] transition-colors"
+          className="shrink-0 flex items-center gap-2 bg-accent-deep text-fg text-sm font-semibold px-4 py-2.5 rounded-xl hover:bg-accent-deep transition-colors"
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
@@ -97,16 +97,16 @@ export default function AdminPlansPage() {
       </div>
 
       {plans.length === 0 ? (
-        <div className="border border-dashed border-white/15 rounded-2xl py-20 text-center">
-          <div className="w-12 h-12 rounded-2xl bg-[#17509e]/10 border border-[#17509e]/20 flex items-center justify-center mx-auto mb-4">
-            <svg className="w-6 h-6 text-[#2dabe0]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+        <div className="border border-dashed border-line rounded-card py-20 text-center">
+          <div className="w-12 h-12 rounded-card bg-accent-deep/10 border border-accent-deep/20 flex items-center justify-center mx-auto mb-4">
+            <svg className="w-6 h-6 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.36-1.352c1.163.204 2.293.368 3.372.52m-1.02-4.917c1.04-.166 2.09-.3 3.138-.411M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
-          <p className="text-sm text-white font-semibold mb-1" style={{ fontFamily: "var(--font-brand), sans-serif" }}>
+          <p className="text-sm text-fg font-semibold mb-1" style={{ fontFamily: "var(--font-brand), sans-serif" }}>
             No payment plans yet
           </p>
-          <p className="text-sm text-stone-500 max-w-sm mx-auto">
+          <p className="text-sm text-fg-muted max-w-sm mx-auto">
             Create your first plan to show pricing on the landing page and to assign subscriptions to users.
             Until then, the pricing section keeps showing the default annual card.
           </p>
@@ -116,39 +116,39 @@ export default function AdminPlansPage() {
           {plans.map((p) => (
             <div
               key={p.id}
-              className={`border rounded-2xl p-5 flex flex-col transition-colors ${
-                p.highlight ? "border-[#17509e]/40 bg-[#17509e]/[0.06]" : "border-white/[0.06] bg-white/[0.03]"
+              className={`border rounded-card p-5 flex flex-col transition-colors ${
+                p.highlight ? "border-accent-deep/40 bg-accent-deep/[0.06]" : "border-line bg-surface"
               }`}
             >
               {/* Header */}
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-semibold text-white text-sm truncate" style={{ fontFamily: "var(--font-brand), sans-serif" }}>
+                    <span className="font-semibold text-fg text-sm truncate" style={{ fontFamily: "var(--font-brand), sans-serif" }}>
                       {p.name}
                     </span>
                     {p.highlight && (
-                      <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#17509e]/20 text-[#2dabe0] border border-[#17509e]/30">
+                      <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-accent-deep/20 text-accent border border-accent-deep/30">
                         Popular
                       </span>
                     )}
                   </div>
-                  {p.description && <p className="text-xs text-stone-500 mt-0.5 line-clamp-1">{p.description}</p>}
+                  {p.description && <p className="text-xs text-fg-muted mt-0.5 line-clamp-1">{p.description}</p>}
                 </div>
                 <div className="text-right shrink-0">
-                  <div className="text-lg font-bold text-white" style={{ fontFamily: "var(--font-brand), sans-serif" }}>
+                  <div className="text-lg font-bold text-fg" style={{ fontFamily: "var(--font-brand), sans-serif" }}>
                     {formatPrice(p)}
                   </div>
-                  <div className="text-[10px] text-stone-500 uppercase tracking-wide">{p.interval}</div>
+                  <div className="text-[10px] text-fg-muted uppercase tracking-wide">{p.interval}</div>
                 </div>
               </div>
 
               {/* Status badges */}
               <div className="flex items-center gap-1.5 mt-3 flex-wrap">
-                <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${p.isPublic ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : "bg-white/[0.04] text-stone-400 border-white/10"}`}>
+                <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${p.isPublic ? "bg-emerald-500/10 text-success-bright border-emerald-500/20" : "bg-surface text-fg-muted border-line"}`}>
                   {p.isPublic ? "Public · on pricing page" : "Private"}
                 </span>
-                <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${p.active ? "bg-[#17509e]/10 text-[#2dabe0] border-[#17509e]/20" : "bg-amber-500/10 text-amber-400 border-amber-500/20"}`}>
+                <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${p.active ? "bg-accent-deep/10 text-accent border-accent-deep/20" : "bg-amber-500/10 text-amber-400 border-amber-500/20"}`}>
                   {p.active ? "Active" : "Inactive"}
                 </span>
               </div>
@@ -157,21 +157,21 @@ export default function AdminPlansPage() {
               {p.features.length > 0 && (
                 <ul className="mt-4 space-y-1.5 flex-1">
                   {p.features.slice(0, 4).map((f, i) => (
-                    <li key={i} className="flex items-start gap-2 text-xs text-stone-400">
-                      <svg className="w-3 h-3 text-[#2dabe0] shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <li key={i} className="flex items-start gap-2 text-xs text-fg-muted">
+                      <svg className="w-3 h-3 text-accent shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                       </svg>
                       <span className="line-clamp-1">{f}</span>
                     </li>
                   ))}
                   {p.features.length > 4 && (
-                    <li className="text-xs text-stone-600 pl-5">+{p.features.length - 4} more</li>
+                    <li className="text-xs text-fg-muted pl-5">+{p.features.length - 4} more</li>
                   )}
                 </ul>
               )}
 
               {/* Actions */}
-              <div className="flex items-center gap-1.5 mt-5 pt-4 border-t border-white/[0.06]">
+              <div className="flex items-center gap-1.5 mt-5 pt-4 border-t border-line">
                 <button
                   onClick={() => setEditorDraft({
                     id: p.id,
@@ -185,24 +185,24 @@ export default function AdminPlansPage() {
                     highlight: p.highlight === true,
                     sortOrder: String(p.sortOrder ?? 0),
                   })}
-                  className="flex-1 px-2.5 py-1.5 text-xs font-semibold rounded-lg bg-white/[0.06] border border-white/10 text-stone-300 hover:text-white hover:border-white/20 transition-colors"
+                  className="flex-1 px-2.5 py-1.5 text-xs font-semibold rounded-lg bg-surface-2 border border-line text-fg-soft hover:text-fg hover:border-fg-muted/30 transition-colors"
                 >
                   Edit
                 </button>
                 <button
                   onClick={() => togglePlanField(p.id, "isPublic", !p.isPublic)}
                   disabled={busyId === p.id}
-                  className="flex-1 px-2.5 py-1.5 text-xs font-semibold rounded-lg bg-white/[0.06] border border-white/10 text-stone-300 hover:text-white hover:border-white/20 disabled:opacity-50 transition-colors"
+                  className="flex-1 px-2.5 py-1.5 text-xs font-semibold rounded-lg bg-surface-2 border border-line text-fg-soft hover:text-fg hover:border-fg-muted/30 disabled:opacity-50 transition-colors"
                 >
                   {p.isPublic ? "Make private" : "Make public"}
                 </button>
                 <button
                   onClick={() => copyPlanLink(p)}
-                  className="p-1.5 border border-white/10 rounded-lg text-stone-400 hover:text-white hover:border-white/20 transition-colors"
+                  className="p-1.5 border border-line rounded-lg text-fg-muted hover:text-fg hover:border-fg-muted/30 transition-colors"
                   title="Copy direct subscribe link"
                 >
                   {copiedId === p.id ? (
-                    <svg className="w-3.5 h-3.5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <svg className="w-3.5 h-3.5 text-success-bright" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                     </svg>
                   ) : (
@@ -214,7 +214,7 @@ export default function AdminPlansPage() {
                 <button
                   onClick={() => togglePlanField(p.id, "active", !p.active)}
                   disabled={busyId === p.id}
-                  className="p-1.5 border border-white/10 rounded-lg text-stone-400 hover:text-white hover:border-white/20 disabled:opacity-50 transition-colors"
+                  className="p-1.5 border border-line rounded-lg text-fg-muted hover:text-fg hover:border-fg-muted/30 disabled:opacity-50 transition-colors"
                   title={p.active ? "Deactivate plan" : "Activate plan"}
                 >
                   {p.active ? (
@@ -232,13 +232,13 @@ export default function AdminPlansPage() {
                     <button
                       onClick={() => deletePlan(p.id)}
                       disabled={busyId === p.id}
-                      className="px-2 py-1 bg-red-500/10 border border-red-500/30 text-red-400 text-[11px] rounded-lg hover:bg-red-500/20 disabled:opacity-50"
+                      className="px-2 py-1 bg-red-500/10 border border-red-500/30 text-danger text-[11px] rounded-lg hover:bg-red-500/20 disabled:opacity-50"
                     >
                       {busyId === p.id ? "..." : "Delete"}
                     </button>
                     <button
                       onClick={() => setDeleteConfirm(null)}
-                      className="px-2 py-1 border border-white/10 text-stone-400 text-[11px] rounded-lg"
+                      className="px-2 py-1 border border-line text-fg-muted text-[11px] rounded-lg"
                     >
                       No
                     </button>
@@ -246,7 +246,7 @@ export default function AdminPlansPage() {
                 ) : (
                   <button
                     onClick={() => setDeleteConfirm(p.id)}
-                    className="p-1.5 border border-white/10 rounded-lg text-stone-400 hover:text-red-400 hover:border-red-500/30 transition-colors"
+                    className="p-1.5 border border-line rounded-lg text-fg-muted hover:text-danger hover:border-red-500/30 transition-colors"
                     title="Delete plan"
                   >
                     <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

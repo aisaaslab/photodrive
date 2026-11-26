@@ -28,8 +28,8 @@ const clean = (s) => String(s ?? "").replace(/\s+/g, " ").replace(/\d{1,2} [A-Z]
 
   // ---- helpers
   const cardsInfo = () => page.evaluate(() => [...document.querySelectorAll("h3")].filter((h) => h.closest("div")?.parentElement?.querySelector('button[aria-label="More"]')).map((h) => {
-    const root = h.closest("div.rounded-2xl, div.group, div") && h.parentElement.parentElement.parentElement;
-    const cardRoot = h.closest("[class*='rounded-2xl']") ?? root;
+    const root = h.closest("div.rounded-card, div.rounded-2xl, div.group, div") && h.parentElement.parentElement.parentElement;
+    const cardRoot = h.closest("[class*='rounded-card'], [class*='rounded-2xl']") ?? root;
     return {
       title: h.textContent.trim(),
       badge: [...cardRoot.querySelectorAll("span")].map((s) => s.textContent.trim()).find((t) => /^(Public|Password|Private)$/.test(t)) ?? null,

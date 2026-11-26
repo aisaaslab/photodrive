@@ -25,8 +25,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   if (loading || !user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#080808]">
-        <div className="w-5 h-5 border-2 border-white/10 border-t-white/60 rounded-full animate-spin" />
+      <div className="min-h-screen flex items-center justify-center bg-canvas">
+        <div className="w-5 h-5 border-2 border-line border-t-white/60 rounded-full animate-spin" />
       </div>
     );
   }
@@ -39,10 +39,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   return (
     <ToastProvider>
-    <div className="min-h-screen flex flex-col bg-[#080808] text-white">
-      <div className="aurora-bg"><span /></div>
+    <div className="min-h-screen flex flex-col bg-canvas text-fg">
+      
 
-      <header className="sticky top-0 z-30 border-b border-white/[0.08] bg-[#0b0b0b]/85 backdrop-blur-xl">
+      <header className="sticky top-0 z-30 border-b border-line bg-canvas/85 backdrop-blur-xl">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 flex items-center justify-between" style={{ height: "64px" }}>
           <Link href="/">
             <Image
@@ -58,7 +58,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <div className="flex items-center gap-3 sm:gap-4">
             <Link
               href="/dashboard/account"
-              className="flex items-center gap-1.5 text-sm text-white/60 hover:text-white transition-colors"
+              className="flex items-center gap-1.5 text-sm text-fg-muted hover:text-fg transition-colors"
               title={t.dashboardLayout.account}
               aria-label={t.dashboardLayout.account}
             >
@@ -83,24 +83,24 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   <img
                     src={avatarUrl}
                     alt={displayName ?? ""}
-                    className="w-8 h-8 rounded-full object-cover ring-1 ring-white/25"
+                    className="w-8 h-8 rounded-full object-cover ring-1 ring-fg-muted/30"
                   />
                 ) : (
-                  <div className="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center text-xs font-bold text-white/80 ring-1 ring-white/25">
+                  <div className="w-8 h-8 bg-surface-2 rounded-full flex items-center justify-center text-xs font-bold text-fg-soft ring-1 ring-fg-muted/30">
                     {(displayName ?? "?")[0].toUpperCase()}
                   </div>
                 )}
               </button>
-              <span className="hidden sm:inline text-sm font-medium text-white/80">{displayName}</span>
+              <span className="hidden sm:inline text-sm font-medium text-fg-soft">{displayName}</span>
             </div>
 
-            <div className="w-px h-4 bg-white/15 hidden sm:block" />
+            <div className="w-px h-4 bg-line hidden sm:block" />
 
             <button
               onClick={() => signOut(auth).then(() => router.push("/login"))}
               aria-label={t.dashboardLayout.signOut}
               title={t.dashboardLayout.signOut}
-              className="flex items-center gap-1.5 text-sm text-white/60 hover:text-white transition-colors"
+              className="flex items-center gap-1.5 text-sm text-fg-muted hover:text-fg transition-colors"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />

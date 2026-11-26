@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { Translations } from "@/lib/i18n";
 import { APP_NAME } from "@/lib/branding";
-import { Logo } from "./NavBar";
+import { Logo } from "@/components/ui/Logo";
 import { LanguageMenu } from "./LanguageMenu";
 
 /** Footer (design node 8:296): logo and tagline, three link columns, copyright and the language menu. */

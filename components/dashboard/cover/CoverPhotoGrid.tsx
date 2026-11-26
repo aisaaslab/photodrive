@@ -25,8 +25,8 @@ export function CoverPhotoGrid({
     onClick={() => onSelect(null)}
     className={`w-full mb-4 h-16 rounded-xl border-2 transition-all flex items-center justify-center gap-2 text-sm ${
       selectedId === null
-        ? "border-[#2dabe0] ring-2 ring-[#2dabe0]/30 bg-[#2dabe0]/10 text-white"
-        : "border-white/10 hover:border-white/20 text-white/50 hover:text-white/70"
+        ? "border-accent ring-2 ring-accent/30 bg-accent/10 text-fg"
+        : "border-line hover:border-fg-muted/30 text-fg-muted hover:text-fg-soft"
     }`}
   >
     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -47,10 +47,10 @@ export function CoverPhotoGrid({
           key={p.id}
           onClick={() => onSelect(p.id)}
           title={p.name}
-          className={`relative aspect-square rounded-lg overflow-hidden border-2 cursor-pointer transition-all bg-white/[0.03] ${
+          className={`relative aspect-square rounded-lg overflow-hidden border-2 cursor-pointer transition-all bg-surface ${
             isSelected
-              ? "border-[#2dabe0] ring-2 ring-[#2dabe0]/30"
-              : "border-transparent hover:border-white/20"
+              ? "border-accent ring-2 ring-accent/30"
+              : "border-transparent hover:border-fg-muted/30"
           }`}
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -71,15 +71,15 @@ export function CoverPhotoGrid({
           />
           {/* "Current" badge — what's saved right now */}
           {isCurrent && (
-            <div className="absolute top-1 left-1 bg-white/80 text-stone-900 text-[9px] font-bold px-1.5 py-0.5 rounded-full">
+            <div className="absolute top-1 left-1 bg-fg/80 text-canvas text-[9px] font-bold px-1.5 py-0.5 rounded-full">
               {c.coverCurrent}
             </div>
           )}
           {/* Selected checkmark overlay */}
           {isSelected && (
-            <div className="absolute inset-0 bg-[#2dabe0]/20 flex items-center justify-center">
-              <div className="w-6 h-6 bg-[#2dabe0] rounded-full flex items-center justify-center">
-                <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+            <div className="absolute inset-0 bg-accent/20 flex items-center justify-center">
+              <div className="w-6 h-6 bg-accent rounded-full flex items-center justify-center">
+                <svg className="w-3.5 h-3.5 text-fg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                 </svg>
               </div>

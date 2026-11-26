@@ -16,16 +16,16 @@ export function SettingsContact({ gallery, form }: { gallery: GalleryDoc; form: 
       {/* "Book this photographer" CTA — a link + on/off toggle.
           Accepts any URL: mailto:, https://wa.me/, https://m.me/,
           a booking page, etc. Quick-fill chips for common types. */}
-      <div className="bg-[#1a1a1a] border border-white/10 rounded-lg p-3 space-y-2.5">
+      <div className="bg-surface-2 border border-line rounded-lg p-3 space-y-2.5">
         <div className="flex items-center justify-between">
-          <span id={`book-${gallery.id}`} className="text-xs font-medium text-white/80">{c.bookCtaLabel}</span>
+          <span id={`book-${gallery.id}`} className="text-xs font-medium text-fg-soft">{c.bookCtaLabel}</span>
           <button
             type="button"
             role="switch"
             aria-checked={values.bookEnabled}
             aria-labelledby={`book-${gallery.id}`}
             onClick={() => set("bookEnabled", !values.bookEnabled)}
-            className={`relative w-9 h-5 rounded-full transition-colors ${values.bookEnabled ? "bg-[#17509e]" : "bg-white/10"}`}
+            className={`relative w-9 h-5 rounded-full transition-colors ${values.bookEnabled ? "bg-accent-deep" : "bg-surface-2"}`}
           >
             <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow-sm transition-transform ${values.bookEnabled ? "translate-x-4" : "translate-x-0.5"}`} />
           </button>
@@ -38,7 +38,7 @@ export function SettingsContact({ gallery, form }: { gallery: GalleryDoc; form: 
               onChange={(e) => set("bookLink", e.target.value)}
               placeholder={c.bookLinkPlaceholder}
               aria-label={c.bookCtaLabel}
-              className="w-full bg-[#111111] border border-white/10 rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-white/25 transition-all placeholder-stone-600"
+              className="w-full bg-surface border border-line rounded-lg px-3 py-2 text-sm text-fg outline-none focus:border-fg-muted/30 transition-all placeholder:text-fg-muted"
             />
             <div className="flex flex-wrap gap-1.5">
               {[
@@ -51,7 +51,7 @@ export function SettingsContact({ gallery, form }: { gallery: GalleryDoc; form: 
                   key={chip.label}
                   type="button"
                   onClick={() => set("bookLink", chip.prefix)}
-                  className="text-[10px] font-medium text-white/60 bg-white/[0.06] border border-white/10 rounded-full px-2.5 py-1 hover:text-white hover:border-white/20 transition-all"
+                  className="text-[10px] font-medium text-fg-muted bg-surface-2 border border-line rounded-full px-2.5 py-1 hover:text-fg hover:border-fg-muted/30 transition-all"
                 >
                   {chip.label}
                 </button>
@@ -62,18 +62,18 @@ export function SettingsContact({ gallery, form }: { gallery: GalleryDoc; form: 
       </div>
 
       <div>
-        <p className="text-xs font-medium text-white/70 mb-1">{c.linksLabel}</p>
+        <p className="text-xs font-medium text-fg-soft mb-1">{c.linksLabel}</p>
         <div className="space-y-2">
           {SOCIAL_FIELDS.map((soc) => (
             <div key={soc.key} className="relative">
-              <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-white/40">{soc.icon}</span>
+              <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-fg-muted">{soc.icon}</span>
               <input
                 type="url"
                 value={values.social[soc.key]}
                 onChange={(e) => set("social", { ...values.social, [soc.key]: e.target.value } as typeof values.social)}
                 placeholder={soc.placeholder}
                 aria-label={soc.key}
-                className="w-full bg-[#1a1a1a] border border-white/10 rounded-lg pl-9 pr-3 py-2 text-sm text-white outline-none focus:border-white/25 transition-all placeholder-stone-600"
+                className="w-full bg-surface-2 border border-line rounded-lg pl-9 pr-3 py-2 text-sm text-fg outline-none focus:border-fg-muted/30 transition-all placeholder:text-fg-muted"
               />
             </div>
           ))}

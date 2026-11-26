@@ -31,17 +31,18 @@ export function NewGalleryForm({ onCreated, onCancel, initialData, autoSubmit }:
   }
 
   return (
-    <div className="bg-[#111111] border border-white/[0.1] rounded-2xl overflow-hidden">
+    <div className="bg-surface border border-line rounded-card overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-6 py-4 border-b border-white/[0.06]">
+      <div className="flex items-center justify-between px-6 py-4 border-b border-line">
         <div>
-          <h2 className="font-semibold text-white" style={{ fontFamily: "var(--font-brand), sans-serif" }}>{f.title}</h2>
-          <p className="text-xs text-white/60 mt-0.5">{f.subtitle}</p>
+          <h2 className="font-semibold text-fg" style={{ fontFamily: "var(--font-brand), sans-serif" }}>{f.title}</h2>
+          <p className="text-xs text-fg-muted mt-0.5">{f.subtitle}</p>
         </div>
         {onCancel && (
           <button
             onClick={onCancel}
-            className="w-8 h-8 flex items-center justify-center rounded-full text-white/60 hover:text-white hover:bg-white/[0.08] transition-colors"
+            aria-label={f.cancel}
+            className="w-8 h-8 flex items-center justify-center rounded-full text-fg-muted hover:text-fg hover:bg-surface-2 transition-colors"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -56,7 +57,7 @@ export function NewGalleryForm({ onCreated, onCancel, initialData, autoSubmit }:
         <SocialLinksField form={form} />
 
         {error && (
-          <div className="flex items-center gap-2 text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3">
+          <div className="flex items-center gap-2 text-sm text-danger bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3">
             <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
             </svg>
@@ -69,7 +70,7 @@ export function NewGalleryForm({ onCreated, onCancel, initialData, autoSubmit }:
             <button
               type="button"
               onClick={onCancel}
-              className="flex-1 border border-white/10 text-white rounded-xl py-2.5 text-sm font-medium hover:bg-white/[0.04] transition-colors"
+              className="flex-1 border border-line text-fg rounded-xl py-2.5 text-sm font-medium hover:bg-surface transition-colors"
             >
               {f.cancel}
             </button>
@@ -77,11 +78,11 @@ export function NewGalleryForm({ onCreated, onCancel, initialData, autoSubmit }:
           <button
             type="submit"
             disabled={loading}
-            className="flex-1 bg-white text-stone-900 rounded-xl py-2.5 text-sm font-medium hover:bg-stone-100 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+            className="flex-1 bg-accent text-canvas rounded-pill py-2.5 text-sm font-medium hover:brightness-110 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
           >
             {loading ? (
               <>
-                <div className="w-4 h-4 border-2 border-stone-400 border-t-stone-900 rounded-full animate-spin" />
+                <div className="w-4 h-4 border-2 border-canvas/30 border-t-canvas rounded-full animate-spin" />
                 {f.creating}
               </>
             ) : (

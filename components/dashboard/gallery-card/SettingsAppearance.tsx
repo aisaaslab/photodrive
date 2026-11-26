@@ -21,8 +21,8 @@ export function SettingsAppearance({ gallery, form, onChooseCover }: { gallery: 
           cover + position and the title font / color / size being
           edited. */}
       <div>
-        <p className="text-[11px] font-medium text-white/50 mb-1.5">{c.titlePreview}</p>
-        <div className="relative h-28 rounded-xl overflow-hidden border border-white/10 bg-gradient-to-br from-[#17509e] via-[#0d2d5c] to-stone-900">
+        <p className="text-[11px] font-medium text-fg-muted mb-1.5">{c.titlePreview}</p>
+        <div className="relative h-28 rounded-xl overflow-hidden border border-line bg-gradient-to-br from-[#17509e] via-[#0d2d5c] to-stone-900">
           {gallery.coverFileId && (
             // eslint-disable-next-line @next/next/no-img-element
             <img
@@ -51,7 +51,7 @@ export function SettingsAppearance({ gallery, form, onChooseCover }: { gallery: 
       <button
         type="button"
         onClick={() => onChooseCover()}
-        className="w-full flex items-center justify-center gap-1.5 bg-white/[0.03] border border-white/[0.08] rounded-lg px-3 py-2 text-xs text-white/70 hover:text-white hover:border-white/20 transition-all"
+        className="w-full flex items-center justify-center gap-1.5 bg-surface border border-line rounded-lg px-3 py-2 text-xs text-fg-soft hover:text-fg hover:border-fg-muted/30 transition-all"
       >
         <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.7}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25z" />
@@ -59,8 +59,8 @@ export function SettingsAppearance({ gallery, form, onChooseCover }: { gallery: 
         {gallery.coverFileId ? c.coverCurrent : c.chooseCover}
       </button>
 
-      <div className="bg-[#1a1a1a] border border-white/10 rounded-lg p-3 space-y-3">
-        <p className="text-xs font-medium text-white/70">{c.titleFontLabel}</p>
+      <div className="bg-surface-2 border border-line rounded-lg p-3 space-y-3">
+        <p className="text-xs font-medium text-fg-soft">{c.titleFontLabel}</p>
         <div className="grid grid-cols-5 gap-1.5">
           {(["classic", "serif", "script", "modern", "mono"] as const).map((fid) => (
             <button
@@ -69,16 +69,16 @@ export function SettingsAppearance({ gallery, form, onChooseCover }: { gallery: 
               aria-pressed={values.titleFont === fid}
               onClick={() => set("titleFont", fid)}
               className={`flex flex-col items-center gap-1 rounded-lg border py-2 px-1 transition-all ${
-                values.titleFont === fid ? "border-[#2dabe0] bg-[#2dabe0]/10" : "border-white/10 hover:border-white/25"
+                values.titleFont === fid ? "border-accent bg-accent/10" : "border-line hover:border-fg-muted/30"
               }`}
             >
-              <span className="text-white text-lg leading-none" style={{ fontFamily: titleFontFamily(fid) }}>Aa</span>
-              <span className="text-[9px] text-white/50">{titleFontLabel(fid, c)}</span>
+              <span className="text-fg text-lg leading-none" style={{ fontFamily: titleFontFamily(fid) }}>Aa</span>
+              <span className="text-[9px] text-fg-muted">{titleFontLabel(fid, c)}</span>
             </button>
           ))}
         </div>
 
-        <p className="text-xs font-medium text-white/70">{c.titleColorLabel}</p>
+        <p className="text-xs font-medium text-fg-soft">{c.titleColorLabel}</p>
         <div className="flex flex-wrap gap-2">
           {TITLE_COLORS.map((color) => (
             <button
@@ -89,14 +89,14 @@ export function SettingsAppearance({ gallery, form, onChooseCover }: { gallery: 
               aria-pressed={values.titleColor === color}
               onClick={() => set("titleColor", color)}
               className={`w-7 h-7 rounded-full border-2 transition-all ${
-                values.titleColor === color ? "border-[#2dabe0] ring-2 ring-[#2dabe0]/30 scale-110" : "border-white/20 hover:border-white/50"
+                values.titleColor === color ? "border-accent ring-2 ring-accent/30 scale-110" : "border-fg-muted/30 hover:border-white/50"
               }`}
               style={{ backgroundColor: color }}
             />
           ))}
         </div>
 
-        <p className="text-xs font-medium text-white/70">{c.titleSizeLabel}</p>
+        <p className="text-xs font-medium text-fg-soft">{c.titleSizeLabel}</p>
         <div className="grid grid-cols-4 gap-1.5">
           {(["sm", "md", "lg", "xl"] as const).map((sid, i) => (
             <button
@@ -105,11 +105,11 @@ export function SettingsAppearance({ gallery, form, onChooseCover }: { gallery: 
               aria-pressed={values.titleSize === sid}
               onClick={() => set("titleSize", sid)}
               className={`flex flex-col items-center gap-1 rounded-lg border py-2 px-1 transition-all ${
-                values.titleSize === sid ? "border-[#2dabe0] bg-[#2dabe0]/10" : "border-white/10 hover:border-white/25"
+                values.titleSize === sid ? "border-accent bg-accent/10" : "border-line hover:border-fg-muted/30"
               }`}
             >
-              <span className="text-white leading-none" style={{ fontSize: `${0.8 + i * 0.25}rem` }}>Aa</span>
-              <span className="text-[9px] text-white/50">{titleSizeLabel(sid, c)}</span>
+              <span className="text-fg leading-none" style={{ fontSize: `${0.8 + i * 0.25}rem` }}>Aa</span>
+              <span className="text-[9px] text-fg-muted">{titleSizeLabel(sid, c)}</span>
             </button>
           ))}
         </div>
@@ -117,10 +117,10 @@ export function SettingsAppearance({ gallery, form, onChooseCover }: { gallery: 
 
       {/* Header branding: swap the PhotoDrive logo at the top of the
           public gallery for the photographer's own avatar + name. */}
-      <div className="flex items-start justify-between gap-3 bg-white/[0.03] border border-white/[0.06] rounded-lg px-3 py-2.5">
+      <div className="flex items-start justify-between gap-3 bg-surface border border-line rounded-lg px-3 py-2.5">
         <span>
-          <span id={`brand-${gallery.id}`} className="block text-xs font-medium text-white/80">{c.headerBrandingLabel}</span>
-          <span className="block text-[11px] text-white/40 mt-0.5">{c.headerBrandingHint}</span>
+          <span id={`brand-${gallery.id}`} className="block text-xs font-medium text-fg-soft">{c.headerBrandingLabel}</span>
+          <span className="block text-[11px] text-fg-muted mt-0.5">{c.headerBrandingHint}</span>
         </span>
         <button
           type="button"
@@ -128,7 +128,7 @@ export function SettingsAppearance({ gallery, form, onChooseCover }: { gallery: 
           aria-checked={values.headerBranding}
           aria-labelledby={`brand-${gallery.id}`}
           onClick={() => set("headerBranding", !values.headerBranding)}
-          className={`relative w-9 h-5 rounded-full transition-colors shrink-0 mt-0.5 ${values.headerBranding ? "bg-[#17509e]" : "bg-white/10"}`}
+          className={`relative w-9 h-5 rounded-full transition-colors shrink-0 mt-0.5 ${values.headerBranding ? "bg-accent-deep" : "bg-surface-2"}`}
         >
           <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow-sm transition-transform ${values.headerBranding ? "translate-x-4" : "translate-x-0.5"}`} />
         </button>

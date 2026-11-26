@@ -5,7 +5,7 @@ import { auth } from "@/lib/firebase/client";
 import { useRouter } from "next/navigation";
 import { useLanguage } from "@/lib/i18n";
 
-export function GoogleSignInButton() {
+export function GoogleSignInButton({ disabled }: { disabled?: boolean }) {
   const { t } = useLanguage();
   const router = useRouter();
 
@@ -17,8 +17,10 @@ export function GoogleSignInButton() {
 
   return (
     <button
+      type="button"
       onClick={handleSignIn}
-      className="flex items-center gap-3 bg-white text-gray-700 border border-gray-300 rounded-xl px-6 py-3 text-sm font-medium shadow-sm hover:shadow-md transition-all duration-200 hover:border-gray-400"
+      disabled={disabled}
+      className="flex items-center gap-3 bg-white text-gray-700 border border-gray-300 rounded-pill px-6 py-3 text-sm font-medium shadow-sm hover:shadow-md transition-all duration-200 hover:border-gray-400 disabled:opacity-50 disabled:cursor-not-allowed"
     >
       <svg className="w-5 h-5" viewBox="0 0 24 24">
         <path

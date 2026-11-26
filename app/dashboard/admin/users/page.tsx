@@ -60,7 +60,7 @@ const flagLabel = (f: Pick<PaymentFlag, "status" | "needsReview">) =>
         : f.status === "dispute_lost" ? "Dispute lost"
           : "Needs review";
 const flagStyle = (f: Pick<PaymentFlag, "status">) =>
-  f.status === "dispute_lost" || f.status === "disputed" ? "bg-red-500/10 text-red-400 border-red-500/20" : "bg-amber-500/10 text-amber-300 border-amber-500/20";
+  f.status === "dispute_lost" || f.status === "disputed" ? "bg-red-500/10 text-danger border-red-500/20" : "bg-amber-500/10 text-amber-300 border-amber-500/20";
 
 const SOURCE_LABEL: Record<"admin" | "free_code" | "paid", string> = {
   admin: "Admin grant",
@@ -69,9 +69,9 @@ const SOURCE_LABEL: Record<"admin" | "free_code" | "paid", string> = {
 };
 
 const SOURCE_STYLE: Record<"admin" | "free_code" | "paid", string> = {
-  admin: "bg-[#17509e]/10 text-[#2dabe0] border-[#17509e]/30",
+  admin: "bg-accent-deep/10 text-accent border-accent-deep/30",
   free_code: "bg-amber-500/10 text-amber-300 border-amber-500/25",
-  paid: "bg-white/[0.05] text-stone-300 border-white/10",
+  paid: "bg-surface-2 text-fg-soft border-line",
 };
 
 function formatPaid(cents: number | null, currency: string | null) {
@@ -96,10 +96,10 @@ function Avatar({ src, name, size = 7 }: { src?: string | null; name: string; si
   const dims = AVATAR_SIZES[size] ?? AVATAR_SIZES[7];
   if (src) {
     // eslint-disable-next-line @next/next/no-img-element
-    return <img src={src} alt={name} className={`${dims} rounded-full ring-1 ring-white/10 object-cover`} />;
+    return <img src={src} alt={name} className={`${dims} rounded-full ring-1 ring-line object-cover`} />;
   }
   return (
-    <div className={`${dims} rounded-full bg-[#17509e]/20 flex items-center justify-center text-xs font-bold text-[#2dabe0] ring-1 ring-[#17509e]/20`}>
+    <div className={`${dims} rounded-full bg-accent-deep/20 flex items-center justify-center text-xs font-bold text-accent ring-1 ring-accent-deep/20`}>
       {initials}
     </div>
   );
@@ -320,7 +320,7 @@ export default function AdminUsersPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-32">
-        <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+        <div className="w-5 h-5 border-2 border-fg-muted/30 border-t-white rounded-full animate-spin" />
       </div>
     );
   }
@@ -341,16 +341,16 @@ export default function AdminUsersPage() {
     <div>
       <div className="flex items-end justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-white" style={{ fontFamily: "var(--font-brand), sans-serif" }}>
+          <h1 className="text-2xl font-bold text-fg" style={{ fontFamily: "var(--font-brand), sans-serif" }}>
             Users
           </h1>
-          <p className="text-sm text-stone-400 mt-1">
+          <p className="text-sm text-fg-muted mt-1">
             {users.length} account{users.length === 1 ? "" : "s"} · create accounts, assign plans, manage galleries.
           </p>
         </div>
         <button
           onClick={() => setCreateOpen(true)}
-          className="shrink-0 flex items-center gap-2 bg-[#17509e] text-white text-sm font-semibold px-4 py-2.5 rounded-xl hover:bg-[#103a75] transition-colors"
+          className="shrink-0 flex items-center gap-2 bg-accent-deep text-fg text-sm font-semibold px-4 py-2.5 rounded-xl hover:bg-accent-deep transition-colors"
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M18 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zM3 19.235v-.11a6.375 6.375 0 0112.75 0v.109A12.318 12.318 0 010.75 19.235z" />
@@ -362,7 +362,7 @@ export default function AdminUsersPage() {
       {/* Search + sort */}
       <div className="flex gap-3 mb-6">
         <div className="relative flex-1">
-          <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-fg-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
           </svg>
           <input
@@ -370,13 +370,13 @@ export default function AdminUsersPage() {
             placeholder="Search photographer, email, gallery, promo code..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-white/[0.05] border border-white/[0.08] rounded-xl pl-9 pr-4 py-2.5 text-sm text-white placeholder:text-stone-500 focus:outline-none focus:border-white/20"
+            className="w-full bg-surface-2 border border-line rounded-xl pl-9 pr-4 py-2.5 text-sm text-fg placeholder:text-fg-muted focus:outline-none focus:border-fg-muted/30"
           />
         </div>
         <select
           value={sort}
           onChange={(e) => setSort(e.target.value as typeof sort)}
-          className="bg-[#111111] border border-white/[0.08] rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-white/20 cursor-pointer shrink-0"
+          className="bg-surface border border-line rounded-xl px-3 py-2.5 text-sm text-fg focus:outline-none focus:border-fg-muted/30 cursor-pointer shrink-0"
         >
           <option value="newest">Newest sign-ups</option>
           <option value="oldest">Oldest sign-ups</option>
@@ -398,13 +398,13 @@ export default function AdminUsersPage() {
             key={key}
             onClick={() => setSourceFilter(key)}
             aria-pressed={sourceFilter === key}
-            className={`text-xs font-semibold px-3 py-1.5 rounded-full border transition-colors ${
+            className={`text-xs font-semibold px-3 py-1.5 rounded-pill border transition-colors ${
               sourceFilter === key
-                ? "bg-white text-stone-900 border-white"
-                : "bg-white/[0.03] text-stone-400 border-white/[0.08] hover:text-white hover:border-white/20"
+                ? "bg-accent text-canvas border-white"
+                : "bg-surface text-fg-muted border-line hover:text-fg hover:border-fg-muted/30"
             }`}
           >
-            {label} <span className={sourceFilter === key ? "text-stone-500" : "text-stone-600"}>{sourceCounts[key]}</span>
+            {label} <span className={sourceFilter === key ? "text-fg-muted" : "text-fg-muted"}>{sourceCounts[key]}</span>
           </button>
         ))}
         {/* Customers with a refunded, disputed or flagged payment (S2-09) */}
@@ -414,7 +414,7 @@ export default function AdminUsersPage() {
           className={`text-xs font-semibold px-3 py-1.5 rounded-full border transition-colors ml-auto ${
             issuesOnly
               ? "bg-amber-400 text-stone-900 border-amber-400"
-              : "bg-white/[0.03] text-amber-300 border-amber-500/20 hover:border-amber-500/40"
+              : "bg-surface text-amber-300 border-amber-500/20 hover:border-amber-500/40"
           }`}
         >
           Payment issues <span className={issuesOnly ? "text-stone-700" : "text-amber-400/70"}>{issueCount}</span>
@@ -424,7 +424,7 @@ export default function AdminUsersPage() {
       {/* Photographers list */}
       <div className="space-y-3">
         {sortedUsers.length === 0 && (
-          <div className="text-center py-16 text-stone-500">No results found</div>
+          <div className="text-center py-16 text-fg-muted">No results found</div>
         )}
         {sortedUsers.map((u) => {
           const userGalleries = galleriesFor(u.uid);
@@ -432,31 +432,31 @@ export default function AdminUsersPage() {
           const selectedPlan = planSelect[u.uid] ?? "";
 
           return (
-            <div key={u.uid} className="bg-white/[0.03] border border-white/[0.06] rounded-2xl overflow-hidden">
+            <div key={u.uid} className="bg-surface border border-line rounded-card overflow-hidden">
               {/* Photographer row */}
               <button
-                className="w-full flex items-center gap-4 px-5 py-4 hover:bg-white/[0.02] transition-colors text-left"
+                className="w-full flex items-center gap-4 px-5 py-4 hover:bg-surface transition-colors text-left"
                 onClick={() => setExpandedUid(isExpanded ? null : u.uid)}
               >
                 <Avatar src={u.photoURL} name={u.displayName || u.email} size={9} />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-semibold text-white text-sm" style={{ fontFamily: "var(--font-brand), sans-serif" }}>
+                    <span className="font-semibold text-fg text-sm" style={{ fontFamily: "var(--font-brand), sans-serif" }}>
                       {u.displayName || "—"}
                     </span>
-                    <span className="text-xs text-stone-500">{u.email}</span>
+                    <span className="text-xs text-fg-muted">{u.email}</span>
                   </div>
-                  <div className="text-xs text-stone-500 mt-0.5">
+                  <div className="text-xs text-fg-muted mt-0.5">
                     Joined: {formatDate(u.createdAt)} · Last sign-in: {formatDate(u.lastSignIn)}
                   </div>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                   {u.subscriptionActive ? (
-                    <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                    <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-500/10 text-success-bright border border-emerald-500/20">
                       ✓ {u.planName ? `${u.planName} (${u.planInterval})` : "Active"} {u.subscriptionExpiresAt ? (u.subscriptionExpiresAt > 4102444800000 ? "· lifetime" : `until ${formatDate(u.subscriptionExpiresAt)}`) : ""}
                     </span>
                   ) : (
-                    <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-white/[0.04] text-stone-500 border border-white/[0.06]">
+                    <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-surface text-fg-muted border border-line">
                       No subscription
                     </span>
                   )}
@@ -482,11 +482,11 @@ export default function AdminUsersPage() {
                       {flagLabel(u.paymentFlags[0])}{u.paymentFlags.length > 1 ? ` +${u.paymentFlags.length - 1}` : ""}
                     </span>
                   )}
-                  <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${userGalleries.length > 0 ? "bg-[#17509e]/10 text-[#2dabe0] border border-[#17509e]/20" : "bg-white/[0.04] text-stone-500 border border-white/[0.06]"}`}>
+                  <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${userGalleries.length > 0 ? "bg-accent-deep/10 text-accent border border-accent-deep/20" : "bg-surface text-fg-muted border border-line"}`}>
                     {userGalleries.length} {userGalleries.length === 1 ? "gallery" : "galleries"}
                   </span>
                   <svg
-                    className={`w-4 h-4 text-stone-500 transition-transform ${isExpanded ? "rotate-180" : ""}`}
+                    className={`w-4 h-4 text-fg-muted transition-transform ${isExpanded ? "rotate-180" : ""}`}
                     fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
                   >
                     <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
@@ -496,21 +496,21 @@ export default function AdminUsersPage() {
 
               {/* Expanded section */}
               {isExpanded && (
-                <div className="border-t border-white/[0.06]">
+                <div className="border-t border-line">
                   {/* Payment issues: refunded, disputed or flagged for review (S2-09) */}
                   {u.paymentFlags.length > 0 && (
-                    <div className="px-5 py-4 border-b border-white/[0.06] bg-amber-500/[0.03]">
+                    <div className="px-5 py-4 border-b border-line bg-amber-500/[0.03]">
                       <p className="text-xs font-semibold text-amber-300 mb-2">Payment issues</p>
                       <ul className="space-y-1.5">
                         {u.paymentFlags.map((f) => (
-                          <li key={f.sessionId} className="text-xs text-stone-300">
+                          <li key={f.sessionId} className="text-xs text-fg-soft">
                             <span className={`inline-block font-semibold px-2 py-0.5 rounded-full border mr-2 ${flagStyle(f)}`}>{flagLabel(f)}</span>
                             {f.amountTotal !== null && <>{formatPaid(f.amountTotal, f.currency)}</>}
                             {f.refundedAmount !== null && f.refundedAmount > 0 && <> · refunded {formatPaid(f.refundedAmount, f.currency)}</>}
                             {f.activatedAt > 0 && <> · {formatDate(f.activatedAt)}</>}
                             {f.needsReview && f.status !== "fulfilled" && <span className="text-amber-300"> · needs review</span>}
-                            <span className="block text-stone-500 font-mono mt-0.5">{f.sessionId}</span>
-                            {f.reviewNote && <span className="block text-stone-500 mt-0.5">{f.reviewNote}</span>}
+                            <span className="block text-fg-muted font-mono mt-0.5">{f.sessionId}</span>
+                            {f.reviewNote && <span className="block text-fg-muted mt-0.5">{f.reviewNote}</span>}
                             {f.needsReview && (
                               <button
                                 type="button"
@@ -527,11 +527,11 @@ export default function AdminUsersPage() {
                   )}
 
                   {/* Subscription / access control */}
-                  <div className="px-5 py-4 border-b border-white/[0.06]">
+                  <div className="px-5 py-4 border-b border-line">
                     {u.accessSource && (
-                      <p className="text-xs text-stone-400 mb-3">
-                        <span className="text-stone-500">How they got access:</span>{" "}
-                        <span className="text-white font-medium">{SOURCE_LABEL[u.accessSource]}</span>
+                      <p className="text-xs text-fg-muted mb-3">
+                        <span className="text-fg-muted">How they got access:</span>{" "}
+                        <span className="text-fg font-medium">{SOURCE_LABEL[u.accessSource]}</span>
                         {u.accessSource === "free_code" && u.promoCode && <> · code <span className="font-mono text-amber-300">{u.promoCode}</span></>}
                         {u.accessSource !== "admin" && u.lastPaymentCents !== null && <> · charged {formatPaid(u.lastPaymentCents, u.lastPaymentCurrency)}</>}
                         {u.planName && <> · {u.planName}{u.planInterval ? ` (${u.planInterval})` : ""}</>}
@@ -539,11 +539,11 @@ export default function AdminUsersPage() {
                       </p>
                     )}
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-xs text-stone-400 mr-1">Access / Subscription:</span>
+                      <span className="text-xs text-fg-muted mr-1">Access / Subscription:</span>
                       <select
                         value={selectedPlan}
                         onChange={(e) => setPlanSelect((prev) => ({ ...prev, [u.uid]: e.target.value }))}
-                        className="bg-[#111111] border border-white/[0.08] rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-white/20 cursor-pointer"
+                        className="bg-surface border border-line rounded-lg px-2.5 py-1.5 text-xs text-fg focus:outline-none focus:border-fg-muted/30 cursor-pointer"
                       >
                         <option value="">Choose plan…</option>
                         {plans.map((p) => (
@@ -556,16 +556,16 @@ export default function AdminUsersPage() {
                         onClick={() => selectedPlan && setSubscription(u.uid, "assign_plan", selectedPlan)}
                         disabled={subBusy === u.uid || !selectedPlan}
                         title="Activates the chosen plan on this account immediately"
-                        className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-[#17509e] text-white hover:bg-[#103a75] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-accent-deep text-fg hover:bg-accent-deep disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                       >
                         Assign plan
                       </button>
-                      <span className="w-px h-4 bg-white/10" />
+                      <span className="w-px h-4 bg-surface-2" />
                       <button
                         onClick={() => setSubscription(u.uid, "grant_lifetime")}
                         disabled={subBusy === u.uid}
                         title="Grants complimentary lifetime access"
-                        className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-[#17509e]/40 text-[#2dabe0] hover:border-[#17509e] disabled:opacity-50 transition-colors"
+                        className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-accent-deep/40 text-accent hover:border-accent-deep disabled:opacity-50 transition-colors"
                       >
                         Free lifetime
                       </button>
@@ -573,24 +573,24 @@ export default function AdminUsersPage() {
                         onClick={() => setSubscription(u.uid, "grant_year")}
                         disabled={subBusy === u.uid}
                         title="Grants complimentary access for one year"
-                        className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-[#17509e]/40 text-[#2dabe0] hover:border-[#17509e] disabled:opacity-50 transition-colors"
+                        className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-accent-deep/40 text-accent hover:border-accent-deep disabled:opacity-50 transition-colors"
                       >
                         +1 year
                       </button>
                       {revokeConfirm === u.uid ? (
                         <span className="flex items-center gap-1.5">
-                          <span className="text-xs text-red-400">Remove access?</span>
+                          <span className="text-xs text-danger">Remove access?</span>
                           <button
                             onClick={() => setSubscription(u.uid, "revoke")}
                             disabled={subBusy === u.uid}
                             title="Removes the subscription — the account stays, premium access goes"
-                            className="px-2.5 py-1.5 text-xs font-semibold rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 disabled:opacity-50 transition-colors"
+                            className="px-2.5 py-1.5 text-xs font-semibold rounded-lg bg-red-500/10 border border-red-500/30 text-danger hover:bg-red-500/20 disabled:opacity-50 transition-colors"
                           >
                             {subBusy === u.uid ? "..." : "Yes, revoke"}
                           </button>
                           <button
                             onClick={() => setRevokeConfirm(null)}
-                            className="px-2.5 py-1.5 border border-white/10 text-stone-400 text-xs rounded-lg"
+                            className="px-2.5 py-1.5 border border-line text-fg-muted text-xs rounded-lg"
                           >
                             No
                           </button>
@@ -600,31 +600,31 @@ export default function AdminUsersPage() {
                           onClick={() => setRevokeConfirm(u.uid)}
                           disabled={subBusy === u.uid}
                           title="Removes the subscription — the account stays, premium access goes"
-                          className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-red-500/30 text-red-400 hover:bg-red-500/10 disabled:opacity-50 transition-colors"
+                          className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-red-500/30 text-danger hover:bg-red-500/10 disabled:opacity-50 transition-colors"
                         >
                           Revoke access
                         </button>
                       )}
                       {subBusy === u.uid && (
-                        <span className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                        <span className="w-4 h-4 border-2 border-fg-muted/30 border-t-white rounded-full animate-spin" />
                       )}
                     </div>
-                    <p className="text-[11px] text-stone-600 mt-2">
+                    <p className="text-[11px] text-fg-muted mt-2">
                       Revoke removes premium access but keeps the account. Deleting (below) removes the account, its subscription and its galleries permanently.
                     </p>
                     {subMessage[u.uid] && (
-                      <p className={`text-xs mt-2 ${subMessage[u.uid].kind === "ok" ? "text-emerald-400" : "text-red-400"}`}>
+                      <p className={`text-xs mt-2 ${subMessage[u.uid].kind === "ok" ? "text-success-bright" : "text-danger"}`}>
                         {subMessage[u.uid].kind === "ok" ? "✓ " : ""}{subMessage[u.uid].text}
                       </p>
                     )}
                     {plans.length === 0 && (
-                      <p className="text-[11px] text-stone-600 mt-2">
+                      <p className="text-[11px] text-fg-muted mt-2">
                         No payment plans yet — create one in the Plans tab to assign it here.
                       </p>
                     )}
                   </div>
                   {userGalleries.length === 0 ? (
-                    <div className="px-5 py-6 text-sm text-stone-500">No galleries yet.</div>
+                    <div className="px-5 py-6 text-sm text-fg-muted">No galleries yet.</div>
                   ) : (
                     <div className="divide-y divide-white/[0.04]">
                       {userGalleries.map((g) => (
@@ -634,19 +634,19 @@ export default function AdminUsersPage() {
                             <div className="space-y-3">
                               <div className="grid sm:grid-cols-2 gap-3">
                                 <div>
-                                  <label className="block text-xs text-stone-400 mb-1">Name</label>
+                                  <label className="block text-xs text-fg-muted mb-1">Name</label>
                                   <input
                                     value={editName}
                                     onChange={(e) => setEditName(e.target.value)}
-                                    className="w-full bg-white/[0.06] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-white/25"
+                                    className="w-full bg-surface-2 border border-line rounded-lg px-3 py-2 text-sm text-fg focus:outline-none focus:border-fg-muted/30"
                                   />
                                 </div>
                                 <div>
-                                  <label className="block text-xs text-stone-400 mb-1">Visibility</label>
+                                  <label className="block text-xs text-fg-muted mb-1">Visibility</label>
                                   <select
                                     value={editVisibility}
                                     onChange={(e) => setEditVisibility(e.target.value as "public" | "private")}
-                                    className="w-full bg-white/[0.06] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-white/25"
+                                    className="w-full bg-surface-2 border border-line rounded-lg px-3 py-2 text-sm text-fg focus:outline-none focus:border-fg-muted/30"
                                   >
                                     <option value="public">Public (no password)</option>
                                     <option value="private">Private (password required)</option>
@@ -657,49 +657,49 @@ export default function AdminUsersPage() {
                                       onChange={(e) => setEditPassword(e.target.value)}
                                       placeholder="Password (required)"
                                       maxLength={200}
-                                      className="mt-2 w-full bg-white/[0.06] border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-stone-600 focus:outline-none focus:border-white/25"
+                                      className="mt-2 w-full bg-surface-2 border border-line rounded-lg px-3 py-2 text-sm text-fg placeholder:text-fg-muted focus:outline-none focus:border-fg-muted/30"
                                     />
                                   )}
                                   {editVisibility === "public" && g.passwordHash && (
                                     <p className="mt-1 text-xs text-amber-300">Saving as public removes this gallery&apos;s password.</p>
                                   )}
-                                  {editError && <p className="mt-1 text-xs text-red-400">{editError}</p>}
+                                  {editError && <p className="mt-1 text-xs text-danger">{editError}</p>}
                                 </div>
                               </div>
                               <div>
-                                <label className="block text-xs text-stone-400 mb-1">Google Drive URL</label>
+                                <label className="block text-xs text-fg-muted mb-1">Google Drive URL</label>
                                 <input
                                   value={editDriveUrl}
                                   onChange={(e) => setEditDriveUrl(e.target.value)}
-                                  className="w-full bg-white/[0.06] border border-white/10 rounded-lg px-3 py-2 text-sm text-white font-mono text-xs focus:outline-none focus:border-white/25"
+                                  className="w-full bg-surface-2 border border-line rounded-lg px-3 py-2 text-sm text-fg font-mono text-xs focus:outline-none focus:border-fg-muted/30"
                                 />
                               </div>
                               <div className="grid sm:grid-cols-3 gap-3">
                                 <div>
-                                  <label className="block text-xs text-stone-400 mb-1">Website</label>
+                                  <label className="block text-xs text-fg-muted mb-1">Website</label>
                                   <input
                                     value={editSocial.website}
                                     onChange={(e) => setEditSocial((s) => ({ ...s, website: e.target.value }))}
                                     placeholder="https://..."
-                                    className="w-full bg-white/[0.06] border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-stone-600 focus:outline-none focus:border-white/25"
+                                    className="w-full bg-surface-2 border border-line rounded-lg px-3 py-2 text-sm text-fg placeholder:text-fg-muted focus:outline-none focus:border-fg-muted/30"
                                   />
                                 </div>
                                 <div>
-                                  <label className="block text-xs text-stone-400 mb-1">Instagram</label>
+                                  <label className="block text-xs text-fg-muted mb-1">Instagram</label>
                                   <input
                                     value={editSocial.instagram}
                                     onChange={(e) => setEditSocial((s) => ({ ...s, instagram: e.target.value }))}
                                     placeholder="https://instagram.com/..."
-                                    className="w-full bg-white/[0.06] border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-stone-600 focus:outline-none focus:border-white/25"
+                                    className="w-full bg-surface-2 border border-line rounded-lg px-3 py-2 text-sm text-fg placeholder:text-fg-muted focus:outline-none focus:border-fg-muted/30"
                                   />
                                 </div>
                                 <div>
-                                  <label className="block text-xs text-stone-400 mb-1">Facebook</label>
+                                  <label className="block text-xs text-fg-muted mb-1">Facebook</label>
                                   <input
                                     value={editSocial.facebook}
                                     onChange={(e) => setEditSocial((s) => ({ ...s, facebook: e.target.value }))}
                                     placeholder="https://facebook.com/..."
-                                    className="w-full bg-white/[0.06] border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-stone-600 focus:outline-none focus:border-white/25"
+                                    className="w-full bg-surface-2 border border-line rounded-lg px-3 py-2 text-sm text-fg placeholder:text-fg-muted focus:outline-none focus:border-fg-muted/30"
                                   />
                                 </div>
                               </div>
@@ -707,13 +707,13 @@ export default function AdminUsersPage() {
                                 <button
                                   onClick={() => saveEdit(g.id)}
                                   disabled={editSaving}
-                                  className="px-4 py-2 bg-white text-stone-900 text-sm font-semibold rounded-lg hover:bg-stone-100 disabled:opacity-50 transition-colors"
+                                  className="px-4 py-2 bg-accent text-canvas text-sm font-semibold rounded-pill hover:brightness-110 disabled:opacity-50 transition-colors"
                                 >
                                   {editSaving ? "Saving..." : "Save"}
                                 </button>
                                 <button
                                   onClick={() => setEditingId(null)}
-                                  className="px-4 py-2 border border-white/10 text-stone-400 text-sm rounded-lg hover:text-white transition-colors"
+                                  className="px-4 py-2 border border-line text-fg-muted text-sm rounded-lg hover:text-fg transition-colors"
                                 >
                                   Cancel
                                 </button>
@@ -724,12 +724,12 @@ export default function AdminUsersPage() {
                             <div className="flex items-center gap-4">
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-2 flex-wrap">
-                                  <span className="font-medium text-white text-sm">{g.name}</span>
+                                  <span className="font-medium text-fg text-sm">{g.name}</span>
                                   {!g.passwordHash && (
-                                    <span className="text-xs bg-black/40 border border-white/10 text-stone-500 px-2 py-0.5 rounded-full">Public</span>
+                                    <span className="text-xs bg-black/40 border border-line text-fg-muted px-2 py-0.5 rounded-full">Public</span>
                                   )}
                                   {g.passwordHash && (
-                                    <span className="text-xs bg-black/40 border border-white/10 text-stone-400 px-2 py-0.5 rounded-full flex items-center gap-1">
+                                    <span className="text-xs bg-black/40 border border-line text-fg-muted px-2 py-0.5 rounded-full flex items-center gap-1">
                                       <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
                                       </svg>
@@ -737,7 +737,7 @@ export default function AdminUsersPage() {
                                     </span>
                                   )}
                                 </div>
-                                <div className="text-xs text-stone-500 mt-0.5 font-mono">/gallery/{g.slug} · {formatDate(g.createdAt)}</div>
+                                <div className="text-xs text-fg-muted mt-0.5 font-mono">/gallery/{g.slug} · {formatDate(g.createdAt)}</div>
                               </div>
                               <div className="flex items-center gap-1.5 shrink-0">
                                 {/* View */}
@@ -745,7 +745,7 @@ export default function AdminUsersPage() {
                                   href={`/gallery/${g.slug}`}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="p-1.5 border border-white/10 rounded-lg text-stone-400 hover:text-white hover:border-white/20 transition-colors"
+                                  className="p-1.5 border border-line rounded-lg text-fg-muted hover:text-fg hover:border-fg-muted/30 transition-colors"
                                   title="View gallery"
                                 >
                                   <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -757,7 +757,7 @@ export default function AdminUsersPage() {
                                   href={`https://drive.google.com/drive/folders/${g.folderId}`}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="p-1.5 border border-white/10 rounded-lg text-stone-400 hover:text-white hover:border-white/20 transition-colors"
+                                  className="p-1.5 border border-line rounded-lg text-fg-muted hover:text-fg hover:border-fg-muted/30 transition-colors"
                                   title="Drive folder"
                                 >
                                   <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -767,7 +767,7 @@ export default function AdminUsersPage() {
                                 {/* Edit */}
                                 <button
                                   onClick={() => startEdit(g)}
-                                  className="p-1.5 border border-white/10 rounded-lg text-stone-400 hover:text-white hover:border-white/20 transition-colors"
+                                  className="p-1.5 border border-line rounded-lg text-fg-muted hover:text-fg hover:border-fg-muted/30 transition-colors"
                                   title="Edit"
                                 >
                                   <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -777,17 +777,17 @@ export default function AdminUsersPage() {
                                 {/* Delete */}
                                 {deleteConfirm === g.id ? (
                                   <div className="flex items-center gap-1.5">
-                                    <span className="text-xs text-red-400">Sure?</span>
+                                    <span className="text-xs text-danger">Sure?</span>
                                     <button
                                       onClick={() => deleteGallery(g.id)}
                                       disabled={deletingId === g.id}
-                                      className="px-2 py-1 bg-red-500/10 border border-red-500/30 text-red-400 text-xs rounded-lg hover:bg-red-500/20 disabled:opacity-50"
+                                      className="px-2 py-1 bg-red-500/10 border border-red-500/30 text-danger text-xs rounded-lg hover:bg-red-500/20 disabled:opacity-50"
                                     >
                                       {deletingId === g.id ? "..." : "Yes"}
                                     </button>
                                     <button
                                       onClick={() => setDeleteConfirm(null)}
-                                      className="px-2 py-1 border border-white/10 text-stone-400 text-xs rounded-lg"
+                                      className="px-2 py-1 border border-line text-fg-muted text-xs rounded-lg"
                                     >
                                       No
                                     </button>
@@ -795,7 +795,7 @@ export default function AdminUsersPage() {
                                 ) : (
                                   <button
                                     onClick={() => setDeleteConfirm(g.id)}
-                                    className="p-1.5 border border-white/10 rounded-lg text-stone-400 hover:text-red-400 hover:border-red-500/30 transition-colors"
+                                    className="p-1.5 border border-line rounded-lg text-fg-muted hover:text-danger hover:border-red-500/30 transition-colors"
                                     title="Delete"
                                   >
                                     <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -813,24 +813,24 @@ export default function AdminUsersPage() {
                   {/* Danger zone: permanent user delete */}
                   <div className="px-5 py-4 border-t border-red-500/10 bg-red-500/[0.02] flex items-center justify-between gap-3 flex-wrap">
                     <div>
-                      <p className="text-xs font-semibold text-red-400">Delete user permanently</p>
-                      <p className="text-[11px] text-stone-500 mt-0.5">
+                      <p className="text-xs font-semibold text-danger">Delete user permanently</p>
+                      <p className="text-[11px] text-fg-muted mt-0.5">
                         Removes the account, its subscription and {userGalleries.length} {userGalleries.length === 1 ? "gallery" : "galleries"}. No need to revoke first. Cannot be undone.
                       </p>
                     </div>
                     {userDeleteConfirm === u.uid ? (
                       <div className="flex items-center gap-1.5">
-                        <span className="text-xs text-red-400">Sure?</span>
+                        <span className="text-xs text-danger">Sure?</span>
                         <button
                           onClick={() => deleteUser(u.uid)}
                           disabled={userDeletingId === u.uid}
-                          className="px-3 py-1.5 bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-semibold rounded-lg hover:bg-red-500/20 disabled:opacity-50"
+                          className="px-3 py-1.5 bg-red-500/10 border border-red-500/30 text-danger text-xs font-semibold rounded-lg hover:bg-red-500/20 disabled:opacity-50"
                         >
                           {userDeletingId === u.uid ? "Deleting..." : "Yes, delete"}
                         </button>
                         <button
                           onClick={() => setUserDeleteConfirm(null)}
-                          className="px-3 py-1.5 border border-white/10 text-stone-400 text-xs rounded-lg"
+                          className="px-3 py-1.5 border border-line text-fg-muted text-xs rounded-lg"
                         >
                           No
                         </button>
@@ -838,7 +838,7 @@ export default function AdminUsersPage() {
                     ) : (
                       <button
                         onClick={() => setUserDeleteConfirm(u.uid)}
-                        className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-red-500/30 text-red-400 hover:bg-red-500/10 transition-colors"
+                        className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-red-500/30 text-danger hover:bg-red-500/10 transition-colors"
                       >
                         Delete user…
                       </button>

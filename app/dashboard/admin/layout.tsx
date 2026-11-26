@@ -42,7 +42,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   if (loading || checking) {
     return (
       <div className="flex items-center justify-center py-32">
-        <div className="w-5 h-5 border-2 border-white/10 border-t-white/60 rounded-full animate-spin" />
+        <div className="w-5 h-5 border-2 border-line border-t-white/60 rounded-full animate-spin" />
       </div>
     );
   }
@@ -54,7 +54,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       {/* Back-office sub-nav */}
       <div className="flex items-center justify-between gap-3 mb-8">
         <div className="flex items-center gap-1.5 flex-wrap">
-          <span className="text-[10px] font-semibold tracking-widest uppercase text-[#2dabe0] border border-[#17509e]/30 bg-[#17509e]/10 rounded-md px-2 py-1 mr-1.5">
+          <span className="text-[10px] font-semibold tracking-widest uppercase text-accent border border-accent-deep/30 bg-accent-deep/10 rounded-md px-2 py-1 mr-1.5">
             Admin
           </span>
           {TABS.map((tab) => {
@@ -63,10 +63,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <Link
                 key={tab.href}
                 href={tab.href}
-                className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                className={`px-4 py-1.5 rounded-pill text-sm font-medium transition-colors ${
                   active
-                    ? "bg-white text-stone-900"
-                    : "text-stone-400 hover:text-white hover:bg-white/[0.06]"
+                    ? "bg-accent text-canvas"
+                    : "text-fg-muted hover:text-fg hover:bg-surface-2"
                 }`}
               >
                 {tab.label}
@@ -79,7 +79,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             href="/"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-xs text-white/50 hover:text-white transition-colors"
+            className="text-xs text-fg-muted hover:text-fg transition-colors"
             title="Open the site in a new tab"
           >
             View site ↗
@@ -88,15 +88,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             href="/#pricing"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-xs text-white/50 hover:text-white transition-colors"
+            className="text-xs text-fg-muted hover:text-fg transition-colors"
             title="Open the pricing section in a new tab to check your changes"
           >
             Pricing ↗
           </a>
-          <span className="w-px h-3 bg-white/10" />
+          <span className="w-px h-3 bg-surface-2" />
           <Link
             href="/dashboard"
-            className="text-xs text-white/50 hover:text-white transition-colors shrink-0"
+            className="text-xs text-fg-muted hover:text-fg transition-colors shrink-0"
           >
             ← Dashboard
           </Link>

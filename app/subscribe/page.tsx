@@ -159,8 +159,8 @@ export default function SubscribePage() {
 
   if (checking) {
     return (
-      <main className="min-h-screen bg-[#080808] text-white flex items-center justify-center">
-        <div className="w-6 h-6 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+      <main className="min-h-screen bg-canvas text-fg flex items-center justify-center">
+        <div className="w-6 h-6 border-2 border-fg-muted/30 border-t-white rounded-full animate-spin" />
       </main>
     );
   }
@@ -175,11 +175,11 @@ export default function SubscribePage() {
     formatMoney(plan.priceCents, plan.currency, LOCALES[lang], { trimWholeNumbers: true });
 
   return (
-    <main className="min-h-screen bg-[#080808] text-white flex flex-col">
-      <div className="aurora-bg"><span /></div>
+    <main className="min-h-screen bg-canvas text-fg flex flex-col">
+      
 
       <nav className="relative z-50 flex items-center justify-between px-6 py-5">
-        <Link href="/" className="font-bold text-white text-lg" style={{ fontFamily: "var(--font-brand), sans-serif" }}>
+        <Link href="/" className="font-bold text-fg text-lg" style={{ fontFamily: "var(--font-brand), sans-serif" }}>
           {APP_NAME}
         </Link>
         <LanguageSwitcher />
@@ -192,16 +192,16 @@ export default function SubscribePage() {
             <h1 className="text-3xl font-bold mb-2" style={{ fontFamily: "var(--font-brand), sans-serif" }}>
               {s.title}
             </h1>
-            <p className="text-stone-400 text-sm">{s.subtitle}</p>
+            <p className="text-fg-muted text-sm">{s.subtitle}</p>
           </div>
 
           {sub && (
-            <div className="mb-6 rounded-xl border border-white/[0.08] bg-white/[0.04] px-4 py-3 text-center text-sm">
-              <p className={sub.isActive ? "text-stone-300" : "text-amber-300"}>
+            <div className="mb-6 rounded-xl border border-line bg-surface px-4 py-3 text-center text-sm">
+              <p className={sub.isActive ? "text-fg-soft" : "text-amber-300"}>
                 {withDate(sub.isActive ? s.currentAccess : s.expiredAccess, sub.expiresAt)}
               </p>
               {selectedPlan && (
-                <p className="mt-1 text-white font-medium">
+                <p className="mt-1 text-fg font-medium">
                   {withDate(
                     s.renewExtends,
                     computeExpiry({
@@ -217,7 +217,7 @@ export default function SubscribePage() {
 
           {!plansLoaded ? (
             <div className="flex justify-center py-16">
-              <div className="w-6 h-6 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+              <div className="w-6 h-6 border-2 border-fg-muted/30 border-t-white rounded-full animate-spin" />
             </div>
           ) : plans.length > 1 ? (
             /* Plan picker */
@@ -228,31 +228,31 @@ export default function SubscribePage() {
                   <button
                     key={plan.id}
                     onClick={() => setSelectedPlanId(plan.id)}
-                    className={`text-left border rounded-2xl p-6 transition-all ${
+                    className={`text-left border rounded-card p-6 transition-all ${
                       selected
-                        ? "border-[#17509e] bg-[#17509e]/10 ring-1 ring-[#17509e]/40"
-                        : "border-white/[0.08] bg-white/[0.03] hover:border-white/20"
+                        ? "border-accent-deep bg-accent-deep/10 ring-1 ring-accent-deep/40"
+                        : "border-line bg-surface hover:border-fg-muted/30"
                     }`}
                   >
                     <div className="flex items-center justify-between gap-2 mb-3">
-                      <span className="text-sm font-bold tracking-widest uppercase text-[#2dabe0]">{plan.name}</span>
+                      <span className="text-sm font-bold tracking-widest uppercase text-accent">{plan.name}</span>
                       {selected && (
-                        <span className="w-5 h-5 rounded-full bg-[#17509e] flex items-center justify-center shrink-0">
-                          <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                        <span className="w-5 h-5 rounded-full bg-accent-deep flex items-center justify-center shrink-0">
+                          <svg className="w-3 h-3 text-fg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                             <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                           </svg>
                         </span>
                       )}
                     </div>
-                    {plan.description && <p className="text-xs text-stone-400 mb-3">{plan.description}</p>}
+                    {plan.description && <p className="text-xs text-fg-muted mb-3">{plan.description}</p>}
                     <div className="flex items-end gap-1 mb-4">
-                      <span className="text-3xl font-bold text-white">{formatPrice(plan)}</span>
-                      <span className="text-stone-400 text-xs mb-1">{perInterval[plan.interval]}</span>
+                      <span className="text-3xl font-bold text-fg">{formatPrice(plan)}</span>
+                      <span className="text-fg-muted text-xs mb-1">{perInterval[plan.interval]}</span>
                     </div>
                     <ul className="space-y-2">
                       {plan.features.slice(0, 4).map((f, i) => (
-                        <li key={i} className="flex items-start gap-2 text-xs text-stone-300">
-                          <svg className="w-3.5 h-3.5 text-[#2dabe0] shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                        <li key={i} className="flex items-start gap-2 text-xs text-fg-soft">
+                          <svg className="w-3.5 h-3.5 text-accent shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                             <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                           </svg>
                           {f}
@@ -265,21 +265,21 @@ export default function SubscribePage() {
             </div>
           ) : selectedPlan ? null : (
             /* No purchasable plan loaded: never show a hard-coded price. */
-            <p className="text-center text-sm text-stone-400 py-8">{s.error}</p>
+            <p className="text-center text-sm text-fg-muted py-8">{s.error}</p>
           )}
 
           {/* Selected plan summary + buy button (plan mode) */}
           {plansLoaded && selectedPlan && (
-            <div className="mt-6 bg-white/[0.04] border border-white/[0.08] rounded-2xl p-6">
+            <div className="mt-6 bg-surface border border-line rounded-card p-6">
               <div className="text-center mb-5">
                 <div className="flex items-end justify-center gap-1">
-                  <span className="text-4xl font-bold text-white">{formatPrice(selectedPlan)}</span>
-                  <span className="text-stone-400 text-sm mb-1.5">{perInterval[selectedPlan.interval]}</span>
+                  <span className="text-4xl font-bold text-fg">{formatPrice(selectedPlan)}</span>
+                  <span className="text-fg-muted text-sm mb-1.5">{perInterval[selectedPlan.interval]}</span>
                 </div>
-                <p className="text-white text-base font-medium mt-1">{selectedPlan.interval === "yearly" ? t.pricing.vatNote : t.pricing.vatNoteMonthly}</p>
+                <p className="text-fg text-base font-medium mt-1">{selectedPlan.interval === "yearly" ? t.pricing.vatNote : t.pricing.vatNoteMonthly}</p>
                 {selectedPlan.interval === "yearly" && (
-                  <p className="flex items-center justify-center gap-1.5 text-stone-400 text-xs mt-2">
-                    <svg className="w-3.5 h-3.5 text-[#2dabe0] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
+                  <p className="flex items-center justify-center gap-1.5 text-fg-muted text-xs mt-2">
+                    <svg className="w-3.5 h-3.5 text-accent shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
                     {noAutoRenew}
                   </p>
                 )}
@@ -287,11 +287,11 @@ export default function SubscribePage() {
               <button
                 onClick={handleCheckout}
                 disabled={loading}
-                className="w-full bg-white text-stone-900 font-bold py-3 rounded-xl text-sm hover:bg-stone-100 transition-all hover:scale-[1.01] active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="w-full bg-accent text-canvas font-bold py-3 rounded-pill text-sm hover:brightness-110 transition-all hover:scale-[1.01] active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {loading ? (
                   <>
-                    <div className="w-4 h-4 border-2 border-stone-400 border-t-stone-900 rounded-full animate-spin" />
+                    <div className="w-4 h-4 border-2 border-canvas/30 border-t-canvas rounded-full animate-spin" />
                     {s.loading}
                   </>
                 ) : (
@@ -301,15 +301,15 @@ export default function SubscribePage() {
             </div>
           )}
 
-          {error && <p className="text-xs text-red-400 text-center mt-3">{error}</p>}
+          {error && <p className="text-xs text-danger text-center mt-3">{error}</p>}
 
-          <p className="text-xs text-stone-600 text-center mt-4 leading-relaxed">
+          <p className="text-xs text-fg-muted text-center mt-4 leading-relaxed">
             {s.secureNote}
           </p>
 
-          <p className="text-xs text-stone-600 text-center mt-5 leading-relaxed">
+          <p className="text-xs text-fg-muted text-center mt-5 leading-relaxed">
             <span className="whitespace-nowrap">{s.hasAccount}</span>{" "}
-            <Link href="/login" className="text-stone-400 hover:text-white transition-colors underline underline-offset-2 whitespace-nowrap">
+            <Link href="/login" className="text-fg-muted hover:text-fg transition-colors underline underline-offset-2 whitespace-nowrap">
               {s.signIn}
             </Link>
           </p>

@@ -15,8 +15,8 @@ export const SOCIAL_FIELDS = [
 ] as const;
 
 export const inputCls =
-  "w-full bg-[#1a1a1a] border border-white/10 rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-white/25 transition-all placeholder-stone-600";
-export const sectionHeading = "text-[11px] font-semibold uppercase tracking-wider text-white/40";
+  "w-full bg-surface-2 border border-line rounded-lg px-3 py-2 text-sm text-fg outline-none focus:border-fg-muted/30 transition-all placeholder:text-fg-muted";
+export const sectionHeading = "text-[11px] font-semibold uppercase tracking-wider text-fg-muted";
 
 // Short size for the live title preview in the settings dialog.
 export const PREVIEW_SIZES: Record<string, string> = { sm: "1.25rem", md: "1.6rem", lg: "2rem", xl: "2.4rem" };

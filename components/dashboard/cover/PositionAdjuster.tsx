@@ -22,16 +22,16 @@ export function PositionAdjuster({
   const { t } = useLanguage();
   const c = t.galleryCard;
   return (
-    <div className="mb-4 rounded-xl border border-white/10 bg-white/[0.02] p-3">
+    <div className="mb-4 rounded-xl border border-line bg-surface p-3">
       <div className="flex items-center justify-between gap-3 mb-2.5">
         <div>
-          <p className="text-xs font-semibold text-white/90">{c.coverAdjustLabel}</p>
-          <p className="text-[11px] text-white/50 mt-0.5">{c.coverDragHint}</p>
+          <p className="text-xs font-semibold text-fg">{c.coverAdjustLabel}</p>
+          <p className="text-[11px] text-fg-muted mt-0.5">{c.coverDragHint}</p>
         </div>
         <button
           onClick={() => onChange({ x: COVER_POS_DEFAULT, y: COVER_POS_DEFAULT })}
           disabled={pos.x === COVER_POS_DEFAULT && pos.y === COVER_POS_DEFAULT}
-          className="shrink-0 px-3 py-1.5 text-[11px] font-medium text-white/70 border border-white/10 rounded-lg hover:bg-white/[0.05] transition-colors disabled:opacity-40"
+          className="shrink-0 px-3 py-1.5 text-[11px] font-medium text-fg-soft border border-line rounded-lg hover:bg-surface-2 transition-colors disabled:opacity-40"
         >
           {c.coverReset}
         </button>

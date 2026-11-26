@@ -91,7 +91,7 @@ export function BannerPreview({
 
   return (
     <div className={className}>
-      <p className="text-[11px] font-medium text-white/50 mb-1.5">{label}</p>
+      <p className="text-[11px] font-medium text-fg-muted mb-1.5">{label}</p>
       <div
         ref={boxRef}
         role="group"
@@ -103,7 +103,7 @@ export function BannerPreview({
         onPointerCancel={endDrag}
         onKeyDown={onKeyDown}
         style={{ aspectRatio: String(aspect) }}
-        className={`relative w-full overflow-hidden rounded-lg border border-white/10 bg-white/[0.03] select-none touch-none outline-none focus-visible:ring-2 focus-visible:ring-[#2dabe0]/60 ${
+        className={`relative w-full overflow-hidden rounded-lg border border-line bg-surface select-none touch-none outline-none focus-visible:ring-2 focus-visible:ring-accent/60 ${
           dragging ? "cursor-grabbing" : "cursor-grab"
         }`}
       >
@@ -131,7 +131,7 @@ export function BannerPreview({
         {/* Same readability gradient as the public banner */}
         <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
         {!dragging && (
-          <div className="absolute top-1.5 right-1.5 pointer-events-none bg-black/50 text-white/90 rounded-full p-1">
+          <div className="absolute top-1.5 right-1.5 pointer-events-none bg-black/50 text-fg rounded-full p-1">
             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 7.5L12 3l4.5 4.5M7.5 16.5L12 21l4.5-4.5M3 12h18" />
             </svg>

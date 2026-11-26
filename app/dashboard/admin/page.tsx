@@ -55,10 +55,10 @@ function Avatar({ src, name }: { src?: string | null; name: string }) {
   const initials = name?.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase() || "?";
   if (src) {
     // eslint-disable-next-line @next/next/no-img-element
-    return <img src={src} alt={name} className="w-6 h-6 rounded-full ring-1 ring-white/10 object-cover" />;
+    return <img src={src} alt={name} className="w-6 h-6 rounded-full ring-1 ring-line object-cover" />;
   }
   return (
-    <div className="w-6 h-6 rounded-full bg-[#17509e]/20 flex items-center justify-center text-[10px] font-bold text-[#2dabe0] ring-1 ring-[#17509e]/20">
+    <div className="w-6 h-6 rounded-full bg-accent-deep/20 flex items-center justify-center text-[10px] font-bold text-accent ring-1 ring-accent-deep/20">
       {initials}
     </div>
   );
@@ -83,18 +83,18 @@ function StatCard({
       : tone === "warn"
         ? "bg-amber-500/[0.06] border-amber-500/20"
         : tone === "info"
-          ? "bg-[#17509e]/[0.08] border-[#17509e]/25"
-          : "bg-white/[0.03] border-white/[0.06]";
+          ? "bg-accent-deep/[0.08] border-accent-deep/25"
+          : "bg-surface border-line";
   const iconClasses =
-    tone === "ok" ? "text-emerald-400 bg-emerald-500/10" : tone === "warn" ? "text-amber-400 bg-amber-500/10" : tone === "info" ? "text-[#2dabe0] bg-[#17509e]/10" : "text-stone-400 bg-white/[0.06]";
+    tone === "ok" ? "text-success-bright bg-emerald-500/10" : tone === "warn" ? "text-amber-400 bg-amber-500/10" : tone === "info" ? "text-accent bg-accent-deep/10" : "text-fg-muted bg-surface-2";
   return (
-    <div className={`border rounded-2xl p-5 ${toneClasses}`}>
+    <div className={`border rounded-card p-5 ${toneClasses}`}>
       <div className="flex items-start justify-between gap-3">
         <div>
-          <div className="text-2xl font-bold text-white" style={{ fontFamily: "var(--font-brand), sans-serif" }}>
+          <div className="text-2xl font-bold text-fg" style={{ fontFamily: "var(--font-brand), sans-serif" }}>
             {value}
           </div>
-          <div className="text-xs text-stone-400 mt-1">{label}</div>
+          <div className="text-xs text-fg-muted mt-1">{label}</div>
         </div>
         <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${iconClasses}`}>
           <svg width={18} height={18} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -102,7 +102,7 @@ function StatCard({
           </svg>
         </div>
       </div>
-      {sub && <div className="text-[11px] text-stone-500 mt-2">{sub}</div>}
+      {sub && <div className="text-[11px] text-fg-muted mt-2">{sub}</div>}
     </div>
   );
 }
@@ -131,7 +131,7 @@ export default function AdminOverviewPage() {
   if (!stats) {
     return (
       <div className="flex items-center justify-center py-32">
-        <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+        <div className="w-5 h-5 border-2 border-fg-muted/30 border-t-white rounded-full animate-spin" />
       </div>
     );
   }
@@ -139,10 +139,10 @@ export default function AdminOverviewPage() {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-white" style={{ fontFamily: "var(--font-brand), sans-serif" }}>
+        <h1 className="text-2xl font-bold text-fg" style={{ fontFamily: "var(--font-brand), sans-serif" }}>
           Overview
         </h1>
-        <p className="text-sm text-stone-400 mt-1">Your store at a glance.</p>
+        <p className="text-sm text-fg-muted mt-1">Your store at a glance.</p>
       </div>
 
       {/* Stats */}
@@ -191,30 +191,30 @@ export default function AdminOverviewPage() {
 
       <div className="grid lg:grid-cols-2 gap-6">
         {/* Expiring soon */}
-        <div className="border border-white/[0.06] rounded-2xl p-5">
+        <div className="border border-line rounded-card p-5">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-sm font-semibold text-white" style={{ fontFamily: "var(--font-brand), sans-serif" }}>
+            <h2 className="text-sm font-semibold text-fg" style={{ fontFamily: "var(--font-brand), sans-serif" }}>
               Expiring soon
             </h2>
-            <span className="text-xs text-stone-500">≤ 30 days</span>
+            <span className="text-xs text-fg-muted">≤ 30 days</span>
           </div>
           {expiringSoon.length === 0 ? (
-            <p className="text-sm text-stone-500 py-6 text-center">No subscriptions expiring soon.</p>
+            <p className="text-sm text-fg-muted py-6 text-center">No subscriptions expiring soon.</p>
           ) : (
             <div className="space-y-2">
               {expiringSoon.map((u) => (
                 <div key={u.uid} className="flex items-center justify-between gap-3 text-sm">
                   <div className="min-w-0 flex items-center gap-2">
                     <Avatar src={u.photoURL} name={u.displayName || u.email} />
-                    <span className="text-white truncate">{u.displayName || u.email}</span>
-                    <span className="text-stone-500 truncate hidden sm:inline">· {u.email}</span>
+                    <span className="text-fg truncate">{u.displayName || u.email}</span>
+                    <span className="text-fg-muted truncate hidden sm:inline">· {u.email}</span>
                   </div>
                   <div className="flex items-center gap-3 shrink-0">
-                    {u.planName && <span className="text-xs text-stone-500 hidden sm:inline">{u.planName}</span>}
-                    <span className={`font-semibold tabular-nums ${u.daysLeft <= 7 ? "text-red-400" : "text-amber-400"}`}>
+                    {u.planName && <span className="text-xs text-fg-muted hidden sm:inline">{u.planName}</span>}
+                    <span className={`font-semibold tabular-nums ${u.daysLeft <= 7 ? "text-danger" : "text-amber-400"}`}>
                       {u.daysLeft === 0 ? "expires today" : `in ${u.daysLeft}d`}
                     </span>
-                    <a href={`mailto:${u.email}`} className="text-xs px-2.5 py-1 rounded-lg border border-white/10 text-stone-300 hover:text-white hover:border-white/20 transition-colors">
+                    <a href={`mailto:${u.email}`} className="text-xs px-2.5 py-1 rounded-lg border border-line text-fg-soft hover:text-fg hover:border-fg-muted/30 transition-colors">
                       Email
                     </a>
                   </div>
@@ -225,34 +225,34 @@ export default function AdminOverviewPage() {
         </div>
 
         {/* Recent sign-ups */}
-        <div className="border border-white/[0.06] rounded-2xl p-5">
-          <h2 className="text-sm font-semibold text-white mb-4" style={{ fontFamily: "var(--font-brand), sans-serif" }}>
+        <div className="border border-line rounded-card p-5">
+          <h2 className="text-sm font-semibold text-fg mb-4" style={{ fontFamily: "var(--font-brand), sans-serif" }}>
             Recent sign-ups
           </h2>
           {recentUsers.length === 0 ? (
-            <p className="text-sm text-stone-500 py-6 text-center">No users yet.</p>
+            <p className="text-sm text-fg-muted py-6 text-center">No users yet.</p>
           ) : (
             <div className="space-y-2">
               {recentUsers.map((u) => (
                 <div key={u.uid} className="flex items-center justify-between gap-3 text-sm">
                   <div className="min-w-0 flex items-center gap-2">
                     <Avatar src={u.photoURL} name={u.displayName || u.email} />
-                    <span className="text-white truncate">{u.displayName || "—"}</span>
-                    <span className="text-stone-500 truncate hidden sm:inline">· {u.email}</span>
+                    <span className="text-fg truncate">{u.displayName || "—"}</span>
+                    <span className="text-fg-muted truncate hidden sm:inline">· {u.email}</span>
                   </div>
                   <div className="flex items-center gap-2.5 shrink-0">
                     {u.subscriptionActive ? (
-                      <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Active</span>
+                      <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-500/10 text-success-bright border border-emerald-500/20">Active</span>
                     ) : (
-                      <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-white/[0.04] text-stone-500 border border-white/[0.06]">Free</span>
+                      <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-surface text-fg-muted border border-line">Free</span>
                     )}
-                    <span className="text-xs text-stone-500 tabular-nums">{formatDate(u.createdAt)}</span>
+                    <span className="text-xs text-fg-muted tabular-nums">{formatDate(u.createdAt)}</span>
                   </div>
                 </div>
               ))}
             </div>
           )}
-          <Link href="/dashboard/admin/users" className="inline-block text-xs text-[#2dabe0] hover:underline mt-4">
+          <Link href="/dashboard/admin/users" className="inline-block text-xs text-accent hover:underline mt-4">
             Manage users →
           </Link>
         </div>

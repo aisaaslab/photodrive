@@ -147,10 +147,10 @@ function ThankYouContent() {
   )}`;
 
   return (
-    <main className="min-h-screen bg-[#080808] text-white flex flex-col px-6">
-      <div className="aurora-bg"><span /></div>
+    <main className="min-h-screen bg-canvas text-fg flex flex-col px-6">
+      
       <div className="relative z-10 flex items-center justify-between py-5">
-        <span className="font-bold text-white text-lg" style={{ fontFamily: "var(--font-brand), sans-serif" }}>PhotoDrive</span>
+        <span className="font-bold text-fg text-lg" style={{ fontFamily: "var(--font-brand), sans-serif" }}>PhotoDrive</span>
         <LanguageSwitcher />
       </div>
 
@@ -158,11 +158,11 @@ function ThankYouContent() {
         <div className="w-full max-w-sm text-center">
           {order === "loading" ? (
             <>
-              <div className="w-12 h-12 border-2 border-white/10 border-t-white/60 rounded-full animate-spin mx-auto mb-6" />
+              <div className="w-12 h-12 border-2 border-line border-t-white/60 rounded-full animate-spin mx-auto mb-6" />
               <h1 className="text-2xl font-bold mb-2" style={{ fontFamily: "var(--font-brand), sans-serif" }}>
                 {ss.processingTitle}
               </h1>
-              <p className="text-stone-400 text-sm">{ss.processingSubtitle}</p>
+              <p className="text-fg-muted text-sm">{ss.processingSubtitle}</p>
             </>
           ) : (
             <>
@@ -172,7 +172,7 @@ function ThankYouContent() {
                 }`}
               >
                 {confirmed && !awaiting ? (
-                  <svg className="w-8 h-8 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <svg className="w-8 h-8 text-success-bright" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                   </svg>
                 ) : (
@@ -184,28 +184,28 @@ function ThankYouContent() {
               <h1 className="text-2xl font-bold mb-2" style={{ fontFamily: "var(--font-brand), sans-serif" }}>
                 {awaiting ? ss.awaitingTitle : confirmed ? ss.orderTitle : ss.pendingTitle}
               </h1>
-              <p className="text-stone-400 text-sm mb-6 leading-relaxed">
+              <p className="text-fg-muted text-sm mb-6 leading-relaxed">
                 {awaiting ? ss.awaitingSubtitle : confirmed ? ss.orderSubtitle : ss.pendingSubtitle}
               </p>
 
               {activation === "checking" && (
-                <div className="flex items-center justify-center gap-2 text-stone-500 text-xs mb-6">
-                  <div className="w-3.5 h-3.5 border-2 border-white/10 border-t-white/50 rounded-full animate-spin" />
+                <div className="flex items-center justify-center gap-2 text-fg-muted text-xs mb-6">
+                  <div className="w-3.5 h-3.5 border-2 border-line border-t-white/50 rounded-full animate-spin" />
                   {ss.processingTitle}
                 </div>
               )}
               {activation === "pending" && confirmed && (
-                <p className="text-stone-500 text-xs mb-6 leading-relaxed">{ss.pendingSubtitle}</p>
+                <p className="text-fg-muted text-xs mb-6 leading-relaxed">{ss.pendingSubtitle}</p>
               )}
               {activation === "login" && (
-                <p className="text-stone-400 text-sm mb-6 leading-relaxed">{ss.loginPrompt}</p>
+                <p className="text-fg-muted text-sm mb-6 leading-relaxed">{ss.loginPrompt}</p>
               )}
 
               <div className="flex flex-col gap-2">
                 {activation === "login" ? (
                   <Link
                     href={loginHref}
-                    className="inline-flex items-center justify-center bg-white text-stone-900 font-bold px-6 py-2.5 rounded-xl text-sm hover:bg-stone-100 transition-all"
+                    className="inline-flex items-center justify-center bg-accent text-canvas font-bold px-6 py-2.5 rounded-pill text-sm hover:brightness-110 transition-all"
                   >
                     {ss.loginCta}
                   </Link>
@@ -213,13 +213,13 @@ function ThankYouContent() {
                   <>
                     <Link
                       href="/dashboard?gallery=pending"
-                      className="inline-flex items-center justify-center bg-white text-stone-900 font-bold px-6 py-2.5 rounded-xl text-sm hover:bg-stone-100 transition-all"
+                      className="inline-flex items-center justify-center bg-accent text-canvas font-bold px-6 py-2.5 rounded-pill text-sm hover:brightness-110 transition-all"
                     >
                       {ss.goToDashboard}
                     </Link>
                     <Link
                       href="/dashboard/account"
-                      className="inline-flex items-center justify-center text-white/60 hover:text-white px-6 py-2 rounded-xl text-sm transition-all"
+                      className="inline-flex items-center justify-center text-fg-muted hover:text-fg px-6 py-2 rounded-xl text-sm transition-all"
                     >
                       {ss.viewAccount}
                     </Link>

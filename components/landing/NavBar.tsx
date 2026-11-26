@@ -1,20 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { Menu, X } from "lucide-react";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { useLanguage } from "@/lib/i18n";
-import { APP_NAME } from "@/lib/branding";
 import { Button } from "@/components/ui/Button";
+import { Logo } from "@/components/ui/Logo";
 import { cn, focusRing } from "@/lib/ui/cn";
 import { LanguageMenu } from "./LanguageMenu";
-
-/** The original PhotoDrive logo (folder, camera lens, wordmark), in the version made for dark backgrounds. */
-export function Logo({ className, priority }: { className?: string; priority?: boolean }) {
-  return <Image src="/logo-light.png" alt={APP_NAME} width={735} height={200} priority={priority} className={cn("h-10 w-auto sm:h-11", className)} />;
-}
 
 const LINKS = [
   { href: "#how", key: "howItWorks" },

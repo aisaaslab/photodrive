@@ -63,7 +63,7 @@
  * fonts are chosen through lib/gallery/title-style.ts.
  */
 :root {
-  --font-sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-sans: "Manrope Variable", "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-brand: var(--font-sans);
   --font-title-serif: "Playfair Display Variable";
   --font-title-script: "Dancing Script Variable";
