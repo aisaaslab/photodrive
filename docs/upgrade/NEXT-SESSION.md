@@ -71,6 +71,14 @@ git log --oneline -20                        # what actually landed
 
 Reconcile any task whose checkbox disagrees with the code before continuing.
 
+## 5b · Where the work stands (2026-11-26, branch `claude/beautiful-archimedes-vsqbhq`, PR 8)
+
+- **Done:** S3 protected delivery and validation, S4 code (awaiting owner dry-runs / Stripe test mode), S5-01..11 (typeface, tokens, primitives, i18n split, repos, big-file splits), **S6-00, 04, 05, 06, 07, 08, 09, 11, 13**.
+- **The new landing page is built at `/new-landing`** (not indexed; the live `/` is untouched). Components: `components/landing/*`; copy: `landing` in each dictionary (draft wording outside English); plans: `lib/server/public-plans.ts`; checks: `scripts/verify/browser/landing.cjs` (`WITH_PLANS=1` for pricing) and `lp.cjs`.
+- **Open S6 tasks:** S6-02/S6-03/S6-10/S6-12 (each needs the page on a preview or `/`, native copy review, or a Lighthouse run on the preview), **S6-14** (owner sign-off on the preview, then move `app/new-landing/page.tsx` to `app/page.tsx`, drop `noindex`, add `alternates.canonical`, delete the old landing components `app/page.tsx` old body, `DemoForm`, `DemoVideo`, `TrustSection`, `ImageCompareSlider`, `LanguageSwitcher` if unused, re-run `landing.cjs` and Lighthouse on the preview). **Do not do the move before sign-off**: merging the PR would publish it.
+- **Needs the owner:** review `/new-landing` on a Vercel preview at 1440 / 1024 / 390; set `NEXT_PUBLIC_APP_URL` (structured data and the OG image fall back to `example.com`); native review of the new copy; decide whether `LOCALES.en` should become `en-US` for dates in the account area (D19); a real Drive folder test of "Try it now".
+- **Next in the plan after S6:** S5-12 (user-area redesign in code, D9: dashboard, client gallery, account, admin on the same tokens; the snapshots `gallery-snapshot.cjs` and `dashboard-snapshot.cjs` must still pass), then S7 admin foundation.
+
 ## 6 · Fast orientation: what is already known
 
 - Stack: Next.js 16.2.1, React 19, Tailwind v4, Firebase Auth + Firestore (Admin SDK on the server), Stripe SDK 20, `jose`, `bcryptjs`, `nodemailer`/Resend, SWR.
