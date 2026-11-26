@@ -171,13 +171,17 @@ export default function DashboardPage() {
               : `${galleries.length} ${galleries.length === 1 ? t.dashboard.gallery : t.dashboard.galleries}`}
           </p>
           {sub && (
-            <p className="text-xs text-fg-muted mt-1">
-              {t.dashboard.subscription}{" "}
-              <span className={showRenewBanner ? "text-accent" : "text-fg-muted"}>
+            <Link
+              href="/dashboard/account"
+              className="mt-2.5 inline-flex flex-wrap items-center gap-x-2 gap-y-0.5 rounded-pill border border-line bg-surface px-3 py-1.5 text-xs text-fg-muted transition-colors hover:border-fg-muted/40 hover:text-fg-soft"
+            >
+              <span aria-hidden className={`size-1.5 rounded-full ${daysLeft === 0 ? "bg-danger" : showRenewBanner ? "bg-amber-400" : "bg-success-bright"}`} />
+              <span>{t.dashboard.subscription}</span>
+              <span className={showRenewBanner ? "font-semibold text-accent" : "font-semibold text-fg-soft"}>
                 {planLabel ? `${planLabel} · ` : ""}
                 {isLifetime ? t.dashboard.lifetime : `${t.dashboard.activeUntil} ${expiresLabel} (${sub.daysLeft} ${t.dashboard.daysLeft})`}
               </span>
-            </p>
+            </Link>
           )}
         </div>
 
@@ -324,7 +328,7 @@ export default function DashboardPage() {
           ))}
         </div>
       ) : !loadError ? (
-        <GalleryList galleries={filteredAndSorted} onDelete={handleDelete} onUpdate={handleUpdate} />
+        <GalleryList galleries={filteredAndSorted} onCreate={() => setShowForm(true)} onDelete={handleDelete} onUpdate={handleUpdate} />
       ) : null}
     </div>
   );

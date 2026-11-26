@@ -41,7 +41,7 @@ export function LightboxThumbnails({
             aria-current={i === activeIndex ? "true" : undefined}
             className={`relative shrink-0 w-14 h-14 rounded-lg overflow-hidden transition-all ${
               i === activeIndex
-                ? "ring-2 ring-white opacity-100 scale-105"
+                ? "ring-2 ring-canvas opacity-100 scale-105"
                 : "opacity-40 hover:opacity-70"
             }`}
           >
@@ -61,7 +61,7 @@ export function LightboxThumbnails({
               className="w-full h-full object-cover"
             />
             {favorites.has(p.id) && (
-              <div className="absolute top-0.5 right-0.5 w-3 h-3 bg-[#17509e] rounded-full" />
+              <div className="absolute top-0.5 right-0.5 w-3 h-3 bg-accent-deep rounded-full" />
             )}
           </button>
         ))}

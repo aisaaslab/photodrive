@@ -67,26 +67,26 @@ export function SendSelectionModal({ galleryId, count, onClose }: Props) {
   }
 
   const field =
-    "w-full bg-white border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm text-stone-900 placeholder-stone-400 outline-none focus:ring-2 focus:ring-[#17509e]/40 focus:border-[#17509e]/50 transition-all";
+    "w-full bg-surface border border-line rounded-xl px-3.5 py-2.5 text-sm text-fg placeholder:text-fg-muted outline-none focus:ring-2 focus:ring-accent-deep/40 focus:border-accent-deep/50 transition-all";
 
   return (
     <Modal
       onClose={onClose}
       ariaLabel={g.sendTitle}
-      className="bg-stone-50 border border-stone-200 rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto"
+      className="bg-canvas border border-line rounded-card shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto"
     >
       {sent ? (
         <div className="p-7 text-center">
-          <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center">
+          <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-emerald-100 text-success-bright flex items-center justify-center">
             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
             </svg>
           </div>
-          <h2 className="text-lg font-semibold text-stone-900">{g.sendThanks}</h2>
-          <p className="text-sm text-stone-500 mt-1.5 leading-relaxed">{g.sendThanksBody}</p>
+          <h2 className="text-lg font-semibold text-fg">{g.sendThanks}</h2>
+          <p className="text-sm text-fg-muted mt-1.5 leading-relaxed">{g.sendThanksBody}</p>
           <button
             onClick={onClose}
-            className="mt-6 w-full bg-stone-900 text-white rounded-xl py-3 text-sm font-semibold hover:bg-stone-800 transition-colors"
+            className="mt-6 w-full bg-accent text-canvas rounded-pill py-3 text-sm font-semibold hover:bg-surface-2 transition-colors"
           >
             {g.sendDone}
           </button>
@@ -94,9 +94,9 @@ export function SendSelectionModal({ galleryId, count, onClose }: Props) {
       ) : (
         <form onSubmit={submit} className="p-6 space-y-4">
           <div>
-            <h2 className="text-lg font-semibold text-stone-900">{g.sendTitle}</h2>
-            <p className="text-sm text-stone-500 mt-1 leading-relaxed">
-              <span className="font-semibold text-stone-800">
+            <h2 className="text-lg font-semibold text-fg">{g.sendTitle}</h2>
+            <p className="text-sm text-fg-muted mt-1 leading-relaxed">
+              <span className="font-semibold text-fg">
                 {count} {count === 1 ? g.photo : g.photos}
               </span>
               {" · "}
@@ -105,15 +105,15 @@ export function SendSelectionModal({ galleryId, count, onClose }: Props) {
           </div>
 
           <div>
-            <label htmlFor="sel-name" className="text-xs font-medium text-stone-600 mb-1 block">{g.yourName}</label>
+            <label htmlFor="sel-name" className="text-xs font-medium text-fg-soft mb-1 block">{g.yourName}</label>
             <input id="sel-name" value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" required maxLength={100} className={field} />
           </div>
           <div>
-            <label htmlFor="sel-email" className="text-xs font-medium text-stone-600 mb-1 block">{g.yourEmail}</label>
+            <label htmlFor="sel-email" className="text-xs font-medium text-fg-soft mb-1 block">{g.yourEmail}</label>
             <input id="sel-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" maxLength={254} className={field} />
           </div>
           <div>
-            <label htmlFor="sel-note" className="text-xs font-medium text-stone-600 mb-1 block">{g.yourNote}</label>
+            <label htmlFor="sel-note" className="text-xs font-medium text-fg-soft mb-1 block">{g.yourNote}</label>
             <textarea id="sel-note" value={note} onChange={(e) => setNote(e.target.value)} rows={3} maxLength={1000} className={`${field} resize-none`} />
           </div>
 
@@ -129,7 +129,7 @@ export function SendSelectionModal({ galleryId, count, onClose }: Props) {
           />
 
           {error && (
-            <p role="alert" className="text-xs text-red-600 bg-red-50 border border-red-200 rounded-xl px-3 py-2">
+            <p role="alert" className="text-xs text-danger bg-danger/10 border border-danger/30 rounded-xl px-3 py-2">
               {error}
             </p>
           )}
@@ -139,18 +139,18 @@ export function SendSelectionModal({ galleryId, count, onClose }: Props) {
               type="button"
               onClick={onClose}
               disabled={sending}
-              className="flex-1 border border-stone-300 text-stone-600 rounded-xl py-3 text-sm font-medium hover:bg-stone-100 transition-colors disabled:opacity-50"
+              className="flex-1 border border-line text-fg-soft rounded-xl py-3 text-sm font-medium hover:bg-surface-2 transition-colors disabled:opacity-50"
             >
               {g.cancel}
             </button>
             <button
               type="submit"
               disabled={sending}
-              className="flex-1 bg-stone-900 text-white rounded-xl py-3 text-sm font-semibold hover:bg-stone-800 transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
+              className="flex-1 bg-accent text-canvas rounded-pill py-3 text-sm font-semibold hover:bg-surface-2 transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
             >
               {sending ? (
                 <>
-                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  <div className="w-4 h-4 border-2 border-fg-muted/40 border-t-white rounded-full animate-spin" />
                   {g.sendSending}
                 </>
               ) : (

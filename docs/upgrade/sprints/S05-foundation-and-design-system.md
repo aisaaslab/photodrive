@@ -47,7 +47,7 @@
 - [x] **S5-11** · S · Housekeeping: unify on one zip library (`client-zip` or `jszip`), delete dead `lib/firestore/favorites.ts`, strip BOMs from the 26 files, fix mojibake in `globals.css`, `not-found.tsx`, `ImageCompareSlider.tsx`, `TrustSection.tsx`, `branding.ts`; centralise brand/email defaults in `lib/branding.ts` (no hard-coded `photodrive.co` or earlier product name elsewhere, per D1).
   - Done when: lint/type/test green; `grep` for the old strings finds only `branding.ts`.
   - Refs: STR-8
-- [ ] **S5-12** · L · User-area redesign (D9, decided 2026-11-26: **full redesign**, designed in code on the Concept B tokens and Manrope, no Figma frames): dashboard, client gallery, account, admin, toasts, dialogs, empty and error states. Behaviour unchanged: `gallery-snapshot.cjs` and `dashboard-snapshot.cjs` are updated for new labels and must otherwise record the same behaviour; owner reviews screenshots per area.
+- [~] **S5-12** · L · User-area redesign (D9, decided 2026-11-26: **full redesign**, designed in code on the Concept B tokens and Manrope, no Figma frames): dashboard, client gallery, account, admin, toasts, dialogs, empty and error states. Behaviour unchanged: `gallery-snapshot.cjs` and `dashboard-snapshot.cjs` are updated for new labels and must otherwise record the same behaviour; owner reviews screenshots per area.
   - Depends: S5-02, S5-03
   - Done when: the user area looks consistent with the new landing page; owner approves screenshots area by area; the snapshots still pass.
 

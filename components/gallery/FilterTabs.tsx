@@ -23,12 +23,12 @@ export function FilterTabs({
         onClick={() => setFilter(value)}
         aria-pressed={active}
         className={`flex items-center gap-1.5 px-2 sm:px-4 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all ${
-          active ? "bg-[#17509e] text-white shadow-sm" : "text-stone-500 hover:text-stone-700"
+          active ? "bg-accent-deep text-fg shadow-sm" : "text-fg-muted hover:text-fg-soft"
         }`}
       >
         {label}
         {count !== undefined && (
-          <span className={`min-w-5 h-5 px-1 rounded-full text-[10px] font-bold flex items-center justify-center shrink-0 ${active ? "bg-white/20 text-white" : "bg-[#17509e] text-white"}`}>
+          <span className={`min-w-5 h-5 px-1 rounded-full text-[10px] font-bold flex items-center justify-center shrink-0 ${active ? "bg-white/20 text-fg" : "bg-accent-deep text-fg"}`}>
             {count}
           </span>
         )}
@@ -37,7 +37,7 @@ export function FilterTabs({
   }
 
   return (
-    <div className="flex items-center gap-1 bg-stone-100 rounded-xl p-1 overflow-x-auto shrink-0 max-w-full">
+    <div data-ui="filter-tabs" className="flex items-center gap-1 bg-surface-2 rounded-xl p-1 overflow-x-auto shrink-0 max-w-full">
       {tabBtn("all", g.filterAll)}
       {tabBtn("photos", g.filterPhotos, photoCount)}
       {videoCount > 0 && tabBtn("videos", g.filterVideos, videoCount)}
@@ -45,7 +45,7 @@ export function FilterTabs({
         onClick={() => setFilter("favorites")}
         aria-pressed={filter === "favorites"}
         className={`flex items-center gap-1.5 px-2 sm:px-4 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all ${
-          filter === "favorites" ? "bg-[#17509e] text-white shadow-sm" : "text-stone-500 hover:text-stone-700"
+          filter === "favorites" ? "bg-accent-deep text-fg shadow-sm" : "text-fg-muted hover:text-fg-soft"
         }`}
       >
         <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill={filter === "favorites" ? "white" : "none"} stroke="currentColor" strokeWidth={2}>
@@ -53,7 +53,7 @@ export function FilterTabs({
         </svg>
         <span className="hidden min-[400px]:inline">{g.filterFavorites}</span>
         {favoritesCount > 0 && (
-          <span className={`min-w-5 h-5 px-1 rounded-full text-[10px] font-bold flex items-center justify-center shrink-0 ${filter === "favorites" ? "bg-white/20 text-white" : "bg-[#17509e] text-white"}`}>
+          <span className={`min-w-5 h-5 px-1 rounded-full text-[10px] font-bold flex items-center justify-center shrink-0 ${filter === "favorites" ? "bg-white/20 text-fg" : "bg-accent-deep text-fg"}`}>
             {favoritesCount}
           </span>
         )}

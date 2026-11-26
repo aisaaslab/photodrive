@@ -30,8 +30,8 @@ export function LightboxTopBar({
   return (
     <div className="flex items-center justify-between px-5 py-4 shrink-0">
       {/* Counter */}
-      <span className="text-white/50 text-sm">
-        {index + 1} <span className="text-white/25">/</span> {total}
+      <span data-ui="lightbox-counter" className="text-fg-muted text-sm">
+        {index + 1} <span className="text-fg-muted/50">/</span> {total}
       </span>
 
       {/* Actions */}
@@ -43,8 +43,8 @@ export function LightboxTopBar({
           aria-pressed={playing}
           className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-all ${
             playing
-              ? "bg-[#17509e] text-white"
-              : "bg-white/10 text-white/70 hover:bg-white/20"
+              ? "bg-accent-deep text-fg"
+              : "bg-surface-2 text-fg-soft hover:bg-white/20"
           }`}
         >
           {playing ? (
@@ -65,8 +65,8 @@ export function LightboxTopBar({
           aria-pressed={isFavorited}
           className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-all ${
             isFavorited
-              ? "bg-[#17509e] text-white"
-              : "bg-white/10 text-white/70 hover:bg-white/20"
+              ? "bg-accent-deep text-fg"
+              : "bg-surface-2 text-fg-soft hover:bg-white/20"
           }`}
         >
           <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill={isFavorited ? "currentColor" : "none"} stroke="currentColor" strokeWidth={2}>
@@ -81,7 +81,7 @@ export function LightboxTopBar({
             href={download.href}
             download={download.name}
             onClick={(e) => e.stopPropagation()}
-            className="flex items-center gap-1.5 bg-white/10 hover:bg-white/20 text-white/70 hover:text-white rounded-full px-3 py-1.5 text-xs font-medium transition-all"
+            className="flex items-center gap-1.5 bg-surface-2 hover:bg-white/20 text-fg-soft hover:text-fg rounded-full px-3 py-1.5 text-xs font-medium transition-all"
           >
             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
@@ -99,7 +99,7 @@ export function LightboxTopBar({
             aria-label={g.zoom}
             aria-pressed={zoomed}
             className={`w-8 h-8 flex items-center justify-center rounded-full transition-all ${
-              zoomed ? "bg-[#17509e] text-white" : "bg-white/10 hover:bg-white/20 text-white/70 hover:text-white"
+              zoomed ? "bg-accent-deep text-fg" : "bg-surface-2 hover:bg-white/20 text-fg-soft hover:text-fg"
             }`}
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -113,7 +113,7 @@ export function LightboxTopBar({
           onClick={onToggleFullscreen}
           title={g.fullscreen}
           aria-label={g.fullscreen}
-          className="w-8 h-8 flex items-center justify-center bg-white/10 hover:bg-white/20 text-white/70 hover:text-white rounded-full transition-all"
+          className="w-8 h-8 flex items-center justify-center bg-surface-2 hover:bg-white/20 text-fg-soft hover:text-fg rounded-full transition-all"
         >
           {isFullscreen ? (
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -131,7 +131,7 @@ export function LightboxTopBar({
           onClick={onClose}
           aria-label={g.closeViewer}
           title={g.closeViewer}
-          className="w-8 h-8 flex items-center justify-center bg-white/10 hover:bg-white/20 text-white/70 hover:text-white rounded-full transition-all"
+          className="w-8 h-8 flex items-center justify-center bg-surface-2 hover:bg-white/20 text-fg-soft hover:text-fg rounded-full transition-all"
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />

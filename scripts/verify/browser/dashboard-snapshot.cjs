@@ -262,7 +262,8 @@ const clean = (s) => String(s ?? "").replace(/\s+/g, " ").replace(/\d{1,2} [A-Z]
   step("37 new gallery: private created", { requests: takeRequests(), titles: await titles(), header: await headerFacts() });
 
   // ---- sign out
-  await page.click("text=Sign out");
+  await page.click('header button[aria-haspopup="menu"]');
+  await page.click("[role=menuitem]:has-text('Sign out')");
   await page.waitForTimeout(1000);
   step("38 signed out", { url: new URL(page.url()).pathname });
 

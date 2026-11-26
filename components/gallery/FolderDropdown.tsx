@@ -44,8 +44,8 @@ export function FolderDropdown({
         aria-expanded={open}
         className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-medium border transition-all ${
           activeFolder
-            ? "bg-stone-800 text-white border-stone-800"
-            : "bg-stone-100 text-stone-500 border-stone-200 hover:text-stone-700"
+            ? "bg-accent text-canvas border-line"
+            : "bg-surface-2 text-fg-muted border-line hover:text-fg-soft"
         }`}
       >
         <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -57,12 +57,12 @@ export function FolderDropdown({
         </svg>
       </button>
       {open && (
-        <div role="listbox" className="absolute top-full left-0 mt-1 z-40 bg-white border border-stone-200 rounded-xl shadow-lg py-1 min-w-[160px]">
+        <div role="listbox" className="absolute top-full left-0 mt-1 z-40 bg-surface border border-line rounded-xl shadow-lg py-1 min-w-[160px]">
           <button
             role="option"
             aria-selected={!activeFolder}
             onClick={() => { onChange(null); setOpen(false); }}
-            className={`w-full text-left px-4 py-2 text-sm transition-colors ${!activeFolder ? "text-[#2dabe0] font-semibold" : "text-stone-600 hover:bg-stone-50"}`}
+            className={`w-full text-left px-4 py-2 text-sm transition-colors ${!activeFolder ? "text-accent font-semibold" : "text-fg-soft hover:bg-canvas"}`}
           >
             {allLabel}
           </button>
@@ -72,7 +72,7 @@ export function FolderDropdown({
               role="option"
               aria-selected={activeFolder === sf.name}
               onClick={() => { onChange(sf.name); setOpen(false); }}
-              className={`w-full text-left px-4 py-2 text-sm transition-colors ${activeFolder === sf.name ? "text-[#2dabe0] font-semibold" : "text-stone-600 hover:bg-stone-50"}`}
+              className={`w-full text-left px-4 py-2 text-sm transition-colors ${activeFolder === sf.name ? "text-accent font-semibold" : "text-fg-soft hover:bg-canvas"}`}
             >
               {sf.path}
             </button>

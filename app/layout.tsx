@@ -43,7 +43,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           attributes like cz-shortcut-listen="true" onto <body> before React
           hydrates, causing a spurious hydration mismatch. This is the React-
           recommended fix for third-party DOM mutations on this element. */}
-      <body suppressHydrationWarning className="min-h-full flex flex-col bg-stone-50 text-stone-900" style={{ fontFamily: "var(--font-sans), system-ui, sans-serif" }}>
+      <body suppressHydrationWarning className="min-h-full flex flex-col bg-canvas text-fg" style={{ fontFamily: "var(--font-sans), system-ui, sans-serif" }}>
         {gtmId && (
           <noscript>
             <iframe

@@ -183,6 +183,7 @@ export const en = {
   },
   dashboardLayout: {
     signOut: "Sign out",
+    changePhoto: "Change photo",
     account: "Account",
   },
   account: {
@@ -516,6 +517,8 @@ export const en = {
     sortNameAZ: "Name A→Z",
     sortNameZA: "Name Z→A",
     searchPlaceholder: "Search photos...",
+    noResults: "No photos match your search",
+    noResultsHint: "Try a different name, or clear the search.",
     slideshow: "Slideshow",
     prevPhoto: "Previous photo",
     nextPhoto: "Next photo",

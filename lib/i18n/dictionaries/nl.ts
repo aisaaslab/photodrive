@@ -184,7 +184,7 @@ export const nl: Translations = {
     galleries: "galerijen",
   },
   dashboardLayout: {
-    signOut: "Uitloggen",
+    signOut: "Uitloggen", changePhoto: "Foto wijzigen",
     account: "Account",
   },
   account: {
@@ -517,7 +517,7 @@ export const nl: Translations = {
     sortDefault: "Standaard",
     sortNameAZ: "Naam A→Z",
     sortNameZA: "Naam Z→A",
-    searchPlaceholder: "Foto's zoeken...",
+    searchPlaceholder: "Foto's zoeken...", noResults: "Geen foto's gevonden voor je zoekopdracht", noResultsHint: "Probeer een andere naam of wis de zoekopdracht.",
     slideshow: "Diavoorstelling",
     prevPhoto: "Vorige foto",
     nextPhoto: "Volgende foto",

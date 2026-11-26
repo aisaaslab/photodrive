@@ -197,7 +197,7 @@ export const el: Translations = {
   },
   // Dashboard layout
   dashboardLayout: {
-    signOut: "Αποσύνδεση",
+    signOut: "Αποσύνδεση", changePhoto: "Αλλαγή φωτογραφίας",
     account: "Λογαριασμός",
   },
   account: {
@@ -538,7 +538,7 @@ export const el: Translations = {
     sortDefault: "Προεπιλογή",
     sortNameAZ: "Όνομα Α→Ω",
     sortNameZA: "Όνομα Ω→Α",
-    searchPlaceholder: "Αναζήτηση φωτογραφιών...",
+    searchPlaceholder: "Αναζήτηση φωτογραφιών...", noResults: "Καμία φωτογραφία δεν ταιριάζει με την αναζήτησή σου", noResultsHint: "Δοκίμασε άλλο όνομα ή καθάρισε την αναζήτηση.",
     slideshow: "Σλάιντ",
     prevPhoto: "Προηγούμενη φωτογραφία",
     nextPhoto: "Επόμενη φωτογραφία",

@@ -53,7 +53,7 @@ export function GalleryToolbar(p: Props) {
 
   return (
     <>
-      <div className="sticky top-14 z-30 -mx-2 sm:-mx-6 px-3 sm:px-7 py-2 mb-3 sm:mb-5 bg-stone-50/90 backdrop-blur-md border-b border-stone-200/70">
+      <div data-ui="toolbar" className="sticky top-14 z-30 -mx-2 sm:-mx-6 px-3 sm:px-7 py-2 mb-3 sm:mb-5 bg-canvas/90 backdrop-blur-md border-b border-line">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 min-w-0">
             <FilterTabs
@@ -69,13 +69,13 @@ export function GalleryToolbar(p: Props) {
           </div>
 
           <div className="flex items-center gap-2 shrink-0">
-            <p className="hidden md:block text-xs text-stone-600">{countLabel(displayed, g)}</p>
+            <p className="hidden md:block text-xs text-fg-soft">{countLabel(displayed, g)}</p>
             {!selectionMode && displayed.length > 0 && allowDownload && (
               <button
                 onClick={p.onDownloadAll}
                 aria-label={g.downloadAll}
                 title={g.downloadAll}
-                className="flex items-center gap-1.5 text-xs rounded-lg px-2.5 sm:px-3 py-1.5 font-medium transition-all border border-stone-300 text-stone-500 hover:text-stone-700 hover:border-stone-400"
+                className="flex items-center gap-1.5 text-xs rounded-lg px-2.5 sm:px-3 py-1.5 font-medium transition-all border border-line text-fg-muted hover:text-fg-soft hover:border-fg-muted/40"
               >
                 <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
@@ -86,7 +86,7 @@ export function GalleryToolbar(p: Props) {
             {selectionMode && (
               <button
                 onClick={p.onSelectAll}
-                className="flex items-center gap-1.5 text-xs rounded-lg px-2.5 sm:px-3 py-1.5 font-medium transition-all border border-stone-300 text-stone-600 hover:text-stone-900 hover:border-stone-400 bg-white whitespace-nowrap"
+                className="flex items-center gap-1.5 text-xs rounded-lg px-2.5 sm:px-3 py-1.5 font-medium transition-all border border-line text-fg-soft hover:text-fg hover:border-fg-muted/40 bg-surface whitespace-nowrap"
               >
                 {p.allSelected ? g.deselectAll : g.selectAll}
               </button>
@@ -99,8 +99,8 @@ export function GalleryToolbar(p: Props) {
                 title={selectionMode ? g.cancel : g.select}
                 className={`flex items-center gap-1.5 text-xs rounded-lg px-2.5 sm:px-3 py-1.5 font-medium transition-all border ${
                   selectionMode
-                    ? "bg-[#17509e] border-[#17509e] text-white"
-                    : "border-stone-300 text-stone-500 hover:text-stone-700 hover:border-stone-400"
+                    ? "bg-accent-deep border-accent-deep text-fg"
+                    : "border-line text-fg-muted hover:text-fg-soft hover:border-fg-muted/40"
                 }`}
               >
                 <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

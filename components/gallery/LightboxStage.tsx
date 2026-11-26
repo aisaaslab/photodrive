@@ -48,7 +48,7 @@ export function LightboxStage({
       {/* Prev */}
       {activeIndex > 0 && (
         <button
-          className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center bg-white/10 hover:bg-white/20 text-white rounded-full transition-all z-10 hover:scale-110"
+          className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center bg-surface-2 hover:bg-white/20 text-fg rounded-full transition-all z-10 hover:scale-110"
           onClick={(e) => { e.stopPropagation(); onPrev(); }}
           aria-label={g.prevPhoto}
         >
@@ -86,7 +86,7 @@ export function LightboxStage({
           <>
             {!imgLoaded && (
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <div className="w-8 h-8 border-2 border-white/20 border-t-white/80 rounded-full animate-spin" />
+                <div className="w-8 h-8 border-2 border-fg-muted/30 border-t-white/80 rounded-full animate-spin" />
               </div>
             )}
             {/* The wrapper owns the entrance animation: an animation with
@@ -125,7 +125,7 @@ export function LightboxStage({
       {/* Next */}
       {activeIndex < total - 1 && (
         <button
-          className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center bg-white/10 hover:bg-white/20 text-white rounded-full transition-all z-10 hover:scale-110"
+          className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center bg-surface-2 hover:bg-white/20 text-fg rounded-full transition-all z-10 hover:scale-110"
           onClick={(e) => { e.stopPropagation(); onNext(); }}
           aria-label={g.nextPhoto}
         >

@@ -14,18 +14,18 @@ export function SelectionBar({
   const { t } = useLanguage();
   const g = t.gallery;
   return (
-    <div className="flex items-center justify-between mb-4 px-4 py-3 bg-stone-100 rounded-xl animate-scale-in">
-      <span className="text-sm text-stone-600">
-        <span className="font-semibold text-stone-900">{count}</span> {g.selected}
+    <div data-ui="selection-count" className="flex items-center justify-between mb-4 px-4 py-3 bg-surface-2 rounded-xl animate-scale-in">
+      <span className="text-sm text-fg-soft">
+        <span className="font-semibold text-fg">{count}</span> {g.selected}
       </span>
       <button
         onClick={onDownload}
         disabled={zipping}
-        className="flex items-center gap-1.5 bg-stone-900 text-white text-xs font-semibold rounded-lg px-3 py-1.5 hover:bg-stone-800 transition-colors disabled:opacity-60"
+        className="flex items-center gap-1.5 bg-accent text-canvas text-xs font-semibold rounded-pill px-3 py-1.5 hover:bg-surface-2 transition-colors disabled:opacity-60"
       >
         {zipping ? (
           <>
-            <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            <div className="w-3.5 h-3.5 border-2 border-fg-muted/40 border-t-white rounded-full animate-spin" />
             {g.preparing} {zipProgress}/{count}
           </>
         ) : (

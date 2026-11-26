@@ -41,13 +41,13 @@ export default async function DemoPage({ params }: Props) {
   }
 
   return (
-    <div className="min-h-screen bg-stone-50 relative">
-      <div className="aurora-bg-light"><span /></div>
+    <div className="min-h-screen bg-canvas relative">
+      
 
       <CountdownBanner expiresAt={data.expiresAt} />
 
       <div className="flex items-center justify-between px-4 sm:px-8 py-4">
-        <span className="text-stone-900 font-bold text-xl" style={{ fontFamily: "var(--font-brand), sans-serif" }}>{APP_NAME}</span>
+        <span className="text-fg font-bold text-xl" style={{ fontFamily: "var(--font-brand), sans-serif" }}>{APP_NAME}</span>
         <LanguageSwitcher variant="light" />
       </div>
 
@@ -65,8 +65,8 @@ export default async function DemoPage({ params }: Props) {
         )}
       </div>
 
-      <div className="border-t border-stone-200 py-6 text-center">
-        <p className="text-xs text-stone-400">Powered by {APP_NAME}</p>
+      <div className="border-t border-line py-6 text-center">
+        <p className="text-xs text-fg-muted">Powered by {APP_NAME}</p>
       </div>
     </div>
   );

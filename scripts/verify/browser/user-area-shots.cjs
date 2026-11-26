@@ -29,6 +29,17 @@ async function login(page, email) {
 
 (async () => {
   const browser = await chromium.launch();
+  // Client-facing pages (no sign-in): the public gallery, a private gallery's password gate, the legal and help pages.
+  for (const w of [1280, 390]) {
+    const c = await browser.newContext({ viewport: { width: w, height: 900 }, reducedMotion: "reduce" });
+    const pg = await c.newPage();
+    await pg.route(/^https?:\/\/(?!localhost|127\.0\.0\.1)/, (r) => r.abort());
+    for (const [name, path] of [["gallery", "/gallery/pubtest"], ["gate", "/gallery/privtest"], ["faq", "/faq"], ["terms", "/terms"], ["contact", "/contact"]]) {
+      await pg.goto(`${BASE}${path}`, { waitUntil: "load" }); await pg.waitForTimeout(1200);
+      await pg.screenshot({ path: `${SHOT}/ua-${name}-${w}.png` }); await audit(pg, `${name} ${w}`);
+    }
+    await c.close();
+  }
   for (const w of [1280, 390]) {
     const ctx = await browser.newContext({ viewport: { width: w, height: 900 }, reducedMotion: "reduce" });
     const page = await ctx.newPage();
@@ -39,6 +50,8 @@ async function login(page, email) {
     await page.waitForSelector('button[aria-label="More"]'); await page.waitForTimeout(600);
     await page.screenshot({ path: `${SHOT}/ua-dashboard-${w}.png`, fullPage: true }); await audit(page, `dashboard ${w}`);
     const dialogShot = async (name) => { await page.waitForSelector('[role="dialog"]', { timeout: 5000 }).catch(() => {}); await page.waitForTimeout(400); if (await page.locator('[role="dialog"]').count()) { await page.screenshot({ path: `${SHOT}/ua-${name}-${w}.png` }); await audit(page, `${name} ${w}`); await page.keyboard.press("Escape"); await page.waitForTimeout(300); } };
+    await page.locator('header button[aria-haspopup="menu"]').click(); await page.waitForTimeout(200);
+    await page.screenshot({ path: `${SHOT}/ua-accountmenu-${w}.png` }); await audit(page, `account menu ${w}`); await page.keyboard.press("Escape");
     await page.locator('button[aria-label="More"]').first().click();
     await page.locator("[role=menu] >> text=Edit").click(); await dialogShot("settings");
     await page.getByRole("button", { name: /New Gallery/ }).first().click(); await page.waitForTimeout(500);
@@ -48,6 +61,13 @@ async function login(page, email) {
     await page.goto(`${BASE}/dashboard/account`, { waitUntil: "load" }); await page.waitForTimeout(1500);
     await page.screenshot({ path: `${SHOT}/ua-account-${w}.png`, fullPage: true }); await audit(page, `account ${w}`);
     await ctx.close();
+    // A first-time photographer: no galleries yet.
+    const c2 = await browser.newContext({ viewport: { width: w, height: 900 }, reducedMotion: "reduce" });
+    const p2 = await c2.newPage();
+    await p2.route(/^https?:\/\/(?!localhost|127\.0\.0\.1)/, (r) => r.abort());
+    await login(p2, "unpaid@example.com"); await p2.waitForTimeout(1200);
+    await p2.screenshot({ path: `${SHOT}/ua-empty-${w}.png`, fullPage: true }); await audit(p2, `empty dashboard ${w}`);
+    await c2.close();
   }
   await browser.close();
   process.exit(failed ? 1 : 0);

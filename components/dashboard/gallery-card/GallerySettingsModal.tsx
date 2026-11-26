@@ -1,6 +1,8 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
 import { Modal } from "@/components/ui/Modal";
+import { cn, focusRing } from "@/lib/ui/cn";
 import { useLanguage } from "@/lib/i18n";
 import type { GalleryDoc } from "@/lib/firestore/types";
 import { SettingsDetails } from "./SettingsDetails";
@@ -11,8 +13,12 @@ import type { useGallerySettings } from "./useGallerySettings";
 
 /**
  * Gallery settings: a proper dialog instead of cramming the form into a card a third of the page wide. Grouped into sections
- * (details, appearance, privacy and downloads, contact and links), with Cancel and Save.
+ * (details, appearance, privacy and downloads, contact and links), with Cancel and Save. A row of section chips under the title jumps
+ * to a section and shows which one is in view, so a long form never feels long (S5-12).
  */
+const SECTIONS = ["details", "appearance", "privacy", "contact"] as const;
+type Section = (typeof SECTIONS)[number];
+
 export function GallerySettingsModal({
   gallery, settings, onChooseCover,
 }: {
@@ -25,6 +31,27 @@ export function GallerySettingsModal({
   const { values, saving, error } = settings;
   const onCancel = settings.cancel;
   const onSave = settings.save;
+  const scroller = useRef<HTMLDivElement>(null);
+  const [active, setActive] = useState<Section>("details");
+  const labels: Record<Section, string> = { details: c.sectionDetails, appearance: c.sectionAppearance, privacy: c.sectionPrivacy, contact: c.sectionContact };
+
+  // The section nearest the top of the scrolling area is the current one.
+  useEffect(() => {
+    const el = scroller.current;
+    if (!el) return;
+    const onScroll = () => {
+      const top = el.getBoundingClientRect().top;
+      let current: Section = "details";
+      for (const id of SECTIONS) {
+        const node = el.querySelector<HTMLElement>(`[data-section="${id}"]`);
+        if (node && node.getBoundingClientRect().top - top <= 48) current = id;
+      }
+      setActive(current);
+    };
+    el.addEventListener("scroll", onScroll, { passive: true });
+    return () => el.removeEventListener("scroll", onScroll);
+  }, []);
+  const jump = (id: Section) => scroller.current?.querySelector<HTMLElement>(`[data-section="${id}"]`)?.scrollIntoView({ behavior: "smooth", block: "start" });
 
   return (
     <Modal
@@ -42,11 +69,22 @@ export function GallerySettingsModal({
             </button>
           </div>
 
-      <div className="flex-1 overflow-y-auto p-5 space-y-7">
-        <SettingsDetails gallery={gallery} form={settings} />
-        <SettingsAppearance gallery={gallery} form={settings} onChooseCover={onChooseCover} />
-        <SettingsPrivacy gallery={gallery} form={settings} />
-        <SettingsContact gallery={gallery} form={settings} />
+      <nav aria-label={c.settingsTitle} className="flex gap-1.5 overflow-x-auto px-5 py-2.5 border-b border-line shrink-0">
+        {SECTIONS.map((id) => (
+          <button
+            key={id} type="button" onClick={() => jump(id)} aria-current={active === id ? "true" : undefined}
+            className={cn("shrink-0 rounded-pill px-3.5 py-1.5 text-xs font-semibold transition-colors", active === id ? "bg-accent-soft text-accent" : "text-fg-muted hover:text-fg hover:bg-surface-2", focusRing)}
+          >
+            {labels[id]}
+          </button>
+        ))}
+      </nav>
+
+      <div ref={scroller} className="flex-1 overflow-y-auto p-5 space-y-7 scroll-smooth">
+        <div data-section="details"><SettingsDetails gallery={gallery} form={settings} /></div>
+        <div data-section="appearance"><SettingsAppearance gallery={gallery} form={settings} onChooseCover={onChooseCover} /></div>
+        <div data-section="privacy"><SettingsPrivacy gallery={gallery} form={settings} /></div>
+        <div data-section="contact"><SettingsContact gallery={gallery} form={settings} /></div>
       </div>
 
           <div className="p-4 border-t border-line shrink-0">

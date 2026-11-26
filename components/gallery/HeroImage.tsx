@@ -34,7 +34,7 @@ export function HeroImage({ primaryUrl, fileId, galleryId, alt = "", objectPosit
 
   if (stage >= 3 || (!fileId && stage >= 1)) {
     // All URLs failed — branded gradient, never a broken-image icon.
-    return <div className="absolute inset-0 bg-gradient-to-br from-[#17509e] via-[#0d2d5c] to-stone-900" />;
+    return <div className="absolute inset-0 bg-gradient-to-br from-[#17509e] via-[#0d2d5c] to-surface-2" />;
   }
 
   const src =

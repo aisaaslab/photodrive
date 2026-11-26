@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
 import { notFound } from "next/navigation";
 import { cookies } from "next/headers";
 import { fetchDriveFolder } from "@/lib/drive/client";
@@ -16,6 +15,7 @@ import { SocialLinks } from "@/components/gallery/SocialLinks";
 import { GalleryAvatar } from "@/components/gallery/GalleryAvatar";
 import { HeroImage } from "@/components/gallery/HeroImage";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { Logo } from "@/components/ui/Logo";
 import { APP_NAME } from "@/lib/branding";
 import { titleFontFamily, titleSizeClass, validTitleColor } from "@/lib/gallery/title-style";
 import { coverObjectPosition } from "@/lib/gallery/cover-position";
@@ -126,15 +126,15 @@ export default async function GalleryPage({ params }: Props) {
   const bookUrl = gallery.bookLink || gallery.website || null;
 
   return (
-    <div className="min-h-screen bg-stone-50 relative">
-      <div className="aurora-bg-light"><span /></div>
+    <div className="min-h-screen bg-canvas relative">
+      
 
       {/* Sticky app header — sits ABOVE the hero, never overlapped.
           Left: PhotoDrive logo (links home) — or, when the photographer opted
           in (headerBranding), their own avatar + name instead. Right: language
           switcher. The photographer's identity also lives below the hero
           (avatar + name) where it gets more visual prominence. */}
-      <header className="sticky top-0 z-40 border-b border-stone-200 bg-white/90 backdrop-blur-xl">
+      <header className="sticky top-0 z-40 border-b border-line bg-canvas/90 backdrop-blur-xl">
         <div className="max-w-6xl mx-auto px-4 sm:px-8 h-14 flex items-center justify-between">
           {gallery.headerBranding === "photographer" && photographer.name ? (
             (() => {
@@ -147,7 +147,7 @@ export default async function GalleryPage({ params }: Props) {
                     size={32}
                   />
                   <span
-                    className="text-sm sm:text-base font-semibold text-stone-900 truncate"
+                    className="text-sm sm:text-base font-semibold text-fg truncate"
                     style={{ fontFamily: "var(--font-brand), sans-serif" }}
                   >
                     {photographer.name}
@@ -164,14 +164,7 @@ export default async function GalleryPage({ params }: Props) {
             })()
           ) : (
             <Link href="/" className="flex items-center gap-2 shrink-0">
-              <Image
-                src="/logo.png"
-                alt={APP_NAME}
-                width={180}
-                height={44}
-                className="h-10 w-auto"
-                priority
-              />
+              <Logo priority />
             </Link>
           )}
           <LanguageSwitcher variant="light" />
@@ -188,7 +181,7 @@ export default async function GalleryPage({ params }: Props) {
             objectPosition={coverObjectPosition(gallery.coverPosX, gallery.coverPosY)}
           />
         ) : (
-          <div className="absolute inset-0 bg-gradient-to-br from-[#17509e] via-[#0d2d5c] to-stone-900" />
+          <div className="absolute inset-0 bg-gradient-to-br from-[#17509e] via-[#0d2d5c] to-surface-2" />
         )}
         {/* Readability gradient over either source */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/10" />
@@ -197,7 +190,7 @@ export default async function GalleryPage({ params }: Props) {
             of the hero bottom (~48px overlap + breathing room). */}
         <div className="absolute inset-x-0 bottom-0 px-4 sm:px-8 pb-20 sm:pb-24 pt-12 sm:pt-16 flex flex-col items-center text-center">
           <h1
-            className={`${titleSizeClass(gallery.titleSize)} font-bold text-white drop-shadow-lg leading-tight break-words`}
+            className={`${titleSizeClass(gallery.titleSize)} font-bold text-fg drop-shadow-lg leading-tight break-words`}
             style={{
               // Photographer-picked font + color (curated set, validated on
               // write). Falls back to the brand font / white.
@@ -227,7 +220,7 @@ export default async function GalleryPage({ params }: Props) {
         {/* Avatar — centered, half-overlapping the hero. The negative margin
             pulls it up so its top half sits on the hero image. */}
         <div className="flex flex-col items-center -mt-10 sm:-mt-12 relative z-10">
-          <div className="rounded-full bg-white p-1 shadow-lg ring-1 ring-stone-200">
+          <div className="rounded-full bg-surface p-1 shadow-lg ring-1 ring-line">
             <GalleryAvatar
               src={photographer.photoURL || undefined}
               name={photographer.name || gallery.name}
@@ -237,7 +230,7 @@ export default async function GalleryPage({ params }: Props) {
           </div>
           {photographer.name && (
             <p
-              className="mt-2.5 text-lg font-semibold text-stone-900 text-center"
+              className="mt-2.5 text-lg font-semibold text-fg text-center"
               style={{ fontFamily: "var(--font-brand), sans-serif" }}
             >
               {photographer.name}
@@ -264,7 +257,7 @@ export default async function GalleryPage({ params }: Props) {
       </div>
 
       {/* Footer */}
-      <div className="border-t border-stone-200 py-6 text-center space-y-1">
+      <div className="border-t border-line py-6 text-center space-y-1">
         {photographer.name && <FooterCredit photographerName={photographer.name} />}
         <PoweredBy appName={APP_NAME} />
       </div>

@@ -10,7 +10,7 @@ import { useLanguage } from "@/lib/i18n";
 export function FooterCredit({ photographerName }: { photographerName: string }) {
   const { t } = useLanguage();
   return (
-    <p className="text-xs text-stone-600">
+    <p className="text-xs text-fg-soft">
       {t.gallery.photographedBy} {photographerName}
     </p>
   );
@@ -19,7 +19,7 @@ export function FooterCredit({ photographerName }: { photographerName: string })
 export function PoweredBy({ appName }: { appName: string }) {
   const { t } = useLanguage();
   return (
-    <p className="text-xs text-stone-500">
+    <p className="text-xs text-fg-muted">
       {t.gallery.poweredBy} {appName}
     </p>
   );

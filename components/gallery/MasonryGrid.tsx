@@ -137,7 +137,7 @@ export function MasonryGrid({ photos, subfolders = [], galleryId, allowDownload 
         <div ref={sentinelRef} className="flex justify-center py-8">
           <button
             onClick={showMore}
-            className="px-5 py-2.5 rounded-xl border border-stone-300 text-sm font-medium text-stone-600 hover:text-stone-900 hover:border-stone-400 bg-white transition-all"
+            className="px-5 py-2.5 rounded-xl border border-line text-sm font-medium text-fg-soft hover:text-fg hover:border-fg-muted/40 bg-surface transition-all"
           >
             {g.loadMore} ({remaining})
           </button>
