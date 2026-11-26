@@ -1,6 +1,7 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
+import { createContext, startTransition, useCallback, useContext, useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { LANGUAGES, LOCALES, PAGE_TITLES, isLang, type Lang } from "./languages";
 import { LANG_COOKIE, languageCookie } from "./detect";
 import { loadDictionary, type Translations } from "./load";
@@ -38,6 +39,7 @@ export function LanguageProvider({
   children: React.ReactNode;
 }) {
   const [state, setState] = useState<{ lang: Lang; t: Translations }>({ lang: initialLang, t: initialDictionary });
+  const router = useRouter();
   const current = useRef<Lang>(initialLang);
   // Only the most recent choice wins if the visitor clicks through languages faster than their files load.
   const latest = useRef(0);
@@ -51,7 +53,10 @@ export function LanguageProvider({
     document.title = PAGE_TITLES[next];
     current.current = next;
     setState({ lang: next, t });
-  }, []);
+    // Sections rendered on the server (the landing page) took their text from the old language: ask the server to render the route
+    // again, now that the cookie says `next`. Client components have already switched above, so nothing flashes.
+    startTransition(() => router.refresh());
+  }, [router]);
 
   // Visitors from before the cookie existed have their choice only in localStorage: adopt it once, which also sets the cookie so
   // the server renders in it from then on.

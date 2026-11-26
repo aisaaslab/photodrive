@@ -2,12 +2,13 @@ import Link from "next/link";
 import { Loader2 } from "lucide-react";
 import { cn, focusRing } from "@/lib/ui/cn";
 
-export type ButtonVariant = "primary" | "glass" | "outline" | "ghost" | "danger";
+export type ButtonVariant = "primary" | "glass" | "scrim" | "outline" | "ghost" | "danger";
 export type ButtonSize = "sm" | "md" | "lg";
 
 const variants: Record<ButtonVariant, string> = {
   primary: "bg-accent text-canvas hover:brightness-110 active:brightness-95",
-  glass: "bg-scrim text-fg border border-white/15 backdrop-blur hover:bg-glass active:bg-glass/60",
+  glass: "bg-glass text-fg border border-line backdrop-blur-sm hover:bg-white/15 active:bg-white/20",
+  scrim: "bg-scrim text-fg border border-white/15 backdrop-blur hover:bg-black/60 active:bg-black/70",
   outline: "bg-surface-2 text-fg border border-line hover:border-accent/60 active:bg-surface",
   ghost: "text-fg-soft hover:text-fg hover:bg-glass active:bg-glass/60",
   danger: "bg-danger/15 text-danger border border-danger/40 hover:bg-danger/25",

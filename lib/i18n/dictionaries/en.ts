@@ -609,6 +609,35 @@ export const en = {
     s11Title: "11. Contact",
     s11Body: "For any questions about this Privacy Policy or to exercise your rights:",
   },
+  landing: {
+    nav: {
+      login: "Log in",
+      menu: "Menu",
+      closeMenu: "Close menu",
+      primary: "Main navigation",
+    },
+    hero: {
+      badgeDrive: "Google Drive",
+      badgeGallery: "Gallery in 60 seconds",
+      lead: "Google Drive wasn’t built to impress clients. PhotoDrive was. Turn your folder of photos & videos into a stunning client gallery in under 60 seconds.",
+      ctaPrimary: "Create your gallery",
+      ctaDemo: "View live demo",
+    },
+    window: {
+      address: "Smith Wedding 2026",
+      name: "Smith Wedding",
+      meta: "248 photos · 12 favourites",
+      all: "All",
+      favorites: "Favorites",
+      downloadAll: "Download all",
+      chipFavTitle: "24 favourites",
+      chipFavSub: "Picked by your client",
+      chipFullTitle: "Full resolution",
+      chipFullSub: "No compression",
+      chipLockTitle: "Password protected",
+      chipLockSub: "Per gallery",
+    },
+  },
 };
 
 export type Translations = typeof en;

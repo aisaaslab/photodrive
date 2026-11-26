@@ -15,7 +15,7 @@ import { Tabs } from "@/components/ui/Tabs";
 import { ToastProvider, useToast } from "@/components/ui/Toast";
 import { Toggle } from "@/components/ui/Toggle";
 
-const VARIANTS: ButtonVariant[] = ["primary", "glass", "outline", "ghost", "danger"];
+const VARIANTS: ButtonVariant[] = ["primary", "glass", "scrim", "outline", "ghost", "danger"];
 
 function Block({ title, note, children }: { title: string; note?: string; children: React.ReactNode }) {
   return (
@@ -47,7 +47,7 @@ export function Kitchen() {
           <h1 className="text-h2-compact font-extrabold">UI kitchen sink</h1>
           <p className="mt-2 max-w-xl text-fg-soft">Every primitive, with its variants and states. Hover and press Tab to see the hover and focus states; disabled and loading are shown directly.</p>
 
-          <Block title="Button" note="primary, glass (over photos), outline, ghost, danger × sm, md, lg; disabled; loading; as a link; with icons.">
+          <Block title="Button" note="primary, glass and scrim (over photos), outline, ghost, danger × sm, md, lg; disabled; loading; as a link; with icons.">
             <div className="flex flex-wrap items-center gap-3">
               {VARIANTS.map((v) => <Button key={v} variant={v}>{v}</Button>)}
             </div>

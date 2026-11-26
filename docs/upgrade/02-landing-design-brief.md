@@ -74,7 +74,7 @@ card radius 24, panels 28–36, pills 99, borders 1 px `line`, gaps 12/20/28/44/
 
 ## Sections
 
-1. **Nav**: logo mark (36 px, `accent`, radius 11) + wordmark (800, 22); links How it works / Features / Pricing / FAQ; language switcher; Log in; **Get started** (accent pill). Auth-aware: shows avatar when signed in (as today).
+1. **Nav**: the **original PhotoDrive logo** (`public/logo-light.png`, owner's instruction 2026-11-26; the Figma file draws a placeholder mark and wordmark, which are not used), about 40 to 44 px high; links How it works / Features / Pricing / FAQ; language switcher; Log in; **Get started** (accent pill). Auth-aware: shows avatar when signed in (as today).
 2. **Hero**: full-bleed photo (`gallery-hero`) under two gradients (left→right `bg` α .92 → .25; top→bottom clear → `bg`). Glass badge (Drive logo → image icon, "Gallery in 60 seconds"), two-line H1 (line 2 gradient), subtitle, **Create your gallery** + **View live demo**, three check items (No re-upload · Client needs no account · Photos stay in your Drive).
 3. **Product preview**: 1120×560 gallery window (title bar, header, filters, 4×2 photo grid), three floating chips (Favourites, Full resolution, Password protected), 280 px bottom fade into the page.
 4. **Built-for strip**: label + 5 chips.

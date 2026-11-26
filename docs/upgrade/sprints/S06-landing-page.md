@@ -21,7 +21,7 @@
 - [ ] **S6-03** · M · `NavBar` (auth-aware client island, hamburger on small screens) and `Footer`.
   - Files: `components/landing/NavBar.tsx`, `components/landing/Footer.tsx`
   - Done when: matches node `5:14` (nav) and `8:296`; keyboard and screen-reader checked.
-- [ ] **S6-04** · L · Hero + product preview: gradients over the hero photo, badge, two-line H1 with gradient line 2, CTAs, checks, 1120×560 gallery window with three floating chips and the bottom fade. Hero image `priority`.
+- [x] **S6-04** · L · Hero + product preview: gradients over the hero photo, badge, two-line H1 with gradient line 2, CTAs, checks, 1120×560 gallery window with three floating chips and the bottom fade. Hero image `priority`.
   - Files: `components/landing/Hero.tsx`, `GalleryWindow.tsx`, `FloatingChip.tsx`
   - Done when: matches node `5:14` at 1440.
 - [ ] **S6-05** · M · Built-for strip and How-it-works (4 equal-height steps with connectors).

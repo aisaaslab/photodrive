@@ -633,4 +633,33 @@ export const el: Translations = {
     s11Title: "11. Επικοινωνία",
     s11Body: "Για οποιαδήποτε ερώτηση σχετικά με την Πολιτική Απορρήτου ή για άσκηση των δικαιωμάτων σας:",
   },
+  landing: {
+    nav: {
+      login: "Είσοδος",
+      menu: "Μενού",
+      closeMenu: "Κλείσιμο μενού",
+      primary: "Κύρια πλοήγηση",
+    },
+    hero: {
+      badgeDrive: "Google Drive",
+      badgeGallery: "Gallery σε 60 δευτερόλεπτα",
+      lead: "Το Google Drive δεν φτιάχτηκε για να εντυπωσιάζει πελάτες. Το PhotoDrive ναι. Μετατρέπει τον φάκελό σου με φωτογραφίες & βίντεο σε μια πανέμορφη gallery σε λιγότερο από 60 δευτερόλεπτα.",
+      ctaPrimary: "Δημιούργησε τη gallery σου",
+      ctaDemo: "Δες live demo",
+    },
+    window: {
+      address: "Smith Wedding 2026",
+      name: "Smith Wedding",
+      meta: "248 φωτογραφίες · 12 αγαπημένα",
+      all: "Όλα",
+      favorites: "Αγαπημένα",
+      downloadAll: "Λήψη όλων",
+      chipFavTitle: "24 αγαπημένα",
+      chipFavSub: "Επιλογή του πελάτη σου",
+      chipFullTitle: "Πλήρης ανάλυση",
+      chipFullSub: "Χωρίς συμπίεση",
+      chipLockTitle: "Προστασία με κωδικό",
+      chipLockSub: "Ανά gallery",
+    },
+  },
 };

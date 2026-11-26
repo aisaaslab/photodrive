@@ -611,4 +611,33 @@ export const nl: Translations = {
     s11Title: "11. Contact",
     s11Body: "Voor vragen over dit Privacybeleid of om uw rechten uit te oefenen:",
   },
+  landing: {
+    nav: {
+      login: "Inloggen",
+      menu: "Menu",
+      closeMenu: "Menu sluiten",
+      primary: "Hoofdnavigatie",
+    },
+    hero: {
+      badgeDrive: "Google Drive",
+      badgeGallery: "Galerij in 60 seconden",
+      lead: "Google Drive is niet gebouwd om klanten te imponeren. PhotoDrive wel. Het zet je map met foto's & video's om in een prachtige galerij in minder dan 60 seconden.",
+      ctaPrimary: "Maak je galerij",
+      ctaDemo: "Bekijk live demo",
+    },
+    window: {
+      address: "Smith Wedding 2026",
+      name: "Smith Wedding",
+      meta: "248 foto's · 12 favorieten",
+      all: "Alles",
+      favorites: "Favorieten",
+      downloadAll: "Alles downloaden",
+      chipFavTitle: "24 favorieten",
+      chipFavSub: "Gekozen door je klant",
+      chipFullTitle: "Volledige resolutie",
+      chipFullSub: "Geen compressie",
+      chipLockTitle: "Met wachtwoord beveiligd",
+      chipLockSub: "Per galerij",
+    },
+  },
 };

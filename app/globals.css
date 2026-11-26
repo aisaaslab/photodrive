@@ -34,14 +34,14 @@
 
   /* Shadows */
   --shadow-glow: 0 0 0 1px rgb(45 171 224 / 0.35), 0 20px 60px -20px rgb(45 171 224 / 0.45);
-  --shadow-window: 0 40px 120px -30px rgb(0 0 0 / 0.7);
-  --shadow-chip: 0 12px 32px -12px rgb(0 0 0 / 0.6);
+  --shadow-window: 0 -10px 140px 0 rgb(43 171 224 / 0.22);
+  --shadow-chip: 0 18px 22px -4px rgb(0 0 0 / 0.55);
 
   /* Page width: 1280 content inside the 1440 canvas (80px gutters on desktop, 16px on a phone) */
   --container-page: 80rem;
 
   /* Type scale: fluid between 390 and 1440. Utilities: text-h1, text-h2, text-h2-compact, text-lead, text-body */
-  --text-h1: clamp(2.5rem, 1.2rem + 5.6vw, 5rem);
+  --text-h1: clamp(2.5rem, 0.9rem + 4.6vw, 5rem);
   --text-h1--line-height: 1.05;
   --text-h1--letter-spacing: -0.03em;
   --text-h1--font-weight: 800;

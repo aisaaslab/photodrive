@@ -35,4 +35,6 @@ It needs the browser pointed at the emulators: build with `NEXT_PUBLIC_FIREBASE_
 
 **UI primitives** (`ui-primitives.cjs`, S5-03): real hover, focus, keyboard and ARIA checks on `/dev/ui`. Start the production server with `SHOW_DEV_UI=1` (the page is a 404 without it) and run `NODE_PATH=$(npm root -g) node scripts/verify/browser/ui-primitives.cjs`; set `SHOT=<dir>` to save screenshots at 1440, 1024 and 390.
 
+**New landing page** (`landing.cjs`, S6): server-rendered copy in six languages, no horizontal overflow at 1440/1024/390 in every language, the phone menu, anchors and CTAs. Run with tsx: `NODE_PATH=$(npm root -g) npx tsx scripts/verify/browser/landing.cjs` against a production server on :3997; `SHOT=<dir>` saves full-page screenshots.
+
 Prints one PASS/FAIL line per check. On staging, run the same page checks by hand against a real private gallery (S3-11).
