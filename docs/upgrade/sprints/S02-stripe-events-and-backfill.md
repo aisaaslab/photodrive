@@ -36,7 +36,7 @@
 - [~] **S2-08** · M · Back-fill **apply** script: `--apply --approved approved.csv`; transactional, idempotent, one `audit_log`-style record per user, refuses to run without the file; rehearsed on staging.
   - Depends: S2-06
   - Done when: staging rehearsal passes; production run only after S2-07 approval.
-- [ ] **S2-09** · S · Show payment status (`refunded`, `disputed`, `needs_review`) minimally on the existing admin users page until the rebuilt Payments view (S8-01).
+- [x] **S2-09** · S · Show payment status (`refunded`, `disputed`, `needs_review`) minimally on the existing admin users page until the rebuilt Payments view (S8-01).
   - Done when: an operator can see a refunded payment without opening Stripe.
 - [ ] **S2-10** · M · Test-mode evidence for refund, dispute and async-failure scenarios (Stripe CLI triggers), recorded with event ids.
   - Files: `docs/upgrade/evidence/S2.md`

@@ -5,6 +5,7 @@ import { useAuth } from "@/components/auth/AuthProvider";
 import { CreateUserModal, CreatedUserPanel, type CreatedUser } from "@/components/admin/CreateUserModal";
 import type { PlanDoc } from "@/lib/firestore/types";
 import { formatMoney } from "@/lib/shared/money";
+import type { PaymentFlag } from "@/lib/access-source";
 
 type Photographer = {
   uid: string;
@@ -26,6 +27,8 @@ type Photographer = {
   planId: string | null;
   planName: string | null;
   planInterval: string | null;
+  // Refunded / disputed / needs-review payments, worst first (S2-09).
+  paymentFlags: PaymentFlag[];
 };
 
 type Gallery = {
@@ -48,6 +51,16 @@ type Gallery = {
 type PlanLite = Pick<PlanDoc, "id" | "name" | "interval" | "priceCents" | "currency" | "active" | "isPublic">;
 
 type SourceFilter = "all" | "free_code" | "paid" | "admin" | "none";
+
+/** Operator-facing wording for a flagged payment (S2-09). */
+const flagLabel = (f: Pick<PaymentFlag, "status" | "needsReview">) =>
+  f.status === "refunded" ? "Refunded"
+    : f.status === "partially_refunded" ? "Partially refunded"
+      : f.status === "disputed" ? "Disputed"
+        : f.status === "dispute_lost" ? "Dispute lost"
+          : "Needs review";
+const flagStyle = (f: Pick<PaymentFlag, "status">) =>
+  f.status === "dispute_lost" || f.status === "disputed" ? "bg-red-500/10 text-red-400 border-red-500/20" : "bg-amber-500/10 text-amber-300 border-amber-500/20";
 
 const SOURCE_LABEL: Record<"admin" | "free_code" | "paid", string> = {
   admin: "Admin grant",
@@ -102,6 +115,7 @@ export default function AdminUsersPage() {
   const [sort, setSort] = useState<"newest" | "oldest" | "name" | "lastSignIn">("newest");
   const [expandedUid, setExpandedUid] = useState<string | null>(null);
   const [sourceFilter, setSourceFilter] = useState<SourceFilter>("all");
+  const [issuesOnly, setIssuesOnly] = useState(false);
 
   // Modals
   const [createOpen, setCreateOpen] = useState(false);
@@ -272,7 +286,10 @@ export default function AdminUsersPage() {
     none: users.filter((u) => !u.accessSource).length,
   };
 
+  const issueCount = users.filter((u) => u.paymentFlags.length > 0).length;
+
   const filteredUsers = users.filter((u) => {
+    if (issuesOnly && u.paymentFlags.length === 0) return false;
     if (sourceFilter === "none" ? !!u.accessSource : sourceFilter !== "all" && u.accessSource !== sourceFilter) return false;
     if (!search) return true;
     const q = search.toLowerCase();
@@ -374,6 +391,18 @@ export default function AdminUsersPage() {
             {label} <span className={sourceFilter === key ? "text-stone-500" : "text-stone-600"}>{sourceCounts[key]}</span>
           </button>
         ))}
+        {/* Customers with a refunded, disputed or flagged payment (S2-09) */}
+        <button
+          onClick={() => setIssuesOnly((v) => !v)}
+          aria-pressed={issuesOnly}
+          className={`text-xs font-semibold px-3 py-1.5 rounded-full border transition-colors ml-auto ${
+            issuesOnly
+              ? "bg-amber-400 text-stone-900 border-amber-400"
+              : "bg-white/[0.03] text-amber-300 border-amber-500/20 hover:border-amber-500/40"
+          }`}
+        >
+          Payment issues <span className={issuesOnly ? "text-stone-700" : "text-amber-400/70"}>{issueCount}</span>
+        </button>
       </div>
 
       {/* Photographers list */}
@@ -429,6 +458,14 @@ export default function AdminUsersPage() {
                       {SOURCE_LABEL[u.accessSource]}{u.accessSource === "free_code" && u.promoCode ? ` · ${u.promoCode}` : ""}
                     </span>
                   )}
+                  {u.paymentFlags.length > 0 && (
+                    <span
+                      title={u.paymentFlags.map((f) => f.reviewNote ?? flagLabel(f)).join("\n")}
+                      className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${flagStyle(u.paymentFlags[0])}`}
+                    >
+                      {flagLabel(u.paymentFlags[0])}{u.paymentFlags.length > 1 ? ` +${u.paymentFlags.length - 1}` : ""}
+                    </span>
+                  )}
                   <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${userGalleries.length > 0 ? "bg-[#17509e]/10 text-[#2dabe0] border border-[#17509e]/20" : "bg-white/[0.04] text-stone-500 border border-white/[0.06]"}`}>
                     {userGalleries.length} {userGalleries.length === 1 ? "gallery" : "galleries"}
                   </span>
@@ -444,6 +481,26 @@ export default function AdminUsersPage() {
               {/* Expanded section */}
               {isExpanded && (
                 <div className="border-t border-white/[0.06]">
+                  {/* Payment issues: refunded, disputed or flagged for review (S2-09) */}
+                  {u.paymentFlags.length > 0 && (
+                    <div className="px-5 py-4 border-b border-white/[0.06] bg-amber-500/[0.03]">
+                      <p className="text-xs font-semibold text-amber-300 mb-2">Payment issues</p>
+                      <ul className="space-y-1.5">
+                        {u.paymentFlags.map((f) => (
+                          <li key={f.sessionId} className="text-xs text-stone-300">
+                            <span className={`inline-block font-semibold px-2 py-0.5 rounded-full border mr-2 ${flagStyle(f)}`}>{flagLabel(f)}</span>
+                            {f.amountTotal !== null && <>{formatPaid(f.amountTotal, f.currency)}</>}
+                            {f.refundedAmount !== null && f.refundedAmount > 0 && <> · refunded {formatPaid(f.refundedAmount, f.currency)}</>}
+                            {f.activatedAt > 0 && <> · {formatDate(f.activatedAt)}</>}
+                            {f.needsReview && f.status !== "fulfilled" && <span className="text-amber-300"> · needs review</span>}
+                            <span className="block text-stone-500 font-mono mt-0.5">{f.sessionId}</span>
+                            {f.reviewNote && <span className="block text-stone-500 mt-0.5">{f.reviewNote}</span>}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
                   {/* Subscription / access control */}
                   <div className="px-5 py-4 border-b border-white/[0.06]">
                     {u.accessSource && (

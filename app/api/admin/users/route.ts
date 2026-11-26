@@ -4,7 +4,7 @@ import { getUidFromRequest, isAdmin } from "@/lib/firebase/admin-guard";
 import { assignPlanToUser, getPlanById } from "@/lib/plans";
 import type { GalleryDoc } from "@/lib/firestore/types";
 import { forOwner, migrateLegacyPassword } from "@/lib/gallery/password-vault";
-import { accessSourceOf, latestPaymentByUid } from "@/lib/access-source";
+import { accessSourceOf, latestPaymentByUid, paymentFlagsByUid } from "@/lib/access-source";
 
 export async function GET(req: NextRequest) {
   const uid = await getUidFromRequest(req);
@@ -16,6 +16,7 @@ export async function GET(req: NextRequest) {
     getAdminDb().collection("payments").get(),
   ]);
   const latestPayment = latestPaymentByUid(paymentsSnap.docs);
+  const paymentFlags = paymentFlagsByUid(paymentsSnap.docs);
 
   // Firestore returns untyped documents, so the shape is asserted rather than
   // inferred — spreading Record<string, unknown> yields just { id } to tsc.
@@ -86,6 +87,8 @@ export async function GET(req: NextRequest) {
       planId: sub?.planId ?? null,
       planName: sub?.planName ?? null,
       planInterval: sub?.planInterval ?? null,
+      // Refunded / disputed / needs-review payments, worst first (empty for most users).
+      paymentFlags: paymentFlags.get(u.uid) ?? [],
     };
   });
 
