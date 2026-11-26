@@ -7,6 +7,7 @@ import { useAuth } from "@/components/auth/AuthProvider";
 import { useLanguage, LOCALES } from "@/lib/i18n";
 import { NewGalleryForm } from "@/components/dashboard/NewGalleryForm";
 import { GalleryList } from "@/components/dashboard/GalleryList";
+import { Modal } from "@/components/ui/Modal";
 import { GalleryDoc } from "@/lib/firestore/types";
 import { useToast } from "@/components/ui/Toast";
 import { PaymentNotice } from "@/components/dashboard/PaymentNotice";
@@ -228,9 +229,19 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* New gallery form */}
+      {/* New gallery: a dialog, so the form never pushes the gallery list down the page (S5-12) */}
       {showForm && (
-        <div className="animate-scale-in">
+        <Modal
+          ariaLabel={t.newGalleryForm.title}
+          dismissOnBackdrop={false}
+          className="w-full max-w-xl max-h-[92vh] overflow-y-auto rounded-card shadow-window animate-scale-in"
+          onClose={() => {
+            setShowForm(false);
+            setPendingGallery(null);
+            setRestoredFromPayment(false);
+            localStorage.removeItem("pending_gallery");
+          }}
+        >
           <NewGalleryForm
             onCreated={() => {
               loadGalleries();
@@ -248,11 +259,11 @@ export default function DashboardPage() {
             initialData={pendingGallery ?? undefined}
             autoSubmit={restoredFromPayment}
           />
-        </div>
+        </Modal>
       )}
 
       {/* Divider */}
-      {!showForm && <div className="h-px bg-surface-2" />}
+      <div className="h-px bg-surface-2" />
 
       {/* Search + Sort */}
       {!loading && galleries.length > 0 && (
