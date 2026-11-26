@@ -42,7 +42,7 @@
   - Depends: S3-01
   - Files: `app/api/demo/create/route.ts`, `app/api/cron/cleanup/route.ts`, `vercel.json`
   - Done when: a person is not blocked forever; expired demos disappear.
-- [ ] **S3-08** · S · Security headers in `next.config.ts`: `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`, `frame-ancestors`; CSP in **report-only** first (allow analytics, fonts, Drive/Google image hosts, Stripe redirects).
+- [~] **S3-08** · S · Security headers in `next.config.ts`: `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`, `frame-ancestors`; CSP in **report-only** first (allow analytics, fonts, Drive/Google image hosts, Stripe redirects).
   - Files: `next.config.ts`
   - Done when: headers visible on all routes; CSP report endpoint receives no violations for normal flows in staging.
   - Refs: SEC-3
