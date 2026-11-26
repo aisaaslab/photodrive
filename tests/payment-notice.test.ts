@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { BANNER_WINDOW_MS, dismissKey, pickBanner, type UserPayment } from "@/lib/payment-notice";
 import { LANGUAGES } from "@/lib/i18n/languages";
-import { translations } from "@/lib/i18n";
+import { translations } from "./helpers-dictionaries";
 
 const NOW = Date.UTC(2026, 10, 26);
 const DAY = 86_400_000;

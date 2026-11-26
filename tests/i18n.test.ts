@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { translations } from "@/lib/i18n";
+import { translations } from "./helpers-dictionaries";
 
 const langs = Object.keys(translations) as (keyof typeof translations)[];
 const sectionKeys = (lang: keyof typeof translations, section: string) =>

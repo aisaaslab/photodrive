@@ -23,3 +23,13 @@ export function decideLanguageSync(opts: { local: Lang | null; account: Lang | n
   if (account) return account === current ? { action: "none" } : { action: "adopt", lang: account };
   return { action: "store", lang: current };
 }
+
+/** The browser tab title per language. */
+export const PAGE_TITLES: Record<Lang, string> = {
+  el: "PhotoDrive, Επαγγελματικά galleries για φωτογράφους",
+  en: "PhotoDrive, Professional galleries for photographers",
+  nl: "PhotoDrive, Professionele galerijen voor fotografen",
+  de: "PhotoDrive, Professionelle Galerien für Fotografen",
+  es: "PhotoDrive, Galerías profesionales para fotógrafos",
+  it: "PhotoDrive, Gallerie professionali per fotografi",
+};

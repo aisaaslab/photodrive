@@ -6,38 +6,37 @@ import { ClientProviders } from "@/components/ClientProviders";
 import { SiteAnalytics } from "@/components/SiteAnalytics";
 import { APP_NAME, APP_URL } from "@/lib/branding";
 import { getTrackingIds } from "@/lib/tracking-settings";
+import { getLanguage } from "@/lib/i18n/server";
+import { PAGE_TITLES } from "@/lib/i18n/languages";
 
 // Fonts are self-hosted (app/fonts.css + app/fonts/*.woff2): nothing is fetched from Google at build or run time.
 
 const description =
   "Share professional galleries with your clients straight from Google Drive.";
 
-export const metadata: Metadata = {
-  metadataBase: new URL(APP_URL),
-  title: `${APP_NAME}, Professional galleries for photographers`,
-  description,
-  openGraph: {
-    type: "website",
-    siteName: APP_NAME,
-    title: `${APP_NAME}, Professional galleries for photographers`,
+// The tab title and link preview follow the visitor's language (S5-06); the description stays English.
+export async function generateMetadata(): Promise<Metadata> {
+  const { lang } = await getLanguage();
+  const title = PAGE_TITLES[lang].replace(/^PhotoDrive/, APP_NAME);
+  return {
+    metadataBase: new URL(APP_URL),
+    title,
     description,
-    url: APP_URL,
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: `${APP_NAME}, Professional galleries for photographers`,
-    description,
-  },
-};
+    openGraph: { type: "website", siteName: APP_NAME, title, description, url: APP_URL },
+    twitter: { card: "summary_large_image", title, description },
+  };
+}
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   // Tag IDs are managed in Dashboard → Admin → Settings (validated server-side,
   // so they're safe to interpolate into the snippets below).
   const { gtmId, googleAdsId, metaPixelId } = await getTrackingIds();
+  // The language of this request (cookie, else the browser's preference): the page is rendered in it from the first byte.
+  const { lang, dictionary } = await getLanguage();
 
   return (
     <html
-      lang="en"
+      lang={lang}
       className="h-full antialiased"
     >
       {/* suppressHydrationWarning: browser extensions (e.g. ColorZilla) inject
@@ -56,7 +55,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             />
           </noscript>
         )}
-        <ClientProviders>{children}</ClientProviders>
+        <ClientProviders lang={lang} dictionary={dictionary}>{children}</ClientProviders>
         <SiteAnalytics />
         {gtmId && (
           <Script id="google-tag-manager" strategy="afterInteractive">

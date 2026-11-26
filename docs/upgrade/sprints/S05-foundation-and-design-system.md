@@ -27,7 +27,7 @@
   - Depends: S5-04
   - Done when: no `collection("…")` string literals outside `lib/server/repos` and `scripts/`; no `as unknown as GalleryDoc[]`.
   - Refs: STR-3
-- [ ] **S5-06** · L · i18n split: `lib/i18n/{el,en,nl,de,es,it}.ts`, types derived from `en`, only the active language shipped, `lang` **cookie** read on the server (browser detection on first visit), `LanguageProvider` seeded from the server; keep the `useLanguage()` API; `npm run i18n:check` for key parity.
+- [x] **S5-06** · L · i18n split: `lib/i18n/{el,en,nl,de,es,it}.ts`, types derived from `en`, only the active language shipped, `lang` **cookie** read on the server (browser detection on first visit), `LanguageProvider` seeded from the server; keep the `useLanguage()` API; `npm run i18n:check` for key parity.
   - Files: `lib/i18n/*`, `components/ClientProviders.tsx`, `app/layout.tsx`
   - Done when: bundle analysis shows one language per page; no hydration flash on language; parity check in CI.
   - Refs: STR-6 · D16

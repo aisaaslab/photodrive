@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { LANGUAGES, decideLanguageSync, isLang } from "@/lib/i18n/languages";
 import { userLanguage } from "@/lib/server/user-language";
-import { LOCALES, translations } from "@/lib/i18n";
+import { LOCALES } from "@/lib/i18n";
+import { translations } from "./helpers-dictionaries";
 
 describe("language list", () => {
   it("is exactly the six languages the app is translated into", () => {
