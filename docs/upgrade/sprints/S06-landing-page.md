@@ -8,7 +8,7 @@
 
 ## Tasks
 
-- [ ] **S6-00** · M · **Design addendum in Figma (Concept B page):** frames for "Try it now" (DemoForm), tutorial video block, trust/"Why PhotoDrive" cards, **390 px mobile frames** (nav, hero, bento, pricing, FAQ), and Greek/German long-text checks. Owner reviews before build.
+- [x] **S6-00** · M · **SUPERSEDED (owner, 2026-11-26, D11/D14): no more Figma frames; the demo form, tutorial video and trust cards are designed in code from the Concept B tokens, and mobile is built responsively from the 1440 design.** Was: Design addendum in Figma (Concept B page): frames for "Try it now" (DemoForm), tutorial video block, trust/"Why PhotoDrive" cards, **390 px mobile frames** (nav, hero, bento, pricing, FAQ), and Greek/German long-text checks. Owner reviews before build.
   - Files: Figma file `Aq966rDz8wrtnqVsk5esPB`, page "B · Cinematic Dark"
   - Done when: node ids of the new frames are added to `02-landing-design-brief.md`; owner approves.
   - Refs: G2, G4 · D11, D14
@@ -34,7 +34,7 @@
   - Refs: PAY-6
 - [x] **S6-08** · M · FAQ (accessible accordion, real content from `app/faq/page.tsx`) and Final CTA panel.
   - Done when: matches nodes `8:256`, `8:286`.
-- [ ] **S6-09** · M · Preserve conversion features per D14: restyle `DemoForm` ("Try it now"), `DemoVideo`, and fold `TrustSection` content into the page; remove or relocate the compare slider. **Copy must not promise anything D3 contradicts** (see S9-07).
+- [x] **S6-09** · M · Preserve conversion features per D14: restyle `DemoForm` ("Try it now"), `DemoVideo`, and fold `TrustSection` content into the page; remove or relocate the compare slider. **Copy must not promise anything D3 contradicts** (see S9-07).
   - Depends: S6-00
   - Files: `components/demo/DemoForm.tsx`, `components/DemoVideo.tsx`, `components/TrustSection.tsx`
   - Done when: demo creation works end to end; frames match the S6-00 addendum.

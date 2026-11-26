@@ -7,6 +7,9 @@ import { HowItWorks } from "@/components/landing/HowItWorks";
 import { Features } from "@/components/landing/Features";
 import { ClientExperience } from "@/components/landing/ClientExperience";
 import { Pricing } from "@/components/landing/Pricing";
+import { TryIt } from "@/components/landing/TryIt";
+import { Video } from "@/components/landing/Video";
+import { Why } from "@/components/landing/Why";
 import { Faq } from "@/components/landing/Faq";
 import { FinalCta } from "@/components/landing/FinalCta";
 import { Footer } from "@/components/landing/Footer";
@@ -27,8 +30,11 @@ export default async function NewLandingPage() {
         <Hero t={t} />
         <BuiltFor t={t} />
         <HowItWorks t={t} />
+        <Video />
         <Features t={t} />
         <ClientExperience t={t} />
+        <TryIt />
+        <Why t={t} />
         <Pricing t={t} plans={plans} />
         <Faq t={t} />
         <FinalCta t={t} />

@@ -696,6 +696,28 @@ export const en = {
       legal: "Legal",
       copyright: "© {year} {name}",
     },
+    why: {
+      label: "Why PhotoDrive",
+      title: "Built for professional photographers",
+      c1t: "Your data stays safe",
+      c1: "We don't store your photos. They live in your own Google Drive.",
+      c2t: "No account for your client",
+      c2: "No sign-up, no app. They just open your link, from any device.",
+      c3t: "One link per gallery",
+      c3: "Send one personal link by email, SMS or chat. It opens on any device.",
+      c4t: "One-time, no lock-in",
+      c4: "One payment for the period you choose. No hidden or automatic charges.",
+    },
+    video: {
+      label: "Tutorial",
+      title: "See PhotoDrive in action.",
+      play: "Watch the demo",
+      replay: "Watch again",
+      aria: "Tutorial video",
+    },
+    tryIt: {
+      fieldLabel: "Google Drive folder link",
+    },
   },
 };
 

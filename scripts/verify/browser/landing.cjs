@@ -79,6 +79,34 @@ const check = (name, ok, extra = "") => { console.log(`${ok ? "PASS" : "FAIL"} $
     await ctx.close();
   }
 
+  // Try it (demo form), tutorial video, and "Why PhotoDrive"
+  {
+    const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 }, extraHTTPHeaders: { "Accept-Language": "en" } });
+    const page = await ctx.newPage();
+    await page.goto(BASE + PATH, { waitUntil: "networkidle" });
+    const tryIt = page.locator("#try-it");
+    check("try it: the hero's demo button scrolls to this section when no demo URL is set", (await page.getByRole("link", { name: "View live demo" }).getAttribute("href")) === "#try-it");
+    await tryIt.getByLabel("Google Drive folder link").fill("not a link");
+    await tryIt.getByRole("button", { name: /Try it/ }).click();
+    await page.waitForSelector("#try-it-error", { timeout: 8000 }).catch(() => {});
+    check("try it: a bad link shows the translated error as an alert", (await tryIt.getByRole("alert").innerText().catch(() => "")) === "Invalid Google Drive link.");
+    check("try it: the field is marked invalid", (await tryIt.getByLabel("Google Drive folder link").getAttribute("aria-invalid")) === "true");
+    await tryIt.getByLabel("Google Drive folder link").fill("https://drive.google.com/drive/folders/BIGFOLDER000000000000000000000000");
+    await tryIt.getByRole("button", { name: /Try it/ }).click();
+    await page.waitForURL(/\/demo\//, { timeout: 15000 }).catch(() => {});
+    check("try it: a valid folder link creates a demo and opens it", /\/demo\/[A-Za-z0-9_-]+/.test(page.url()), page.url());
+
+    await page.goto(BASE + PATH, { waitUntil: "networkidle" });
+    const video = page.locator("video");
+    check("video: has webm and mp4 sources and a label", (await video.locator("source").count()) === 2 && (await video.getAttribute("aria-label")) === "Tutorial video");
+    check("video: the play button covers it until started", await page.getByRole("button", { name: "Watch the demo" }).isVisible());
+    await page.getByRole("button", { name: "Watch the demo" }).click();
+    await page.waitForTimeout(500);
+    check("video: pressing play removes the overlay", (await page.getByRole("button", { name: "Watch the demo" }).count()) === 0);
+    check("why: four trust cards and no promise about links that never expire", (await page.locator("section[aria-labelledby=why-title] li").count()) === 4 && !/never expire|doesn.t expire|stays live/i.test(await page.locator("section[aria-labelledby=why-title]").innerText()));
+    await ctx.close();
+  }
+
   // Pricing from real plans (WITH_PLANS=1: emulator seeded with seed.cjs and seed-plans.cjs) or the no-plans fallback
   {
     const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 }, extraHTTPHeaders: { "Accept-Language": "en" } });

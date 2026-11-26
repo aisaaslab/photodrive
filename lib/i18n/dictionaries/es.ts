@@ -135,5 +135,27 @@ export const es: Translations = {
       legal: "Legal",
       copyright: "© {year} {name}",
     },
+    why: {
+      label: "Por qué PhotoDrive",
+      title: "Hecho para fotógrafos profesionales",
+      c1t: "Tus datos están seguros",
+      c1: "No almacenamos tus fotos. Permanecen en tu propio Google Drive.",
+      c2t: "Sin cuenta para tu cliente",
+      c2: "Sin registro, sin app. Solo abren tu enlace, desde cualquier dispositivo.",
+      c3t: "Un enlace por galería",
+      c3: "Envía un enlace personal por correo, SMS o chat. Se abre en cualquier dispositivo.",
+      c4t: "Pago único, sin ataduras",
+      c4: "Un pago por el periodo que elijas. Sin cargos ocultos ni automáticos.",
+    },
+    video: {
+      label: "Tutorial",
+      title: "Mira PhotoDrive en acción.",
+      play: "Ver la demo",
+      replay: "Ver de nuevo",
+      aria: "Vídeo tutorial",
+    },
+    tryIt: {
+      fieldLabel: "Enlace de tu carpeta de Google Drive",
+    },
   },
 };

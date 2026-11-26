@@ -12,7 +12,7 @@ const COL_2 = [[2, "sm:h-[170px] h-[100px]"], [4, "sm:h-[250px] h-[150px]"]] as 
 
 function Mosaic({ items, offset }: { items: readonly (readonly [number, string])[]; offset?: boolean }) {
   return (
-    <div className={cn("flex flex-1 flex-col gap-3.5 sm:w-[190px] sm:flex-none", offset && "pt-8 sm:pt-12")}>
+    <div className={cn("flex min-w-0 flex-1 flex-col gap-3.5 sm:max-w-[190px]", offset && "pt-8 sm:pt-12")}>
       {items.map(([n, h]) => (
         <div key={n} className={cn("relative overflow-hidden rounded-2xl", h)}>
           <Image src={`/landing/gallery-${n}.jpg`} alt="" fill sizes="190px" className="object-cover" />
@@ -48,7 +48,7 @@ export function Features({ t }: { t: Translations }) {
                 <h3 className="text-[28px] font-bold leading-[34px] text-fg sm:max-w-[290px]">{f.f1Title}</h3>
                 <p className="text-base leading-[25px] text-fg-muted sm:max-w-[290px]">{f.f1Desc}</p>
               </div>
-              <div aria-hidden className="flex max-h-[290px] gap-3.5 overflow-hidden px-8 sm:max-h-none sm:px-0 sm:pt-7">
+              <div aria-hidden className="flex max-h-[290px] gap-3.5 overflow-hidden px-8 sm:min-w-0 sm:max-h-none sm:flex-1 sm:px-0 sm:pb-0 sm:pr-8 sm:pt-7">
                 <Mosaic items={COL_1} />
                 <Mosaic items={COL_2} offset />
               </div>

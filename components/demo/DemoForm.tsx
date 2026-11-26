@@ -1,41 +1,12 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { useLanguage } from "@/lib/i18n";
+import { useDemoCreate } from "./useDemoCreate";
 
 export function DemoForm() {
   const { t } = useLanguage();
   const d = t.demo;
-  const router = useRouter();
-  const [driveUrl, setDriveUrl] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setError(null);
-    setLoading(true);
-    try {
-      const res = await fetch("/api/demo/create", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ driveUrl }),
-      });
-      if (res.status === 429) { setError(d.rateLimitError); return; }
-      if (!res.ok) {
-        const data = await res.json();
-        setError(data.error === "Invalid Google Drive folder URL" ? d.invalidUrl : d.genericError);
-        return;
-      }
-      const { id } = await res.json();
-      router.push(`/demo/${id}`);
-    } catch {
-      setError(d.genericError);
-    } finally {
-      setLoading(false);
-    }
-  }
+  const { driveUrl, setDriveUrl, loading, error, submit: handleSubmit } = useDemoCreate();
 
   return (
     <section id="demo" className="py-16 sm:py-24 px-6 border-t border-white/5">

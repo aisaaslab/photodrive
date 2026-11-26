@@ -698,5 +698,27 @@ export const nl: Translations = {
       legal: "Juridisch",
       copyright: "© {year} {name}",
     },
+    why: {
+      label: "Waarom PhotoDrive",
+      title: "Gemaakt voor professionele fotografen",
+      c1t: "Je gegevens blijven veilig",
+      c1: "We slaan je foto's niet op. Ze blijven in je eigen Google Drive.",
+      c2t: "Geen account voor je klant",
+      c2: "Geen registratie, geen app. Ze openen gewoon je link, op elk apparaat.",
+      c3t: "Eén link per galerij",
+      c3: "Stuur één persoonlijke link per e-mail, sms of chat. Hij opent op elk apparaat.",
+      c4t: "Eenmalig, geen verplichtingen",
+      c4: "Eén betaling voor de periode die je kiest. Geen verborgen of automatische kosten.",
+    },
+    video: {
+      label: "Tutorial",
+      title: "Zie PhotoDrive in actie.",
+      play: "Bekijk de demo",
+      replay: "Opnieuw bekijken",
+      aria: "Tutorialvideo",
+    },
+    tryIt: {
+      fieldLabel: "Link naar je Google Drive-map",
+    },
   },
 };
