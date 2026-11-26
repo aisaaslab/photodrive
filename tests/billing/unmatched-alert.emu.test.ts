@@ -11,7 +11,9 @@ vi.mock("@/lib/firebase/admin", async () => {
   return { getAdminDb: db.testDb, getAdminAuth: db.testAuth };
 });
 const sendEmail = vi.fn();
-vi.mock("@/lib/email", () => ({ sendEmail }));
+vi.mock("@/lib/email", async (orig) => ({ ...(await orig<typeof import("@/lib/email")>()), sendEmail }));
+// Customers get their own e-mails too (S2-14); these tests are about the OPERATOR alert, so only count mail to the operator.
+const adminCalls = () => sendEmail.mock.calls.filter((c) => (c[0] as { to: string }).to === "ops@example.com");
 
 const { POST: webhook } = await import("@/app/api/stripe/webhook/route");
 const { handleStripeEvent } = await import("@/lib/server/billing/events/dispatch");
@@ -46,7 +48,7 @@ describe("unmatched payment policy", () => {
   it("inside 24 h: 500 so Stripe retries, recorded as failed, no alert", async () => {
     expect((await deliver(orphan("evt_young", 2))).status).toBe(500);
     expect(await logDoc("evt_young")).toMatchObject({ status: "failed", error: "unmatched payment" });
-    expect(sendEmail).not.toHaveBeenCalled();
+    expect(adminCalls()).toHaveLength(0);
   });
 
   it("after 24 h: 200, needs_review, and exactly one alert that leaks no customer e-mail", async () => {
@@ -55,8 +57,8 @@ describe("unmatched payment policy", () => {
     expect(doc).toMatchObject({ status: "needs_review", outcome: "unmatched_payment", sessionId: "cs_evt_old" });
     expect(doc.alertedAt).toBeGreaterThan(0);
 
-    expect(sendEmail).toHaveBeenCalledTimes(1);
-    const mail = sendEmail.mock.calls[0][0] as { to: string; subject: string; text: string; html: string };
+    expect(adminCalls()).toHaveLength(1);
+    const mail = adminCalls()[0][0] as { to: string; subject: string; text: string; html: string };
     expect(mail.to).toBe("ops@example.com");
     expect(mail.subject).toContain("unmatched_payment");
     expect(mail.text).toContain("evt_old");
@@ -70,7 +72,7 @@ describe("unmatched payment policy", () => {
     await deliver(event);
     await deliver(event);
     await deliver(event);
-    expect(sendEmail).toHaveBeenCalledTimes(1);
+    expect(adminCalls()).toHaveLength(1);
   });
 
   it("retries inside the window never alert; the first attempt past 24 h alerts once", async () => {
@@ -80,12 +82,12 @@ describe("unmatched payment policy", () => {
     const at = (hours: number) => () => t0 + hours * HOUR * 1000;
     expect((await handleStripeEvent(event as never, log, at(1))).status).toBe(500);
     expect((await handleStripeEvent(event as never, log, at(12))).status).toBe(500);
-    expect(sendEmail).not.toHaveBeenCalled();
+    expect(adminCalls()).toHaveLength(0);
     expect((await handleStripeEvent(event as never, log, at(25))).status).toBe(200);
-    expect(sendEmail).toHaveBeenCalledTimes(1);
+    expect(adminCalls()).toHaveLength(1);
     expect(await logDoc("evt_timeline")).toMatchObject({ status: "needs_review", attempts: 3 });
     await handleStripeEvent(event as never, log, at(26));
-    expect(sendEmail).toHaveBeenCalledTimes(1);
+    expect(adminCalls()).toHaveLength(1);
   });
 
   it("a failing mail provider (false or exception) never changes the response and leaves alertedAt unset", async () => {
@@ -100,7 +102,7 @@ describe("unmatched payment policy", () => {
   it("without ADMIN_ALERT_EMAIL nothing is sent but the event is still recorded", async () => {
     vi.stubEnv("ADMIN_ALERT_EMAIL", "");
     expect((await deliver(orphan("evt_nomail", 30))).status).toBe(200);
-    expect(sendEmail).not.toHaveBeenCalled();
+    expect(adminCalls()).toHaveLength(0);
     expect(await logDoc("evt_nomail")).toMatchObject({ status: "needs_review" });
   });
 });
@@ -116,7 +118,7 @@ describe("which events alert the operator", () => {
     await buy();
     await deliver(eventFixture("customer.created", {}, "evt_ignored"));
     await deliver(eventFixture("charge.refunded", chargeFixture({ payment_intent: "pi_ok" }), "evt_refund"));
-    expect(sendEmail).not.toHaveBeenCalled();
+    expect(adminCalls()).toHaveLength(0);
   });
 
   it("a partial refund and a refund for an unknown payment do, once each", async () => {
@@ -125,8 +127,8 @@ describe("which events alert the operator", () => {
     vi.spyOn(getStripe().checkout.sessions, "list").mockResolvedValue({ data: [] } as never);
     await deliver(eventFixture("charge.refunded", chargeFixture({ payment_intent: "pi_ok", amount_refunded: 1000, refunded: false }), "evt_partial"));
     await deliver(eventFixture("charge.refunded", chargeFixture({ payment_intent: "pi_nope" }), "evt_orphan_refund"));
-    expect(sendEmail).toHaveBeenCalledTimes(2);
-    const subjects = sendEmail.mock.calls.map((c) => (c[0] as { subject: string }).subject);
+    expect(adminCalls()).toHaveLength(2);
+    const subjects = adminCalls().map((c) => (c[0] as { subject: string }).subject);
     expect(subjects[0]).toContain("refund_partial_flagged");
     expect(subjects[1]).toContain("payment_not_found");
   });

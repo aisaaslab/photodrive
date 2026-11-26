@@ -2,6 +2,7 @@ import type Stripe from "stripe";
 import { getAdminDb } from "@/lib/firebase/admin";
 import { claimEvent, markAlerted, markEvent } from "@/lib/server/repos/stripeEvents";
 import { notifyAdmin } from "@/lib/server/notify/admin";
+import { sendCustomerNotice } from "@/lib/server/notify/customer";
 import { fulfilCheckoutSession, UnmatchedPayment } from "@/lib/server/billing/fulfil";
 import { getStripe } from "@/lib/server/billing/stripe";
 import { onChargeRefunded, onDisputeClosed, onDisputeCreated, onSessionNotPaid, type Outcome } from "./handlers";
@@ -73,6 +74,8 @@ async function record(event: Stripe.Event, o: Outcome, log: Logger, now: () => n
   }
   await markEvent(getAdminDb(), event.id, o.status, { sessionId: o.sessionId, uid: o.uid, outcome: o.outcome, error: o.error }, now());
   if (o.status === "needs_review") await alertOps(event, o, log, now);
+  // Tell the customer what happened to their access (S2-14). Never throws and never changes the response.
+  if (o.notice && o.uid) await sendCustomerNotice(getAdminDb(), { ...o.notice, uid: o.uid }, log, now());
   return ok;
 }
 
