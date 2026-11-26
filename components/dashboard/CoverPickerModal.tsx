@@ -12,6 +12,7 @@ import {
   coverObjectPosition,
   validCoverPos,
 } from "@/lib/gallery/cover-position";
+import { proxyUrl } from "@/lib/drive/proxy-url";
 
 interface PickerPhoto {
   id: string;
@@ -52,6 +53,7 @@ const clampPct = (n: number) => Math.min(100, Math.max(0, n));
  * dragging the photo by dx px changes p by -dx / overflow * 100.
  */
 function BannerPreview({
+  galleryId,
   photo,
   aspect,
   label,
@@ -59,6 +61,7 @@ function BannerPreview({
   onChange,
   className = "",
 }: {
+  galleryId: string;
   photo: PickerPhoto;
   aspect: number;
   label: string;
@@ -155,7 +158,7 @@ function BannerPreview({
             const img = e.currentTarget;
             if (!img.dataset.fallback) {
               img.dataset.fallback = "1";
-              img.src = `/api/photos/proxy?fileId=${photo.id}&size=preview`;
+              img.src = proxyUrl(galleryId, photo.id, "preview");
             }
           }}
         />
@@ -333,6 +336,7 @@ export function CoverPickerModal({ gallery, onClose, onSaved }: Props) {
                   <div className="flex flex-col sm:flex-row gap-3 sm:items-start">
                     <BannerPreview
                       key={`d-${selectedPhoto.id}`}
+                      galleryId={gallery.id}
                       className="flex-1 min-w-0"
                       photo={selectedPhoto}
                       aspect={COVER_RECOMMENDED.desktopAspect}
@@ -342,6 +346,7 @@ export function CoverPickerModal({ gallery, onClose, onSaved }: Props) {
                     />
                     <BannerPreview
                       key={`m-${selectedPhoto.id}`}
+                      galleryId={gallery.id}
                       className="w-full sm:w-44 shrink-0"
                       photo={selectedPhoto}
                       aspect={COVER_RECOMMENDED.mobileAspect}
@@ -406,7 +411,7 @@ export function CoverPickerModal({ gallery, onClose, onSaved }: Props) {
                           const img = e.currentTarget;
                           if (!img.dataset.fallback) {
                             img.dataset.fallback = "1";
-                            img.src = `/api/photos/proxy?fileId=${p.id}&size=thumb`;
+                            img.src = proxyUrl(gallery.id, p.id, "thumb");
                           }
                         }}
                       />

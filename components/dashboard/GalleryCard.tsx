@@ -13,6 +13,7 @@ import { Modal } from "@/components/ui/Modal";
 import { useToast } from "@/components/ui/Toast";
 import { LOCALES } from "@/lib/i18n";
 import { coverObjectPosition } from "@/lib/gallery/cover-position";
+import { proxyUrl } from "@/lib/drive/proxy-url";
 
 interface Props {
   gallery: GalleryDoc;
@@ -143,6 +144,9 @@ export function GalleryCard({ gallery, onDelete, onUpdate }: Props) {
     try {
       const { default: JSZip } = await import("jszip");
       const zip = new JSZip();
+      // The owner's originals are authorised by sign-in (the gallery may have downloads turned off for visitors).
+      const token = await user?.getIdToken();
+      const headers: HeadersInit = token ? { Authorization: `Bearer ${token}` } : {};
       // Fetch in small batches; skip any file that fails instead of aborting.
       const CONCURRENCY = 4;
       for (let i = 0; i < selPhotos.length; i += CONCURRENCY) {
@@ -150,7 +154,7 @@ export function GalleryCard({ gallery, onDelete, onUpdate }: Props) {
         await Promise.all(
           batch.map(async (p) => {
             try {
-              const res = await fetch(`/api/photos/proxy?fileId=${p.id}&size=full`);
+              const res = await fetch(proxyUrl(gallery.id, p.id, "full"), { headers });
               if (res.ok) zip.file(p.name || `${p.id}.jpg`, await res.blob());
             } catch {
               // skip
@@ -330,9 +334,9 @@ export function GalleryCard({ gallery, onDelete, onUpdate }: Props) {
                     onError={(e) => {
                       // Fallback to our proxy if Google's thumbnail CDN fails.
                       const img = e.currentTarget;
-                      if (!img.dataset.fallback) {
+                      if (!img.dataset.fallback && gallery.coverFileId) {
                         img.dataset.fallback = "1";
-                        img.src = `/api/photos/proxy?fileId=${gallery.coverFileId}&size=thumb`;
+                        img.src = proxyUrl(gallery.id, gallery.coverFileId, "thumb");
                       }
                     }}
                   />

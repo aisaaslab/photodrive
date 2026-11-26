@@ -25,7 +25,7 @@
   - Depends: S3-02, S3-13
   - Files: `app/gallery/[slug]/page.tsx`, `lib/drive/public-url.ts`, `components/gallery/PhotoTile.tsx`, `components/gallery/Lightbox.tsx`, `components/gallery/HeroImage.tsx`, `components/gallery/MasonryGrid.tsx`, `components/dashboard/GalleryCard.tsx`, `components/dashboard/CoverPickerModal.tsx`, `app/api/galleries/[id]/download-all/route.ts`
   - Done when: in a private gallery, the rendered HTML and network log contain no Drive file id and no `googleusercontent`/`drive.usercontent` URL; public galleries behave as before.
-- [ ] **S3-04** · M · Harden the legacy `/api/photos/proxy` (still used for public galleries and the dashboard): require a gallery id, verify folder membership, rate limit, honour `allowDownload` and the password cookie for `size=full`, `private` cache headers for protected galleries.
+- [x] **S3-04** · M · Harden the legacy `/api/photos/proxy` (still used for public galleries and the dashboard): require a gallery id, verify folder membership, rate limit, honour `allowDownload` and the password cookie for `size=full`, `private` cache headers for protected galleries.
   - Depends: S3-01
   - Files: `app/api/photos/proxy/route.ts`, callers
   - Done when: a foreign file id returns 403; a protected gallery's original requires the cookie.

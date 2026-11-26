@@ -7,6 +7,7 @@ import { Lightbox } from "./Lightbox";
 import { SendSelectionModal } from "./SendSelectionModal";
 import { nanoid } from "nanoid";
 import { useLanguage } from "@/lib/i18n";
+import { proxyUrl } from "@/lib/drive/proxy-url";
 
 interface Props {
   photos: DriveFile[];
@@ -226,7 +227,7 @@ export function MasonryGrid({ photos, subfolders = [], galleryId, allowDownload 
           batch.map(async (id) => {
             const photo = photos.find((p) => p.id === id);
             try {
-              const res = await fetch(`/api/photos/proxy?fileId=${id}&size=full`);
+              const res = await fetch(proxyUrl(galleryId, id, "full"));
               if (res.ok) zip.file(photo?.name ?? `${id}.jpg`, await res.blob());
             } catch {
               // skip this file, keep the rest
@@ -584,6 +585,7 @@ export function MasonryGrid({ photos, subfolders = [], galleryId, allowDownload 
                   return (
                     <PhotoTile
                       key={photo.id}
+                      galleryId={galleryId}
                       photo={photo}
                       index={index}
                       isFavorited={favorites.has(photo.id)}
@@ -605,6 +607,7 @@ export function MasonryGrid({ photos, subfolders = [], galleryId, allowDownload 
                   return (
                     <PhotoTile
                       key={video.id}
+                      galleryId={galleryId}
                       photo={video}
                       index={index}
                       isFavorited={favorites.has(video.id)}
@@ -661,6 +664,7 @@ export function MasonryGrid({ photos, subfolders = [], galleryId, allowDownload 
       {/* Lightbox */}
       {lightboxIndex !== null && (
         <Lightbox
+          galleryId={galleryId}
           photos={lightboxPhotos}
           activeIndex={lightboxIndex}
           favorites={favorites}

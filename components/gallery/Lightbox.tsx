@@ -4,8 +4,10 @@ import { useEffect, useCallback, useRef, useState } from "react";
 import { DriveFile } from "@/lib/drive/types";
 import { driveImageUrl, driveDownloadUrl } from "@/lib/drive/public-url";
 import { useLanguage } from "@/lib/i18n";
+import { proxyUrl } from "@/lib/drive/proxy-url";
 
 interface Props {
+  galleryId: string;
   photos: DriveFile[];
   activeIndex: number;
   favorites: Set<string>;
@@ -18,7 +20,7 @@ interface Props {
   onToggleFavorite: (photoId: string) => void;
 }
 
-export function Lightbox({ photos, activeIndex, favorites, allowDownload = true, onClose, onNext, onPrev, onGoTo, onToggleFavorite }: Props) {
+export function Lightbox({ galleryId, photos, activeIndex, favorites, allowDownload = true, onClose, onNext, onPrev, onGoTo, onToggleFavorite }: Props) {
   const { t } = useLanguage();
   const g = t.gallery;
   const photo = photos[activeIndex];
@@ -493,7 +495,7 @@ export function Lightbox({ photos, activeIndex, favorites, allowDownload = true,
                   const img = e.currentTarget;
                   if (!img.dataset.fallback) {
                     img.dataset.fallback = "1";
-                    img.src = `/api/photos/proxy?fileId=${photo.id}&size=preview`;
+                    img.src = proxyUrl(galleryId, photo.id, "preview");
                   } else {
                     setImgLoaded(true);
                   }
@@ -554,7 +556,7 @@ export function Lightbox({ photos, activeIndex, favorites, allowDownload = true,
                   const img = e.currentTarget;
                   if (!img.dataset.fallback) {
                     img.dataset.fallback = "1";
-                    img.src = `/api/photos/proxy?fileId=${p.id}&size=thumb`;
+                    img.src = proxyUrl(galleryId, p.id, "thumb");
                   }
                 }}
                 className="w-full h-full object-cover"

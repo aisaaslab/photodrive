@@ -176,6 +176,7 @@ export default async function GalleryPage({ params }: Props) {
           <HeroImage
             primaryUrl={driveImageUrl(coverPhoto, 2048)}
             fileId={gallery.coverFileId}
+            galleryId={gallery.id}
             objectPosition={coverObjectPosition(gallery.coverPosX, gallery.coverPosY)}
           />
         ) : (

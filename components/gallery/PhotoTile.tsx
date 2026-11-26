@@ -5,8 +5,10 @@ import { DriveFile } from "@/lib/drive/types";
 import { FavoriteButton } from "./FavoriteButton";
 import { driveImageUrl, driveDownloadUrl } from "@/lib/drive/public-url";
 import { useLanguage } from "@/lib/i18n";
+import { proxyUrl } from "@/lib/drive/proxy-url";
 
 interface Props {
+  galleryId: string;
   photo: DriveFile;
   index: number;
   isFavorited: boolean;
@@ -22,7 +24,7 @@ interface Props {
 const FALLBACK_RATIO = 1.5;
 
 export function PhotoTile({
-  photo, index, isFavorited, isSelected, selectionMode, allowDownload = true,
+  galleryId, photo, index, isFavorited, isSelected, selectionMode, allowDownload = true,
   onOpen, onToggleFavorite, onToggleSelect,
 }: Props) {
   const { t } = useLanguage();
@@ -77,7 +79,7 @@ export function PhotoTile({
           const img = e.currentTarget;
           if (!img.dataset.fallback && !isVideo) {
             img.dataset.fallback = "1";
-            img.src = `/api/photos/proxy?fileId=${photo.id}&size=thumb`;
+            img.src = proxyUrl(galleryId, photo.id, "thumb");
           } else {
             setLoaded(true);
           }
