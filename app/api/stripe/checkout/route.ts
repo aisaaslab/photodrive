@@ -133,6 +133,19 @@ export async function POST(req: NextRequest) {
         interval: plan.interval,
         ...(v2 ? { env: appEnv() } : {}),
       },
+      // An invoice for every purchase (S4-06), tied to the customer above; the Account page links to Stripe's hosted invoice. Receipts
+      // (Stripe's own e-mail) are separate and stay on. Tax/VAT is out of scope (D10).
+      ...(v2
+        ? {
+            invoice_creation: {
+              enabled: true,
+              invoice_data: {
+                description: `${APP_NAME} ${plan.name}`,
+                metadata: { uid: decoded.uid, planId: plan.id, interval: plan.interval, env: appEnv() },
+              },
+            },
+          }
+        : {}),
       allow_promotion_codes: true,
       success_url: `${appUrl}/thank-you?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${appUrl}/subscribe`,

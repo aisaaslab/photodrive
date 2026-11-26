@@ -109,6 +109,17 @@ country and the plan's currency. The owner chooses; the code works with any of t
 5. **Test-mode scenarios to run and record in `docs/upgrade/evidence/S4.md`:** an iDEAL payment (instant, redirect) and a SEPA Debit payment (delayed: use the test IBANs for success and for failure from Stripe's testing documentation) both end with access active and exactly one `payments` document; a failed delayed payment leaves access unchanged and sends the failure notice.
 6. Known limit: the conversion pixel on the thank-you page fires only for payments that are already paid when the page loads, so delayed payments are not reported as purchases.
 
+### Stripe dashboard checklist for invoices and receipts (S4-06)
+
+With `BILLING_FULFIL_V2` on, every checkout creates a Stripe **invoice** (tied to the customer) in addition to Stripe's payment **receipt**. They are different documents: the receipt is the e-mail Stripe sends when a payment succeeds; the invoice is a numbered document with the customer, the line (plan name) and the total. The Account page links each payment that has one to Stripe's hosted invoice page (which carries the PDF).
+
+1. **Settings > Business > Public details / Branding** (test mode first, then live): the business name, address, support e-mail and logo that appear on invoices and receipts.
+2. **Settings > Billing > Invoices**: invoice numbering prefix, default footer (for example a support contact or company registration line), and **default tax/legal details if the owner has any to show** (VAT/tax handling stays out of scope, D10, unless that decision changes).
+3. **Settings > Customer emails**: keep "Successful payments" receipts **on**; the app's own e-mails explain what a refund or dispute does to access and do not replace them.
+4. A fully discounted (100%-off code) checkout also produces a 0-amount invoice. That is expected.
+5. **Test-mode scenario to record in `docs/upgrade/evidence/S4.md`:** buy once, open Account, press "Invoice": Stripe's hosted invoice opens and shows the plan, the amount and the customer; buying a second time shows two invoices for the same Stripe customer.
+6. Purchases made before invoices were switched on have no invoice and no button. If a payment's invoice only appears after the payment was recorded, the first press of the button finds it and remembers it.
+
 ### Rollback
 
 Payment rewrite: set `BILLING_FULFIL_V2=0` (old path resumes; `payments` records already written remain valid). Any data migration has a documented reverse or a backup export taken before `--apply`.

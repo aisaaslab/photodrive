@@ -124,6 +124,8 @@ export interface PaymentDoc {
   amountTotal: number | null;
   currency: string | null;
   customerId: string | null;
+  /** The Stripe invoice created by checkout (S4-06), when there is one. Older payments have none. */
+  invoiceId?: string;
   planId: string | null;
   interval: PlanInterval | null;
   source: "paid" | "free_code";

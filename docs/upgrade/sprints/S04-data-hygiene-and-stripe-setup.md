@@ -28,7 +28,7 @@
   - Files: `lib/server/billing/stripe.ts`, `app/api/stripe/checkout/route.ts`
   - Done when: the second purchase by a user reuses the same Stripe customer.
   - Refs: PAY-5
-- [ ] **S4-06** · M · Invoices and receipts: `invoice_creation` enabled with plan name and metadata; show "Download invoice" on the Account page (hosted invoice link); document the receipt email settings in the Stripe dashboard. Tax/VAT stays out of scope unless D10 changes.
+- [~] **S4-06** · M · Invoices and receipts: `invoice_creation` enabled with plan name and metadata; show "Download invoice" on the Account page (hosted invoice link); document the receipt email settings in the Stripe dashboard. Tax/VAT stays out of scope unless D10 changes.
   - Depends: S4-05
   - Files: `app/api/stripe/checkout/route.ts`, `app/dashboard/account/page.tsx`
   - Done when: a test-mode purchase produces an invoice reachable from Account.

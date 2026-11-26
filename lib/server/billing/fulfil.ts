@@ -142,6 +142,7 @@ export async function fulfilCheckoutSession(
       : {};
 
   const customerId = idOf(session.customer);
+  const invoiceId = idOf(session.invoice as string | { id: string } | null | undefined);
 
   return db.runTransaction(async (tx): Promise<FulfilResult> => {
     const [paymentSnap, userSnap] = await Promise.all([tx.get(paymentRef), tx.get(userRef)]);
@@ -181,6 +182,7 @@ export async function fulfilCheckoutSession(
       amountTotal,
       currency: session.currency ?? null,
       customerId,
+      ...(invoiceId ? { invoiceId } : {}),
       planId,
       interval,
       source: isFree ? "free_code" : "paid",

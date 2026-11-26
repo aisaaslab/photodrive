@@ -17,6 +17,8 @@ type Payment = {
   // What became of the payment (S2-15); paid unless refunded, disputed or lost in a dispute.
   status?: "fulfilled" | "refunded" | "partially_refunded" | "disputed" | "dispute_lost";
   refundedAmount?: number | null;
+  // Stripe issued an invoice for it (S4-06); purchases from before invoices were switched on have none.
+  hasInvoice?: boolean;
 };
 
 // (amounts are formatted with formatMoney, in the viewer's language)
@@ -48,6 +50,30 @@ export default function AccountPage() {
   const [savingName, setSavingName] = useState(false);
   const [nameError, setNameError] = useState("");
   const [avatarEditorOpen, setAvatarEditorOpen] = useState(false);
+  const [invoiceBusy, setInvoiceBusy] = useState<string | null>(null);
+  const [invoiceFailed, setInvoiceFailed] = useState<string | null>(null);
+
+  // Opens Stripe's hosted invoice for one payment. The window is opened first (inside the click) so the browser does not block it.
+  async function openInvoice(sessionId: string) {
+    if (!user || invoiceBusy) return;
+    setInvoiceBusy(sessionId);
+    setInvoiceFailed(null);
+    const win = window.open("", "_blank");
+    if (win) win.opener = null;
+    try {
+      const token = await user.getIdToken();
+      const res = await fetch(`/api/user/invoice?session=${encodeURIComponent(sessionId)}`, { headers: { Authorization: `Bearer ${token}` } });
+      if (!res.ok) throw new Error(String(res.status));
+      const { url } = (await res.json()) as { url: string };
+      if (win) win.location.href = url;
+      else window.location.href = url;
+    } catch {
+      win?.close();
+      setInvoiceFailed(sessionId);
+    } finally {
+      setInvoiceBusy(null);
+    }
+  }
 
   useEffect(() => {
     if (!loading && !user) router.replace("/login");
@@ -207,6 +233,16 @@ export default function AccountPage() {
                 </div>
                 <div className="flex items-center gap-2.5 shrink-0">
                   <span className="text-sm text-white font-semibold">{formatAmount(p, LOCALES[lang])}</span>
+                  {p.hasInvoice && (
+                    <button
+                      type="button"
+                      onClick={() => openInvoice(p.sessionId)}
+                      disabled={invoiceBusy === p.sessionId}
+                      className="text-xs font-semibold text-[#2dabe0] hover:text-white underline-offset-2 hover:underline disabled:opacity-50"
+                    >
+                      {a.invoice}
+                    </button>
+                  )}
                   {(!p.status || p.status === "fulfilled") ? (
                     <span className="inline-flex items-center gap-1 bg-emerald-500/10 text-emerald-400 text-xs font-semibold px-2 py-0.5 rounded-full border border-emerald-500/20">
                       <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -220,6 +256,9 @@ export default function AccountPage() {
                     </span>
                   )}
                 </div>
+                {invoiceFailed === p.sessionId && (
+                  <p role="alert" className="basis-full text-xs text-amber-300">{a.invoiceUnavailable}</p>
+                )}
                 {p.status && p.status !== "fulfilled" && (
                   <p className="basis-full text-xs text-white/60 leading-relaxed">
                     {(p.status === "refunded" ? a.paymentRefundedNote

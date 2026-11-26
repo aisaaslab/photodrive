@@ -34,6 +34,8 @@ export async function GET(req: NextRequest) {
       status: ["refunded", "partially_refunded", "disputed", "dispute_lost"].includes(data.status) ? data.status : "fulfilled",
       refundedAmount: typeof data.refundedAmount === "number" ? data.refundedAmount : null,
       changedAt: typeof data.revokedAt === "number" ? data.revokedAt : null,
+      // Whether Stripe issued an invoice for it (S4-06): purchases made before invoices were switched on have none.
+      hasInvoice: typeof data.invoiceId === "string" && data.invoiceId.length > 0,
     };
   });
 
