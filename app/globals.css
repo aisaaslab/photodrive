@@ -327,3 +327,12 @@ body {
   background: radial-gradient(ellipse, rgba(23,80,158,0.10) 0%, rgba(23,80,158,0.04) 45%, transparent 70%);
   animation: aurora3 14s ease-in-out infinite;
 }
+
+/* Keyboard focus (S5-12): many form fields only changed their border colour on focus, which is hard to see. Every text field, select and
+   textarea gets a clear accent outline for keyboard focus, unless it already draws its own ring (the Input primitive and focusRing). */
+input:not(.sr-only):not([type="checkbox"]):not([type="radio"]):not([class*="ring-accent"]):focus-visible,
+select:not([class*="ring-accent"]):focus-visible,
+textarea:not([class*="ring-accent"]):focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 1px;
+}

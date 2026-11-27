@@ -161,7 +161,7 @@ export default function AccountPage() {
                 </span>
               )}
             </div>
-            <Link href="/dashboard/billing" data-ui="account-billing-link" className="block text-xs font-semibold text-accent hover:text-fg underline-offset-2 hover:underline">
+            <Link href="/dashboard/billing" data-ui="account-billing-link" className="flex min-h-6 items-center text-xs font-semibold text-accent hover:text-fg underline-offset-2 hover:underline">
               {t.billing.linkFromAccount} →
             </Link>
             {!isActive && (

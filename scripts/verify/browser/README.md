@@ -68,3 +68,5 @@ Prints one PASS/FAIL line per check. On staging, run the same page checks by han
 **Client gallery hero and header** (`gallery-hero.cjs`, S5-12): the name in the sticky header after the hero scrolls away, the View photos cue, the skip link, 390 px, axe. Reset, start `serve-emu.sh`, then `NODE_PATH=$(npm root -g) [AXE_PATH=...] [SHOT=<dir>] node scripts/verify/browser/gallery-hero.cjs`.
 
 **Toasts and undoable delete** (`toasts.cjs`, S5-12): the delayed DELETE with Undo, dismiss, leaving the page, 390 px, axe. Reset, start `serve-emu.sh`, then `NODE_PATH=$(npm root -g) [AXE_PATH=...] [SHOT=<dir>] node scripts/verify/browser/toasts.cjs` (takes about a minute: it waits out the undo time twice).
+
+**Keyboard and phone pass** (`keyboard-mobile.cjs`, S5-12): Tab walk with a focus-indicator check on nine user-area screens, dialogs and menus from the keyboard (Escape, focus return), the photo viewer, and at 390 px no overflow and every control at least 24 x 24 px. Reset with `emu-reset.sh --plans`, start `serve-emu.sh` WITHOUT `ADMIN_UID`, then `NODE_PATH=$(npm root -g) node scripts/verify/browser/keyboard-mobile.cjs`.

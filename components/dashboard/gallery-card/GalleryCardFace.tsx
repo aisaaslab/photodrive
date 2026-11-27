@@ -40,6 +40,9 @@ export function GalleryCardFace({ gallery, compact = false, copied, hasNewSelect
   const c = t.galleryCard;
   const [showPassword, setShowPassword] = useState(false);
   const { menuOpen, setMenuOpen, menuRef } = usePopoverMenu();
+  // Choosing a menu item removes the menu from the page; put focus back on the "More" button first, so a dialog opened from the menu
+  // remembers it and gives focus back to it when closed (instead of dropping to the top of the page).
+  const closeMenu = () => { menuRef.current?.querySelector<HTMLElement>("button[aria-haspopup]")?.focus({ preventScroll: true }); setMenuOpen(false); };
   const createdDate = gallery.createdAt
     ? new Date(gallery.createdAt).toLocaleDateString(LOCALES[lang], {
         day: "numeric", month: "short", year: "numeric",
@@ -101,7 +104,7 @@ export function GalleryCardFace({ gallery, compact = false, copied, hasNewSelect
               {isPrivate(gallery) ? (
                 <button
                   onClick={() => setShowPassword((v) => !v)}
-                  className="shrink-0 bg-surface-2 text-fg-soft text-xs px-2 py-0.5 rounded-full flex items-center gap-1 border border-line hover:bg-white/[0.10] transition-colors"
+                  className="shrink-0 min-h-6 bg-surface-2 text-fg-soft text-xs px-2 py-0.5 rounded-full flex items-center gap-1 border border-line hover:bg-white/[0.10] transition-colors"
                 >
                   <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
@@ -219,22 +222,22 @@ export function GalleryCardFace({ gallery, compact = false, copied, hasNewSelect
             role="menu"
             className="absolute right-0 bottom-full mb-1.5 z-20 w-44 bg-surface-2 border border-line rounded-xl shadow-2xl py-1 animate-scale-in"
           >
-            <button role="menuitem" className={menuItemCls} onClick={() => { setMenuOpen(false); onChooseCover(); }}>
+            <button role="menuitem" className={menuItemCls} onClick={() => { closeMenu(); onChooseCover(); }}>
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25z" />
               </svg>
               {c.chooseCover}
             </button>
-            <a role="menuitem" className={menuItemCls} href={`mailto:?subject=${encodeURIComponent(gallery.name)}&body=${encodeURIComponent(galleryUrl(gallery))}`} onClick={() => setMenuOpen(false)}>
+            <a role="menuitem" className={menuItemCls} href={`mailto:?subject=${encodeURIComponent(gallery.name)}&body=${encodeURIComponent(galleryUrl(gallery))}`} onClick={closeMenu}>
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden><path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" /></svg>
               {c.sendByEmail}
             </a>
-            <a role="menuitem" className={menuItemCls} href={`https://wa.me/?text=${encodeURIComponent(`${gallery.name} ${galleryUrl(gallery)}`)}`} target="_blank" rel="noopener noreferrer" onClick={() => setMenuOpen(false)}>
+            <a role="menuitem" className={menuItemCls} href={`https://wa.me/?text=${encodeURIComponent(`${gallery.name} ${galleryUrl(gallery)}`)}`} target="_blank" rel="noopener noreferrer" onClick={closeMenu}>
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden><path strokeLinecap="round" strokeLinejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.076-4.076a1.526 1.526 0 011.037-.443 48.282 48.282 0 005.68-.494c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" /></svg>
               {c.sendOnWhatsapp}
             </a>
             <div className="my-1 h-px bg-surface-2" />
-            <button role="menuitem" className={menuItemCls} onClick={() => { setMenuOpen(false); onEdit(); }}>
+            <button role="menuitem" className={menuItemCls} onClick={() => { closeMenu(); onEdit(); }}>
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
               </svg>
@@ -244,7 +247,7 @@ export function GalleryCardFace({ gallery, compact = false, copied, hasNewSelect
             <button
               role="menuitem"
               className={`${menuItemCls} hover:!bg-red-500/10 hover:!text-danger`}
-              onClick={() => { setMenuOpen(false); onDelete(); }}
+              onClick={() => { closeMenu(); onDelete(); }}
             >
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />

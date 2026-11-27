@@ -110,7 +110,7 @@ export default function BillingPage() {
   return (
     <div className="max-w-2xl mx-auto space-y-6 animate-fade-up">
       <div>
-        <Link href="/dashboard/account" className="text-xs text-fg-muted hover:text-fg transition-colors">{b.back}</Link>
+        <Link href="/dashboard/account" className="inline-flex min-h-6 items-center text-xs text-fg-muted hover:text-fg transition-colors">{b.back}</Link>
         <h1 className="text-2xl font-bold text-fg mt-1" style={{ fontFamily: "var(--font-brand), sans-serif" }}>{b.title}</h1>
         <p className="text-sm text-fg-muted mt-1">{b.subtitle}</p>
       </div>

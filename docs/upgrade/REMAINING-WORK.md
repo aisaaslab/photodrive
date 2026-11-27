@@ -29,7 +29,8 @@ Owner decisions of 2026-11-27 (new):
 - 2026-11-27: **S5-12 part 7**: Account / Billing payment rows say what each payment bought and until when; see `evidence/S5.md`.
 - 2026-11-27: **S5-12 part 8**: client gallery hero and header (name in the header on scroll, View photos cue, skip link); see `evidence/S5.md`.
 - 2026-11-27: **S5-12 part 9**: toasts (undo, dismiss, assertive errors), undo for deleting a gallery, branded error page; see `evidence/S5.md`.
-- Next, in order: S5-12 (rest of the user-area redesign), S0-06 (Sentry wiring), S10-04 (polish); then the release gates.
+- 2026-11-27: **S5-12 part 10**: final keyboard and phone pass (clear focus on all fields, focus return after menu dialogs, 24 px targets); every S5-12 item is done, the box stays `[~]` for the owner's screenshot review; see `evidence/S5.md`.
+- Next, in order: S0-06 (Sentry wiring), S10-04 (polish); then the release gates.
 
 ### Before turning on lapse enforcement (`GALLERY_LAPSE_ENFORCE=1`)
 1. S6-14 shipped (old landing and its "link stays live" card gone) or that card reworded.
