@@ -24,7 +24,7 @@ export const POST = route("galleries.view", async (req: NextRequest, { params }:
 
   const gallery = await loadProxyGallery(id);
   // `photographerId === null` is a demo gallery; a switched-off gallery shows nothing, so it has no views either.
-  if (!gallery || gallery.photographerId === null || gallery.disabled) return NextResponse.json({ counted: false });
+  if (!gallery || gallery.photographerId === null || gallery.disabled || gallery.offline) return NextResponse.json({ counted: false });
   if (gallery.private && !(await hasGalleryAccess(req.cookies.get(`gallery_token_${id}`)?.value, gallery))) {
     return NextResponse.json({ counted: false });
   }

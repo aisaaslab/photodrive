@@ -1,4 +1,5 @@
 import { NextRequest } from "next/server";
+import { availabilityOf, isUnavailable } from "@/lib/server/gallery-availability";
 import { recordGalleryEvent } from "@/lib/server/repos/galleryStats";
 import { downloadsAllowed } from "@/lib/gallery/downloads";
 import { cookies } from "next/headers";
@@ -26,7 +27,7 @@ export async function GET(
   const { id } = await params;
 
   const snap = await galleriesCol().doc(id).get();
-  if (!snap.exists || snap.data()?.disabled === true) return new Response("Not found", { status: 404 });
+  if (!snap.exists || isUnavailable(await availabilityOf(snap.data()!))) return new Response("Not found", { status: 404 });
   const gallery = snap.data()!;
 
   // Respect the per-gallery download switch.

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { availabilityOf, isUnavailable } from "@/lib/server/gallery-availability";
 import { hashPassword, verifyPassword } from "@/lib/gallery/password";
 import { signGalleryToken } from "@/lib/gallery/session";
 import { clientIp, getRateLimiter, rateLimitHeaders } from "@/lib/server/rate-limit";
@@ -51,7 +52,7 @@ export async function POST(req: NextRequest) {
   const gallery = snap.empty ? null : snap.docs[0];
   const data = gallery?.data();
   // A gallery an administrator has turned off cannot be unlocked either (S7-06).
-  if (data?.disabled === true) return NextResponse.json({ error: "Not available" }, { status: 404 });
+  if (data && isUnavailable(await availabilityOf(data))) return NextResponse.json({ error: "Not available" }, { status: 404 });
   const hash = typeof data?.passwordHash === "string" ? data.passwordHash : null;
 
   const valid = await verifyPassword(password, hash ?? (await getDummyHash()));

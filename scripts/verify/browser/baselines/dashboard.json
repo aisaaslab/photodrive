@@ -97,13 +97,14 @@
  },
  "10 after closing, the New badge is gone": false,
  "11 edit private: initial": {
-  "text": "Gallery settings Private test Details Appearance Privacy & downloads Contact & links DETAILS Name Description Event date Location Google Drive folder APPEARANCE Preview Private test Current cover Title font Aa Classic Aa Elegant Aa Script Aa Modern Aa Mono Title color Title size Aa Small Aa Medium Aa Large Aa Extra Show my name in the gallery header Replaces the PhotoDrive logo at the top of the gallery with your avatar and name. PRIVACY & DOWNLOADS Who can open this gallery? Public Private New password (leave blank to keep current) Allow photo downloads Turn off if the client should only view and choose (e.g. before paying). Switch off downloads once a selection is sent After your client sends their selection, photo downloads stop for everyone but you. Turn this off to give them back. CONTACT & LINKS Book this photographer button Links Cancel Save",
+  "text": "Gallery settings Private test Details Appearance Privacy & downloads Contact & links DETAILS Name Description Event date Location Gallery expires on (optional) After this day visitors see an \"unavailable\" page. Nothing is deleted; change or clear the date at any time to bring it back. Google Drive folder APPEARANCE Preview Private test Current cover Title font Aa Classic Aa Elegant Aa Script Aa Modern Aa Mono Title color Title size Aa Small Aa Medium Aa Large Aa Extra Show my name in the gallery header Replaces the PhotoDrive logo at the top of the gallery with your avatar and name. PRIVACY & DOWNLOADS Who can open this gallery? Public Private New password (leave blank to keep current) Allow photo downloads Turn off if the client should only view and choose (e.g. before paying). Switch off downloads once a selection is sent After your client sends their selection, photo downloads stop for everyone but you. Turn this off to give them back. CONTACT & LINKS Book this photographer button Links Cancel Save",
   "fields": {
    "inputs": [
     "text|Name=Private test",
     "textarea|Description=",
     "date|Event date=",
     "text|Location=",
+    "date|Gallery expires on (optional)=",
     "text|Google Drive folder=https://drive.google.com/drive/folders/1DriveFolderIdDDDDDDDDDDDDDDDDDDDDDD",
     "text|New password (leave blank to k=",
     "checkbox|Allow photo downloadsTurn off =true",
@@ -137,6 +138,7 @@
      "description": "",
      "eventDate": "",
      "location": "",
+     "expiresAt": "",
      "bookLink": "",
      "bookEnabled": false,
      "titleFont": "classic",
@@ -151,12 +153,12 @@
  },
  "12b card: password revealed": "Private test new-secret-9 DATE Views: 0 Downloads: 0 Favorites: 0 No visits yet Copy link Open Favorites",
  "12c card: password hidden again": "Private test Password DATE Views: 0 Downloads: 0 Favorites: 0 No visits yet Copy link Open Favorites",
- "13 edit private: choose Public shows the warning": "Gallery settings Private test Details Appearance Privacy & downloads Contact & links DETAILS Name Description Event date Location Google Drive folder APPEARANCE Preview Private test Current cover Title font Aa Classic Aa Elegant Aa Script Aa Modern Aa Mono Title color Title size Aa Small Aa Medium Aa Large Aa Extra Show my name in the gallery header Replaces the PhotoDrive logo at the top of the gallery with your avatar and name. PRIVACY & DOWNLOADS Who can open this gallery? Public Private Switching to Public removes the password. Anyone with the link will be able to open this gallery. Yes, remove the password and make it public Allow photo downloads Turn off if the client should only view and choose (e.g. before paying). Switch off downloads once a selection is sent After your client sends their selection, photo downloads stop for everyone but you. Turn this off to give them back. CONTACT & LINKS Book this photographer button Links Cancel Save",
+ "13 edit private: choose Public shows the warning": "Gallery settings Private test Details Appearance Privacy & downloads Contact & links DETAILS Name Description Event date Location Gallery expires on (optional) After this day visitors see an \"unavailable\" page. Nothing is deleted; change or clear the date at any time to bring it back. Google Drive folder APPEARANCE Preview Private test Current cover Title font Aa Classic Aa Elegant Aa Script Aa Modern Aa Mono Title color Title size Aa Small Aa Medium Aa Large Aa Extra Show my name in the gallery header Replaces the PhotoDrive logo at the top of the gallery with your avatar and name. PRIVACY & DOWNLOADS Who can open this gallery? Public Private Switching to Public removes the password. Anyone with the link will be able to open this gallery. Yes, remove the password and make it public Allow photo downloads Turn off if the client should only view and choose (e.g. before paying). Switch off downloads once a selection is sent After your client sends their selection, photo downloads stop for everyone but you. Turn this off to give them back. CONTACT & LINKS Book this photographer button Links Cancel Save",
  "14 edit private: Save without confirming is refused": {
   "requests": [],
   "toast": "Please confirm that you want to remove the password.",
   "dialogOpen": true,
-  "text": "Gallery settings Private test Details Appearance Privacy & downloads Contact & links DETAILS Name Description Event date Location Google Drive folder APPEARANCE Preview Private test Current cover Title font Aa Classic Aa Elegant Aa Script Aa Modern Aa Mono Title color Title size Aa Small Aa Medium Aa Large Aa Extra Show my name in the gallery header Replaces the PhotoDrive logo at the top of the gallery with your avatar and name. PRIVACY & DOWNLOADS Who can open this gallery? Public Private Switching to Public removes the password. Anyone with the link will be able to open this gallery. Yes, remove the password and make it public Allow photo downloads Turn off if the client should only view and choose (e.g. before paying). Switch off downloads once a selection is sent After your client sends their selection, photo downloads stop for everyone but you. Turn this off to give them back. CONTACT & LINKS Book this photographer button Links Please confirm that you want to remove the password. Cancel Save"
+  "text": "Gallery settings Private test Details Appearance Privacy & downloads Contact & links DETAILS Name Description Event date Location Gallery expires on (optional) After this day visitors see an \"unavailable\" page. Nothing is deleted; change or clear the date at any time to bring it back. Google Drive folder APPEARANCE Preview Private test Current cover Title font Aa Classic Aa Elegant Aa Script Aa Modern Aa Mono Title color Title size Aa Small Aa Medium Aa Large Aa Extra Show my name in the gallery header Replaces the PhotoDrive logo at the top of the gallery with your avatar and name. PRIVACY & DOWNLOADS Who can open this gallery? Public Private Switching to Public removes the password. Anyone with the link will be able to open this gallery. Yes, remove the password and make it public Allow photo downloads Turn off if the client should only view and choose (e.g. before paying). Switch off downloads once a selection is sent After your client sends their selection, photo downloads stop for everyone but you. Turn this off to give them back. CONTACT & LINKS Book this photographer button Links Please confirm that you want to remove the password. Cancel Save"
  },
  "15 edit private: Cancel leaves it private": {
   "dialogOpen": false,
@@ -166,7 +168,7 @@
   "requests": [],
   "toast": "A private gallery needs a password.",
   "dialogOpen": true,
-  "text": "Gallery settings Public test Details Appearance Privacy & downloads Contact & links DETAILS Name Description Event date Location Google Drive folder APPEARANCE Preview Public test Current cover Title font Aa Classic Aa Elegant Aa Script Aa Modern Aa Mono Title color Title size Aa Small Aa Medium Aa Large Aa Extra Show my name in the gallery header Replaces the PhotoDrive logo at the top of the gallery with your avatar and name. PRIVACY & DOWNLOADS Who can open this gallery? Public Private Password (required for a private gallery) Allow photo downloads Turn off if the client should only view and choose (e.g. before paying). Switch off downloads once a selection is sent After your client sends their selection, photo downloads stop for everyone but you. Turn this off to give them back. CONTACT & LINKS Book this photographer button Links A private gallery needs a password. Cancel Save"
+  "text": "Gallery settings Public test Details Appearance Privacy & downloads Contact & links DETAILS Name Description Event date Location Gallery expires on (optional) After this day visitors see an \"unavailable\" page. Nothing is deleted; change or clear the date at any time to bring it back. Google Drive folder APPEARANCE Preview Public test Current cover Title font Aa Classic Aa Elegant Aa Script Aa Modern Aa Mono Title color Title size Aa Small Aa Medium Aa Large Aa Extra Show my name in the gallery header Replaces the PhotoDrive logo at the top of the gallery with your avatar and name. PRIVACY & DOWNLOADS Who can open this gallery? Public Private Password (required for a private gallery) Allow photo downloads Turn off if the client should only view and choose (e.g. before paying). Switch off downloads once a selection is sent After your client sends their selection, photo downloads stop for everyone but you. Turn this off to give them back. CONTACT & LINKS Book this photographer button Links A private gallery needs a password. Cancel Save"
  },
  "17 edit public: fields before saving": {
   "inputs": [
@@ -174,6 +176,7 @@
    "textarea|Description=A description",
    "date|Event date=2026-06-15",
    "text|Location=Santorini, Greece",
+   "date|Gallery expires on (optional)=",
    "text|Google Drive folder=https://drive.google.com/drive/folders/1DriveFolderIdDDDDDDDDDDDDDDDDDDDDDD",
    "checkbox|Allow photo downloadsTurn off =false",
    "url|website=",
@@ -203,6 +206,7 @@
      "description": "A description",
      "eventDate": "2026-06-15",
      "location": "Santorini, Greece",
+     "expiresAt": "",
      "bookLink": "",
      "bookEnabled": false,
      "titleFont": "serif",
@@ -227,6 +231,7 @@
    "textarea|Description=A description",
    "date|Event date=2026-06-15",
    "text|Location=Santorini, Greece",
+   "date|Gallery expires on (optional)=",
    "text|Google Drive folder=https://drive.google.com/drive/folders/1DriveFolderIdDDDDDDDDDDDDDDDDDDDDDD",
    "checkbox|Allow photo downloadsTurn off =false",
    "url|website=",
@@ -257,6 +262,7 @@
      "description": "",
      "eventDate": "",
      "location": "",
+     "expiresAt": "2031-03-01",
      "bookLink": "",
      "bookEnabled": false,
      "titleFont": "classic",
@@ -268,9 +274,10 @@
   ],
   "toast": "Changes saved",
   "dialogOpen": false,
-  "card": "Big gallery Password DATE Views: 0 Downloads: 0 Favorites: 0"
+  "card": "Big gallery Password DATE Expires DATE Views: 0 Downloads: 0"
  },
- "21 edit private: confirmation controls": "Gallery settings Private test Details Appearance Privacy & downloads Contact & links DETAILS Name Description Event date Location Google Drive folder APPEARANCE Preview Private test Current cover Title font Aa Classic Aa Elegant Aa Script Aa Modern Aa Mono Title color Title size Aa Small Aa Medium Aa Large Aa Extra Show my name in the gallery header Replaces the PhotoDrive logo at the top of the gallery with your avatar and name. PRIVACY & DOWNLOADS Who can open this gallery? Public Private Switching to Public removes the password. Anyone with the link will be able to open this gallery. Yes, remove the password and make it public Allow photo downloads Turn off if the client should only view and choose (e.g. before paying). Switch off downloads once a selection is sent After your client sends their selection, photo downloads stop for everyone but you. Turn this off to give them back. CONTACT & LINKS Book this photographer button Links Cancel Save",
+ "20b the card shows the expiry date": "Expires DATE",
+ "21 edit private: confirmation controls": "Gallery settings Private test Details Appearance Privacy & downloads Contact & links DETAILS Name Description Event date Location Gallery expires on (optional) After this day visitors see an \"unavailable\" page. Nothing is deleted; change or clear the date at any time to bring it back. Google Drive folder APPEARANCE Preview Private test Current cover Title font Aa Classic Aa Elegant Aa Script Aa Modern Aa Mono Title color Title size Aa Small Aa Medium Aa Large Aa Extra Show my name in the gallery header Replaces the PhotoDrive logo at the top of the gallery with your avatar and name. PRIVACY & DOWNLOADS Who can open this gallery? Public Private Switching to Public removes the password. Anyone with the link will be able to open this gallery. Yes, remove the password and make it public Allow photo downloads Turn off if the client should only view and choose (e.g. before paying). Switch off downloads once a selection is sent After your client sends their selection, photo downloads stop for everyone but you. Turn this off to give them back. CONTACT & LINKS Book this photographer button Links Cancel Save",
  "22 edit private: switched to public": {
   "requests": [
    {
@@ -287,6 +294,7 @@
      "description": "",
      "eventDate": "",
      "location": "",
+     "expiresAt": "",
      "bookLink": "",
      "bookEnabled": false,
      "titleFont": "classic",
@@ -376,6 +384,7 @@
    "textarea:A few words about this gallery...",
    "date:",
    "text:City, Country",
+   "date:",
    "url:https://drive.google.com/drive/folders/..."
   ],
   "radios": [
@@ -409,6 +418,7 @@
     "textarea:A few words about this gallery...",
     "date:",
     "text:City, Country",
+    "date:",
     "url:https://drive.google.com/drive/folders/...",
     "password:Gallery password"
    ],
@@ -513,6 +523,7 @@
   "textarea:A few words about this gallery...=A lovely day",
   "date:=",
   "text:City, Country=Rhodes",
+  "date:=",
   "url:https://drive.google.com/drive/folders/...=https://drive.google.com/drive/folders/1AbCdEfGhIjKlMnOpQrStUvWxYz012345",
   "password:Gallery password=***14",
   "url:https://instagram.com/username=https://instagram.com/wedding"
@@ -529,7 +540,8 @@
    "facebook": "",
    "description": "A lovely day",
    "eventDate": "",
-   "location": "Rhodes"
+   "location": "Rhodes",
+   "expiresAt": ""
   }
  },
  "44 unpaid: the restored form after payment": [
@@ -537,6 +549,7 @@
   "textarea:A few words about this gallery...=A lovely day",
   "date:=",
   "text:City, Country=Rhodes",
+  "date:=",
   "url:https://drive.google.com/drive/folders/...=https://drive.google.com/drive/folders/1AbCdEfGhIjKlMnOpQrStUvWxYz012345",
   "password:Gallery password=***14",
   "url:https://instagram.com/username=https://instagram.com/wedding"

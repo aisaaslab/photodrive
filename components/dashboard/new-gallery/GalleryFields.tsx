@@ -7,8 +7,8 @@ type Form = ReturnType<typeof useNewGalleryForm>;
 
 /** Name, optional description / date / location, and the Google Drive folder link (with its inline validity hint). */
 export function GalleryFields({ form }: { form: Form }) {
-  const { f, driveValid, driveInvalid, driveCheck, setName, setDriveUrl, setDescription, setEventDate, setLocation } = form;
-  const { name, driveUrl, description, eventDate, location } = form.values;
+  const { f, driveValid, driveInvalid, driveCheck, setName, setDriveUrl, setDescription, setEventDate, setLocation, setExpiresAt } = form;
+  const { name, driveUrl, description, eventDate, location, expiresAt } = form.values;
   return (
     <>
       {/* Gallery name */}
@@ -63,6 +63,19 @@ export function GalleryFields({ form }: { form: Form }) {
             className="w-full bg-surface-2 border border-line rounded-xl px-4 py-2.5 text-sm text-fg placeholder:text-fg-muted outline-none focus:border-fg-muted/30 transition-all"
           />
         </div>
+      </div>
+
+      {/* Optional end of the gallery's life (S9-05) */}
+      <div>
+        <label htmlFor="ng-expires" className="block text-xs font-medium text-fg mb-1.5">{f.expiresLabel}</label>
+        <input
+          id="ng-expires"
+          type="date"
+          value={expiresAt}
+          onChange={(e) => setExpiresAt(e.target.value)}
+          className="w-full bg-surface-2 border border-line rounded-xl px-4 py-2.5 text-sm text-fg outline-none focus:border-fg-muted/30 transition-all"
+        />
+        <p className="text-xs text-fg-muted mt-1.5">{f.expiresHint}</p>
       </div>
 
       {/* Drive URL */}

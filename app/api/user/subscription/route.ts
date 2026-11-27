@@ -1,4 +1,6 @@
 import { route } from "@/lib/server/http";
+import { GRACE_DAYS } from "@/lib/gallery/availability";
+import { lapseEnforced } from "@/lib/server/gallery-availability";
 import { NextRequest, NextResponse } from "next/server";
 import { isAdminToken, requireUser } from "@/lib/server/auth";
 import { billingFulfilV2 } from "@/lib/server/billing/flags";
@@ -25,6 +27,9 @@ export const GET = route("user.subscription.get", async (req: NextRequest) => {
     isActive,
     status,
     expiresAt,
+    // What happens to galleries after the plan ends (D3, S9-04): offline after `graceDays`, only while enforcement is on. The dashboard
+    // words its notice from this, so it never promises something that is not happening.
+    lapse: { enforced: lapseEnforced(), graceDays: GRACE_DAYS },
     // True once purchases made while active extend the subscription (BILLING_FULFIL_V2).
     // Until then the subscribe page keeps sending active users to the dashboard.
     canRenewEarly: billingFulfilV2(),

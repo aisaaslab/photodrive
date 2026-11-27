@@ -10,6 +10,13 @@ Owner decisions of 2026-11-27 (new):
 
 ---
 
+## Progress log
+
+- 2026-11-27: S10-01 selection export, S10-03 Drive folder check, S9-06 download lock after a selection is sent, S10-02 gallery stats,
+  S9-01 D3 recorded (14 days), **S9-05 gallery expiry date and S9-04 availability after plan lapse** are done (see `evidence/S9.md`, `evidence/S10.md`).
+  Lapse enforcement ships **off** (`GALLERY_LAPSE_ENFORCE=0`) until the owner switches it on.
+- Next, in order: S9-03 reminders, S9-02 billing page, S9-07 copy; then S8-01 … S8-05.
+
 ## A · Code work, can be built now (no owner input needed)
 
 | Order | Task | What | Size |

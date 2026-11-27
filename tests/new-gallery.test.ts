@@ -4,7 +4,7 @@ import { createGalleryBody, initialValues, isValidDriveUrl, pendingGalleryOf, ty
 const base: NewGalleryValues = {
   name: "Wedding", driveUrl: "https://drive.google.com/drive/folders/abc", password: "", visibility: "public",
   social: { website: "", instagram: "", facebook: "" }, socialOn: { website: false, instagram: false, facebook: false },
-  description: "", eventDate: "", location: "",
+  description: "", eventDate: "", location: "", expiresAt: "",
 };
 const json = (v: unknown) => JSON.parse(JSON.stringify(v));
 
@@ -25,6 +25,13 @@ describe("new gallery form rules (S5-09)", () => {
     expect(json(createGalleryBody(base))).toEqual({ name: "Wedding", driveUrl: base.driveUrl, visibility: "public" });
   });
 
+  it("an expiry date is sent only when one was chosen (S9-05), and survives the payment round trip", () => {
+    expect(json(createGalleryBody({ ...base, expiresAt: "2027-03-01" })).expiresAt).toBe("2027-03-01");
+    expect("expiresAt" in json(createGalleryBody(base))).toBe(false);
+    expect(initialValues(pendingGalleryOf({ ...base, expiresAt: "2027-03-01" })).expiresAt).toBe("2027-03-01");
+    expect(initialValues(undefined).expiresAt).toBe("");
+  });
+
   it("a private gallery sends its password", () => {
     expect(json(createGalleryBody({ ...base, visibility: "private", password: "secret" })).password).toBe("secret");
   });
@@ -35,8 +42,8 @@ describe("new gallery form rules (S5-09)", () => {
   });
 
   it("what is kept while the visitor pays: everything typed, with switched-off link rows cleared", () => {
-    const v = { ...base, visibility: "private" as const, password: "pw", social: { website: "https://x.com", instagram: "https://i.com", facebook: "" }, socialOn: { website: false, instagram: true, facebook: false }, description: "d", eventDate: "2026-01-02", location: "l" };
-    expect(pendingGalleryOf(v)).toEqual({ name: "Wedding", driveUrl: base.driveUrl, password: "pw", visibility: "private", website: "", instagram: "https://i.com", facebook: "", description: "d", eventDate: "2026-01-02", location: "l" });
+    const v = { ...base, visibility: "private" as const, password: "pw", social: { website: "https://x.com", instagram: "https://i.com", facebook: "" }, socialOn: { website: false, instagram: true, facebook: false }, description: "d", eventDate: "2026-01-02", location: "l", expiresAt: "" };
+    expect(pendingGalleryOf(v)).toEqual({ name: "Wedding", driveUrl: base.driveUrl, password: "pw", visibility: "private", website: "", instagram: "https://i.com", facebook: "", description: "d", eventDate: "2026-01-02", location: "l", expiresAt: "" });
   });
 
   it("a restored form starts from what was kept; link rows with a value are switched on; an old form's visibility follows its password", () => {

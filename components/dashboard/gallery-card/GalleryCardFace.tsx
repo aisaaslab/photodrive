@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { GalleryAvailabilityLine } from "./GalleryAvailabilityLine";
 import { GalleryStatsLine } from "./GalleryStatsLine";
 import { useLanguage, LOCALES } from "@/lib/i18n";
 import type { GalleryDoc } from "@/lib/firestore/types";
@@ -114,6 +115,7 @@ export function GalleryCardFace({ gallery, copied, hasNewSelections, onChooseCov
             {createdDate && (
               <p className="text-xs text-fg-muted mt-0.5">{createdDate}</p>
             )}
+            <GalleryAvailabilityLine gallery={gallery} />
             <GalleryStatsLine stats={gallery.stats} />
             <div className="mb-4" />
 

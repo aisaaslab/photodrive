@@ -1,4 +1,5 @@
 import "server-only";
+import { availabilityOf, isUnavailable } from "@/lib/server/gallery-availability";
 import { getAdminDb } from "@/lib/firebase/admin";
 import { isAdminToken, verifyBearer } from "@/lib/server/auth";
 import { fetchDriveFolder } from "@/lib/drive/client";
@@ -25,6 +26,8 @@ export type ProxyGallery = {
   pwChangedAt: number;
   /** Turned off by an administrator (S7-06): nothing of it is served to anyone. */
   disabled: boolean;
+  /** Not shown to visitors because it is past its own expiry date (S9-05) or its owner's plan lapsed (S9-04, D3). Its owner and administrators can still use it, to extend it or fetch their files. */
+  offline: boolean;
 };
 
 /** Looks the id up as a gallery, then as a live demo. Null when neither exists (or the demo has expired). */
@@ -42,6 +45,7 @@ export async function loadProxyGallery(id: string, now = Date.now()): Promise<Pr
       private: isPrivate(g),
       pwChangedAt: typeof g.pwChangedAt === "number" ? g.pwChangedAt : 0,
       disabled: g.disabled === true,
+      offline: g.disabled !== true && isUnavailable(await availabilityOf(g, now)),
     };
   }
   const demo = await demoGalleriesCol(db).doc(id).get();
@@ -49,7 +53,7 @@ export async function loadProxyGallery(id: string, now = Date.now()): Promise<Pr
   const d = demo.data()!;
   if (typeof d.folderId !== "string" || !d.folderId) return null;
   if (typeof d.expiresAt === "number" && d.expiresAt < now) return null;
-  return { id, folderId: d.folderId, photographerId: null, allowDownload: true, private: false, pwChangedAt: 0, disabled: false };
+  return { id, folderId: d.folderId, photographerId: null, allowDownload: true, private: false, pwChangedAt: 0, disabled: false, offline: false };
 }
 
 /**

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { parseExpiryInput } from "@/lib/gallery/availability";
 import { parseJson, route } from "@/lib/server/http";
 import { deleteGalleryCascade } from "@/lib/server/repos/galleries";
 import { GalleryBody } from "@/lib/shared/schemas/galleries";
@@ -65,6 +66,12 @@ export const PATCH = route("galleries.item.patch", async (
     }
   }
   if (typeof body.allowDownload === "boolean") updates.allowDownload = body.allowDownload;
+  // S9-05: the gallery's own expiry date ("YYYY-MM-DD", or empty/null to clear). Extending it brings the gallery back at once.
+  if (body.expiresAt !== undefined) {
+    const exp = parseExpiryInput(body.expiresAt);
+    if (!exp.ok) return NextResponse.json({ error: "Invalid expiry date" }, { status: 400 });
+    updates.expiresAt = exp.value;
+  }
   // S9-06. Changing the option starts afresh: the stamp of an earlier submission is cleared, so turning it on later does not lock
   // retroactively and turning it off gives downloads back. Saving with the option unchanged (the dialog sends every field) must NOT
   // clear it, or any save would re-open downloads after a client sent their selection.

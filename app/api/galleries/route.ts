@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+import { galleryAvailability, parseExpiryInput } from "@/lib/gallery/availability";
+import { lapseEnforced, ownerPlanOf } from "@/lib/server/gallery-availability";
 import { getStatsSummaries } from "@/lib/server/repos/galleryStats";
 import { parseJson, route } from "@/lib/server/http";
 import { GalleryBody } from "@/lib/shared/schemas/galleries";
@@ -75,6 +77,10 @@ export const POST = route("galleries.post", async (req: NextRequest) => {
     typeof body.bookLink === "string" ? body.bookLink.trim() || undefined : undefined;
   const bookEnabled = body.bookEnabled === true;
 
+  // S9-05: optional expiry date of the gallery ("YYYY-MM-DD").
+  const expiry = parseExpiryInput(body.expiresAt);
+  if (!expiry.ok) return NextResponse.json({ error: "Invalid expiry date" }, { status: 400 });
+
   const now = Date.now();
   const data = {
     photographerId: uid,
@@ -95,6 +101,7 @@ export const POST = route("galleries.post", async (req: NextRequest) => {
     ...(eventDate ? { eventDate } : {}),
     ...(location ? { location } : {}),
     ...(bookLink ? { bookLink } : {}),
+    ...(expiry.value ? { expiresAt: expiry.value } : {}),
     bookEnabled,
     allowDownload,
     createdAt: now,
@@ -137,6 +144,10 @@ export const GET = route("galleries.get", async (req: NextRequest) => {
   }
 
   // Usage counts (S10-02), one more batched read; a gallery nobody has opened has none.
+  // Is each gallery shown to visitors, in the owner's grace period, or offline (S9-04, S9-05)? Computed for the one owner who asked.
+  const now = Date.now();
+  const owner = lapseEnforced() ? await ownerPlanOf(uid, now) : null;
+  for (const g of galleries) g.availability = galleryAvailability({ gallery: g, owner, enforceLapse: lapseEnforced(), now });
   const stats = await getStatsSummaries(galleries.map((g) => g.id), Date.now(), db);
   for (const g of galleries) {
     const s = stats.get(g.id);

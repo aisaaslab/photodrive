@@ -41,13 +41,14 @@ export function useNewGalleryForm({
   const [description, setDescription] = useState(start.description);
   const [eventDate, setEventDate] = useState(start.eventDate);
   const [location, setLocation] = useState(start.location);
+  const [expiresAt, setExpiresAt] = useState(start.expiresAt);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showPayment, setShowPayment] = useState(false);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const payment = usePaymentPlans(showPayment);
 
-  const values: NewGalleryValues = { name, driveUrl, password, visibility, social, socialOn, description, eventDate, location };
+  const values: NewGalleryValues = { name, driveUrl, password, visibility, social, socialOn, description, eventDate, location, expiresAt };
   const driveValid = driveUrl.length > 0 && isValidDriveUrl(driveUrl);
   const driveInvalid = driveUrl.length > 0 && !isValidDriveUrl(driveUrl);
   const submittingRef = useRef(false);
@@ -231,7 +232,7 @@ export function useNewGalleryForm({
 
   return {
     f, values, error, loading, showPayment, checkoutLoading, payment, driveValid, driveInvalid, driveCheck,
-    setName, setDriveUrl, setPassword, setVisibility, setSocial, setSocialOn, setDescription, setEventDate, setLocation,
+    setName, setDriveUrl, setPassword, setVisibility, setSocial, setSocialOn, setDescription, setEventDate, setLocation, setExpiresAt,
     setShowPayment, handleSubmit, handleCheckout,
   };
 }

@@ -1,4 +1,5 @@
 import { cache } from "react";
+import { availabilityOf, isUnavailable } from "@/lib/server/gallery-availability";
 import { ViewBeacon } from "@/components/gallery/ViewBeacon";
 import { downloadsAllowed } from "@/lib/gallery/downloads";
 import type { Metadata } from "next";
@@ -37,11 +38,11 @@ const loadGalleryDoc = cache(async (slug: string) => {
   return snap.empty ? null : snap.docs[0];
 });
 
-/** A gallery an administrator has turned off is not indexed (S7-06); every other gallery keeps the site's default metadata. */
+/** A gallery that is not shown (switched off, past its expiry date, or its owner's plan lapsed) is not indexed; every other gallery keeps the site's default metadata. */
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const doc = await loadGalleryDoc(slug);
-  return doc?.get("disabled") === true ? { robots: { index: false, follow: false } } : {};
+  return doc && isUnavailable(await availabilityOf(doc.data() ?? {})) ? { robots: { index: false, follow: false } } : {};
 }
 
 export default async function GalleryPage({ params }: Props) {
@@ -58,6 +59,7 @@ export default async function GalleryPage({ params }: Props) {
     passwordHash?: string;
     /** Turned off by an administrator (S7-06). */
     disabled?: boolean;
+    expiresAt?: number | null;
     visibility?: "public" | "private";
     pwChangedAt?: number;
     website?: string;
@@ -80,7 +82,7 @@ export default async function GalleryPage({ params }: Props) {
     headerBranding?: "photographer" | null;
   };
 
-  if (gallery.disabled === true) return <GalleryUnavailable />;
+  if (isUnavailable(await availabilityOf(gallery))) return <GalleryUnavailable />;
 
   if (isPrivate(gallery)) {
     const cookieStore = await cookies();

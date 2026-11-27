@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { availabilityOf, isUnavailable } from "@/lib/server/gallery-availability";
 import { getAdminAuth, getAdminDb } from "@/lib/firebase/admin";
 import { verifyGalleryToken } from "@/lib/gallery/session";
 import { isPrivate } from "@/lib/gallery/visibility";
@@ -56,7 +57,7 @@ export async function POST(
 
   const db = getAdminDb();
   const galSnap = await galleriesCol(db).doc(id).get();
-  if (!galSnap.exists || galSnap.data()?.disabled === true) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  if (!galSnap.exists || isUnavailable(await availabilityOf(galSnap.data()!))) return NextResponse.json({ error: "Not found" }, { status: 404 });
   const gallery = galSnap.data()!;
 
   // Password-protected galleries: the visitor must have unlocked this gallery.

@@ -51,6 +51,7 @@ export async function GET(req: NextRequest) {
   try {
     gallery = await loadProxyGallery(galleryId);
     if (!gallery || gallery.disabled) return deny(404, "Not found");
+    if (gallery.offline && !(await isOwnerOrAdmin(req, gallery))) return deny(404, "Not found"); // expired or lapsed: visitors only
     if (!(await fileInGallery(gallery.folderId, fileId))) {
       log.warn("photo outside gallery refused", { galleryId, size });
       return deny(403, "Forbidden");

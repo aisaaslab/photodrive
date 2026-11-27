@@ -26,6 +26,7 @@ async function selectionAccess(req: NextRequest, id: string): Promise<Access> {
   const gallery = await loadProxyGallery(id);
   if (!gallery || gallery.disabled) return { error: NextResponse.json({ error: "Not found" }, { status: 404 }) };
   const owner = await isOwnerOrAdmin(req, gallery);
+  if (gallery.offline && !owner) return { error: NextResponse.json({ error: "Not found" }, { status: 404 }) }; // expired or lapsed: visitors only
   if (!owner && gallery.private && !(await hasGalleryAccess(req.cookies.get(`gallery_token_${id}`)?.value, gallery))) {
     return { error: NextResponse.json({ error: "Unauthorized" }, { status: 401 }) };
   }

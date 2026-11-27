@@ -12,11 +12,14 @@ describe("gallery settings rules (S5-07)", () => {
   it("opens with the gallery's own values, and defaults for what it has not set", () => {
     expect(settingsFrom(gallery())).toEqual({
       name: "Public test", driveUrl: "https://drive.google.com/drive/folders/FOLDER1", password: "", visibility: "public", confirmMakePublic: false,
-      allowDownload: true, disableDownloadAfterSubmit: false, social: { website: "", instagram: "", facebook: "" }, description: "", eventDate: "", location: "", bookLink: "", bookEnabled: false,
+      allowDownload: true, disableDownloadAfterSubmit: false, social: { website: "", instagram: "", facebook: "" }, description: "", eventDate: "", location: "", expiresAt: "", bookLink: "", bookEnabled: false,
       titleFont: "classic", titleColor: "#ffffff", titleSize: "md", headerBranding: false,
     });
     const v = settingsFrom(gallery({ allowDownload: false, instagram: "i", bookEnabled: true, titleFont: "serif", titleColor: "#f2c4c4", titleSize: "lg", headerBranding: "photographer", description: "d" }));
     expect(settingsFrom(gallery({ disableDownloadAfterSubmit: true })).disableDownloadAfterSubmit).toBe(true);
+    // S9-05: the expiry date shows as a plain date, and an empty one clears it
+    expect(settingsFrom(gallery({ expiresAt: Date.UTC(2027, 2, 1, 23, 59, 59, 999) })).expiresAt).toBe("2027-03-01");
+    expect(settingsFrom(gallery({ expiresAt: null })).expiresAt).toBe("");
     expect(v).toMatchObject({ allowDownload: false, bookEnabled: true, titleFont: "serif", titleColor: "#f2c4c4", titleSize: "lg", headerBranding: true, description: "d" });
     expect(v.social.instagram).toBe("i");
     expect(settingsFrom(privateGallery())).toMatchObject({ visibility: "private", password: "old-secret" });
@@ -26,10 +29,10 @@ describe("gallery settings rules (S5-07)", () => {
     const v = { ...settingsFrom(privateGallery()), password: "new-secret-9" };
     expect(buildSettingsPatch(v, privateGallery())).toEqual({
       name: "Public test", visibility: "private", password: "new-secret-9", website: "", instagram: "", facebook: "", allowDownload: true, disableDownloadAfterSubmit: false, description: "",
-      eventDate: "", location: "", bookLink: "", bookEnabled: false, titleFont: "classic", titleColor: "#ffffff", titleSize: "md", headerBranding: null,
+      eventDate: "", location: "", expiresAt: "", bookLink: "", bookEnabled: false, titleFont: "classic", titleColor: "#ffffff", titleSize: "md", headerBranding: null,
     });
     expect(Object.keys(buildSettingsPatch(v, privateGallery()))).toEqual([
-      "name", "visibility", "password", "website", "instagram", "facebook", "allowDownload", "disableDownloadAfterSubmit", "description", "eventDate", "location", "bookLink",
+      "name", "visibility", "password", "website", "instagram", "facebook", "allowDownload", "disableDownloadAfterSubmit", "description", "eventDate", "location", "expiresAt", "bookLink",
       "bookEnabled", "titleFont", "titleColor", "titleSize", "headerBranding",
     ]);
   });
@@ -39,7 +42,7 @@ describe("gallery settings rules (S5-07)", () => {
       titleFont: "serif", titleColor: "#f2c4c4", titleSize: "lg", headerBranding: true, allowDownload: false, social: { website: "", instagram: " instagram.com/photographer ", facebook: "" } };
     expect(buildSettingsPatch(v, gallery())).toEqual({
       name: "Public test (edited)", visibility: "public", website: "", instagram: "instagram.com/photographer", facebook: "", allowDownload: false, disableDownloadAfterSubmit: false, description: "A description",
-      eventDate: "2026-06-15", location: "Santorini, Greece", bookLink: "", bookEnabled: false, titleFont: "serif", titleColor: "#f2c4c4", titleSize: "lg", headerBranding: "photographer",
+      eventDate: "2026-06-15", location: "Santorini, Greece", expiresAt: "", bookLink: "", bookEnabled: false, titleFont: "serif", titleColor: "#f2c4c4", titleSize: "lg", headerBranding: "photographer",
     });
   });
 

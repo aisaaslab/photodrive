@@ -181,8 +181,11 @@ const clean = (s) => String(s ?? "").replace(/\s+/g, " ").replace(/\d{1,2} [A-Z]
   await openEdit("Big gallery");
   await dialog().locator('[role="radio"]:has-text("Private")').click();
   await dialog().getByLabel(/password/i).first().fill("big-secret-1");
+  // S9-05: an expiry date chosen in the dialog is sent as a plain date and shown on the card
+  await dialog().getByLabel(/Gallery expires on/).fill("2031-03-01");
   await save();
   step("20 edit public: made private with a password", { ...(await afterSave()), card: clean(await card("Big gallery").innerText()).slice(0, 60) });
+  step("20b the card shows the expiry date", clean(await card("Big gallery").locator('[data-ui="gallery-availability"]').innerText()));
 
   // finally confirm switching the private gallery to public
   await openEdit("Private test");

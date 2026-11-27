@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import { planPhase } from "@/lib/gallery/availability";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/components/auth/AuthProvider";
@@ -45,7 +46,7 @@ export default function DashboardPage() {
     try { localStorage.setItem("dashboard_sort", next); } catch {}
   }
   // Subscription summary for the header + renewal banner.
-  const [sub, setSub] = useState<{ daysLeft: number; expiresAt: number; planName: string | null; interval: string | null } | null>(null);
+  const [sub, setSub] = useState<{ daysLeft: number; expiresAt: number; planName: string | null; interval: string | null; lapse: { enforced: boolean; graceDays: number } } | null>(null);
   const daysLeft = sub?.daysLeft ?? null;
   const isLifetime = !!sub && sub.expiresAt > 4102444800000;
   // A just-activated 30-day (monthly) plan is always "30 days left", so only
@@ -57,6 +58,15 @@ export default function DashboardPage() {
   const expiresLabel = sub
     ? new Date(sub.expiresAt).toLocaleDateString(LOCALES[lang], { day: "numeric", month: "short", year: "numeric" })
     : "";
+  // After the plan ends (D3): 14 days of grace with the galleries still online, then they are offline for visitors until renewal.
+  // Only worded this way while the server actually does it (`lapse.enforced`), so the notice never promises what is not happening.
+  const lapsePhase = sub?.lapse.enforced ? planPhase({ expiresAt: sub.expiresAt }, Date.now()) : null;
+  const lapseNotice =
+    lapsePhase?.phase === "grace"
+      ? { title: t.dashboard.lapseGraceTitle, body: t.dashboard.lapseGraceBody.replace("{date}", new Date(lapsePhase.graceEndsAt).toLocaleDateString(LOCALES[lang], { day: "numeric", month: "short", year: "numeric" })) }
+      : lapsePhase?.phase === "lapsed"
+      ? { title: t.dashboard.lapseOfflineTitle, body: t.dashboard.lapseOfflineBody.replace("{days}", String(sub?.lapse.graceDays ?? 14)) }
+      : null;
   const [pendingGallery, setPendingGallery] = useState<{ name: string; driveUrl: string; password: string } | null>(null);
   const [restoredFromPayment, setRestoredFromPayment] = useState(false);
 
@@ -110,6 +120,7 @@ export default function DashboardPage() {
                 expiresAt: data.expiresAt,
                 planName: typeof data.planName === "string" ? data.planName : null,
                 interval: typeof data.planInterval === "string" ? data.planInterval : null,
+                lapse: { enforced: data.lapse?.enforced === true, graceDays: typeof data.lapse?.graceDays === "number" ? data.lapse.graceDays : 14 },
               });
             }
           })
@@ -229,12 +240,12 @@ export default function DashboardPage() {
         >
           <div className="text-sm">
             <p className={`font-semibold ${daysLeft === 0 ? "text-red-300" : "text-fg"}`}>
-              {daysLeft === 0 ? t.dashboard.subExpired : t.dashboard.subExpiringSoon}
+              {lapseNotice ? lapseNotice.title : daysLeft === 0 ? t.dashboard.subExpired : t.dashboard.subExpiringSoon}
               {daysLeft > 0 && (
                 <span className="font-normal text-fg-muted"> · {daysLeft} {t.dashboard.daysLeft}</span>
               )}
             </p>
-            <p className="text-fg-muted text-xs mt-0.5">{t.dashboard.subRenewHint}</p>
+            <p className="text-fg-muted text-xs mt-0.5">{lapseNotice ? lapseNotice.body : t.dashboard.subRenewHint}</p>
           </div>
           <Link
             href="/subscribe"

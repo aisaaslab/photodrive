@@ -18,11 +18,11 @@
   - Files: `app/api/cron/reminders/route.ts`, `lib/server/reminders.ts`, `lib/email.ts`, `vercel.json`
   - Done when: running the job twice sends once; test account receives all three emails on a simulated timeline.
   - Refs: F1
-- [ ] **S9-04** · M · Gallery availability after plan lapse per D3: public page and media route check the owner's status (cached lookup), show the grace banner to the owner, "temporarily unavailable" page to visitors after grace; nothing deleted; restoring on renewal is immediate.
+- [x] **S9-04** · M · Gallery availability after plan lapse per D3: public page and media route check the owner's status (cached lookup), show the grace banner to the owner, "temporarily unavailable" page to visitors after grace; nothing deleted; restoring on renewal is immediate.
   - Depends: S9-01
   - Files: `app/gallery/[slug]/page.tsx`, `app/api/g/[galleryId]/media/[token]/route.ts`, `lib/server/repos/galleries.ts`
   - Done when: tests for active, grace, lapsed, renewed; owner sees a clear notice in the dashboard.
-- [ ] **S9-05** · M · Gallery expiry date (feature): optional `expiresAt` per gallery set in create/edit forms; expired galleries show the unavailable page; owner can extend; included in the dashboard card.
+- [x] **S9-05** · M · Gallery expiry date (feature): optional `expiresAt` per gallery set in create/edit forms; expired galleries show the unavailable page; owner can extend; included in the dashboard card.
   - Files: `lib/shared/schemas/gallery.ts`, `components/dashboard/NewGalleryForm.tsx`, `app/gallery/[slug]/page.tsx`
   - Done when: an expired gallery is unreachable (including media), extending restores it.
 - [x] **S9-06** · M · Download control: option "switch off downloads once a selection is submitted" (`disableDownloadAfterSubmit`); enforced server-side in the media route and download-all; UI hides buttons accordingly.

@@ -52,6 +52,11 @@ export interface GalleryDoc {
   titleSize?: string | null;
   // Read-only summary of the client's favorites, attached by GET /api/galleries
   // from the gallery_selections collection (not stored on the gallery itself).
+  // S9-05: optional end of the gallery's life, as a time (the end of the chosen day, UTC). Visitors see the "unavailable" page after it;
+  // the owner can change or clear it at any time. See lib/gallery/availability.ts.
+  expiresAt?: number | null;
+  // Attached by GET /api/galleries (never stored): is it shown to visitors, in grace after the owner's plan ended, or offline?
+  availability?: import("@/lib/gallery/availability").Availability;
   // Usage counts (S10-02), attached by GET /api/galleries from gallery_stats; absent until someone opens the gallery.
   stats?: import("@/lib/gallery/stats").StatsSummary;
   selectionCount?: number;

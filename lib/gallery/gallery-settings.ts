@@ -1,4 +1,5 @@
 import type { GalleryDoc } from "@/lib/firestore/types";
+import { dateFromExpiry } from "@/lib/gallery/availability";
 import { APP_URL } from "@/lib/branding";
 import { galleryVisibility, isPrivate, type Visibility } from "@/lib/gallery/visibility";
 
@@ -17,6 +18,8 @@ export type SettingsValues = {
   description: string;
   eventDate: string;
   location: string;
+  /** The gallery's own expiry date, "YYYY-MM-DD", or "" for none (S9-05). */
+  expiresAt: string;
   bookLink: string;
   bookEnabled: boolean;
   titleFont: string;
@@ -43,6 +46,7 @@ export function settingsFrom(gallery: GalleryDoc): SettingsValues {
     description: gallery.description ?? "",
     eventDate: gallery.eventDate ?? "",
     location: gallery.location ?? "",
+    expiresAt: dateFromExpiry(gallery.expiresAt),
     bookLink: gallery.bookLink ?? "",
     bookEnabled: gallery.bookEnabled === true,
     titleFont: gallery.titleFont ?? "classic",
@@ -77,6 +81,7 @@ export function buildSettingsPatch(values: SettingsValues, gallery: GalleryDoc):
   body.description = values.description.trim();
   body.eventDate = values.eventDate;
   body.location = values.location.trim();
+  body.expiresAt = values.expiresAt; // "" clears it
   body.bookLink = values.bookLink.trim();
   body.bookEnabled = values.bookEnabled;
   body.titleFont = values.titleFont;

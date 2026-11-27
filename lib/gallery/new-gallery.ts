@@ -14,6 +14,8 @@ export type NewGalleryValues = {
   description: string;
   eventDate: string;
   location: string;
+  /** Optional date after which the gallery is no longer shown to visitors, "YYYY-MM-DD" or "" (S9-05). */
+  expiresAt: string;
 };
 
 /** What the form is restored from after a payment (see `pendingGalleryOf`). */
@@ -28,6 +30,7 @@ export type NewGalleryInitial = {
   description?: string;
   eventDate?: string;
   location?: string;
+  expiresAt?: string;
 };
 
 export function isValidDriveUrl(url: string): boolean {
@@ -46,6 +49,7 @@ export function initialValues(initial?: NewGalleryInitial): NewGalleryValues {
     description: initial?.description ?? "",
     eventDate: initial?.eventDate ?? "",
     location: initial?.location ?? "",
+    expiresAt: initial?.expiresAt ?? "",
   };
 }
 
@@ -62,6 +66,7 @@ export function createGalleryBody(v: NewGalleryValues) {
     description: v.description.trim() || undefined,
     eventDate: v.eventDate || undefined,
     location: v.location.trim() || undefined,
+    expiresAt: v.expiresAt || undefined,
   };
 }
 
@@ -78,5 +83,6 @@ export function pendingGalleryOf(v: NewGalleryValues): NewGalleryInitial {
     description: v.description,
     eventDate: v.eventDate,
     location: v.location,
+    expiresAt: v.expiresAt,
   };
 }

@@ -39,6 +39,11 @@ export function SettingsDetails({ gallery, form }: { gallery: GalleryDoc; form: 
         </div>
       </div>
       <div>
+        <label htmlFor={`exp-${gallery.id}`} className="text-xs font-medium text-fg-soft mb-1 block">{c.expiresLabel}</label>
+        <input id={`exp-${gallery.id}`} type="date" value={values.expiresAt} onChange={(e) => set("expiresAt", e.target.value)} className={inputCls} />
+        <p className="text-[11px] text-fg-muted mt-1">{c.expiresHint}</p>
+      </div>
+      <div>
         <label htmlFor={`drive-${gallery.id}`} className="text-xs font-medium text-fg-muted mb-1 block">{c.driveFolderLabel}</label>
         <div className="relative group/drive">
           <input
