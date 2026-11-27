@@ -197,7 +197,7 @@ visitor can see; update the baseline deliberately when the UI is meant to change
 
 ## 10 · Known issues and parking lot (not in any task yet)
 
-- **Date format for English** uses `en-GB` in `LOCALES` (`lib/i18n/languages.ts`); D19 suggests `en-US`. Changing it alters what customers see on the account page and in e-mails: ask the owner. Prices already use `en-US` (`PRICE_LOCALE`).
+- ~~**Date format for English**~~ Decided 2026-11-27: US English (`LOCALES.en` = `en-US`), dates read "December 1, 2026" on the account page, in e-mails and in the admin.
 - The **old** `components/TrustSection.tsx` still has garbled Greek on the live landing; it goes away with the old landing in S6-14.
 - After saving the gallery settings dialog, the "Drive folder" field is empty until reload (`settingsAfterSave` clears `driveUrl`); kept as is, worth a ticket.
 - Performance levers if the preview LCP stays above 2.5 s: the dictionary carried in the page for client components (~25 KB), Firebase auth code loaded on every page for the nav (~135 KB script), the 108 KB favicon PNG.

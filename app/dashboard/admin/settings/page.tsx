@@ -41,7 +41,7 @@ const TRACKING_FIELDS: { key: keyof TrackingForm; label: string; placeholder: st
 const EMPTY_TRACKING: TrackingForm = { gtmId: "", googleAdsId: "", metaPixelId: "" };
 
 function formatDate(ts: number) {
-  return new Date(ts).toLocaleString("en-GB", {
+  return new Date(ts).toLocaleString("en-US", {
     day: "2-digit",
     month: "short",
     year: "numeric",

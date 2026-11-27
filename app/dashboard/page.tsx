@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { planPhase } from "@/lib/gallery/availability";
+import { renewalNudgeDays } from "@/lib/shared/billing-state";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/components/auth/AuthProvider";
@@ -51,7 +52,7 @@ export default function DashboardPage() {
   const isLifetime = !!sub && sub.expiresAt > 4102444800000;
   // A just-activated 30-day (monthly) plan is always "30 days left", so only
   // nudge it in its last week; longer plans get the nudge in the last 30 days.
-  const nudgeWithinDays = sub?.interval === "monthly" ? 7 : 30;
+  const nudgeWithinDays = renewalNudgeDays(sub?.interval);
   const showRenewBanner = !!sub && !isLifetime && sub.daysLeft <= nudgeWithinDays;
   const planLabel = sub?.planName
     || (sub?.interval === "monthly" ? t.dashboard.planMonthly : sub?.interval === "yearly" ? t.dashboard.planYearly : null);

@@ -9,7 +9,7 @@ tasks. Selected landing direction: **Concept B "Cinematic Dark"**.
 ## Status
 
 <!-- STATUS:START -->
-**Overall: 66/114 tasks (58 %)** · est. 101.5/166 ideal dev-days · current focus: S0 · next up: S0-01, S0-05, S0-06
+**Overall: 67/114 tasks (59 %)** · est. 103/166 ideal dev-days · current focus: S0 · next up: S0-01, S0-05, S0-06
 
 | Sprint | Goal | Phase | Tasks | Est. effort | Status |
 |---|---|---|---|---|---|
@@ -22,7 +22,7 @@ tasks. Selected landing direction: **Concept B "Cinematic Dark"**.
 | [S6](sprints/S06-landing-page.md) | New landing page (Concept B "Cinematic Dark") | Redesign and foundation | 9/15 | ~25 d | In progress |
 | [S7](sprints/S07-admin-foundation.md) | Admin back office I: design, roles, audit, counters, users, galleries | Redesign and foundation | 6/6 | ~12 d | Done |
 | [S8](sprints/S08-admin-payments-support-and-release.md) | Admin back office II: payments, support, plans, overview, release | Redesign and foundation | 0/6 | ~10.5 d | Not started |
-| [S9](sprints/S09-billing-lifecycle-features.md) | Billing lifecycle features: reminders, billing page, gallery expiry and download controls | New features | 5/7 | ~8.5 d | In progress |
+| [S9](sprints/S09-billing-lifecycle-features.md) | Billing lifecycle features: reminders, billing page, gallery expiry and download controls | New features | 6/7 | ~8.5 d | In progress |
 | [S10](sprints/S10-engagement-features.md) | Engagement features: selection export, gallery stats, Drive folder check | New features | 3/5 | ~8 d | In progress |
 | [S11](sprints/S11-release-and-handover.md) | Release, rollout and handover | Release | 0/5 | ~4.5 d | Not started |
 

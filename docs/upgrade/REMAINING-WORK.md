@@ -16,7 +16,8 @@ Owner decisions of 2026-11-27 (new):
   S9-01 D3 recorded (14 days), **S9-05 gallery expiry date and S9-04 availability after plan lapse** are done (see `evidence/S9.md`, `evidence/S10.md`).
   Lapse enforcement ships **off** (`GALLERY_LAPSE_ENFORCE=0`) until the owner switches it on.
 - 2026-11-27: **S9-03 renewal reminder e-mails** done, shipped off (`REMINDERS_MODE=off`) with a dry-run mode for the owner to review (see `evidence/S9.md`).
-- Next, in order: S9-02 billing page, S9-07 copy; then S8-01 … S8-05.
+- 2026-11-27: **S9-02 billing page** done (all plan states, truthful lapse wording, shared payment list) and **English dates are US** everywhere (owner decision).
+- Next, in order: S9-07 copy; then S8-01 … S8-05.
 
 ## A · Code work, can be built now (no owner input needed)
 
@@ -74,7 +75,7 @@ Do **not** move the page to `/` until the owner signs off.
 
 ## F · Known small issues
 
-- English dates use `en-GB` in `LOCALES`; D19 suggests `en-US` (owner to decide).
+- ~~English dates use `en-GB`~~ Decided and done 2026-11-27: English dates are US English everywhere (`LOCALES.en` = `en-US`).
 - The old `TrustSection` has garbled Greek on the live landing page; it disappears with S6-14.
 - The Drive folder field in the gallery settings dialog is read-only by design (lock icon and tooltip). Changing the folder of an
   existing gallery is not supported from the owner dialog; only the admin edit form can do it.

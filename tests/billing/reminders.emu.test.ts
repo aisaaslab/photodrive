@@ -117,7 +117,8 @@ describe("language and wording", () => {
   it("states the plan end date and says nothing about galleries going offline unless lapse enforcement is on", async () => {
     await seedUser("u1", { subscriptionStatus: "active", subscriptionExpiresAt: Date.UTC(2026, 11, 1, 12) });
     await run(T0);
-    // English dates follow LOCALES.en (en-GB today; the en-US question is an open owner decision), so the test follows it too
+    // English dates are US English (LOCALES.en = en-US, D19): "December 1, 2026"
+    expect(outbox[0].text).toContain("December 1, 2026");
     expect(outbox[0].text).toContain(new Date(Date.UTC(2026, 11, 1, 12)).toLocaleDateString(LOCALES.en, { year: "numeric", month: "long", day: "numeric", timeZone: "UTC" }));
     expect(outbox[0].text).toContain("stay online for another 14 days");
     outbox = [];

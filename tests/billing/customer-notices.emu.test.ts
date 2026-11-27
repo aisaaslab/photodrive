@@ -33,7 +33,7 @@ async function buy(sessionId: string, paymentIntent: string, uid = "u1") {
     sessionFixture("paid", { id: sessionId, metadata: { uid, planId: "m", interval: "monthly" }, payment_intent: paymentIntent }),
   );
 }
-const dateOf = (ms: number, locale = "en-GB") =>
+const dateOf = (ms: number, locale = "en-US") =>
   new Date(ms).toLocaleDateString(locale, { year: "numeric", month: "long", day: "numeric", timeZone: "UTC" });
 
 beforeEach(async () => {
@@ -137,7 +137,7 @@ describe("disputes", () => {
     expect(mails().map((m) => m.subject)).toEqual(["A dispute was opened on your payment", "Your access has been restored"]);
     expect(mails()[0].text).toContain("on hold");
     expect(mails()[1].text).toContain("restored");
-    expect(mails()[1].text).toMatch(/runs until \d/);
+    expect(mails()[1].text).toMatch(/runs until [A-Z][a-z]+ \d{1,2}, \d{4}/);
   });
 
   it("lost: the customer is told the time was removed and how to subscribe again", async () => {

@@ -7,7 +7,7 @@ const { chromium } = require("playwright");
 const fs = require("node:fs");
 const BASE = "http://localhost:3997";
 
-const clean = (s) => String(s ?? "").replace(/\s+/g, " ").replace(/\d{1,2} [A-Z][a-z]{2} \d{4}/g, "DATE").replace(/\b\d{1,2}:\d{2}\b/g, "TIME").replace(/\d+ days? remaining/g, "N days remaining").trim();
+const clean = (s) => String(s ?? "").replace(/\s+/g, " ").replace(/(?:\d{1,2} [A-Z][a-z]{2}|[A-Z][a-z]{2} \d{1,2},?) \d{4}/g, "DATE").replace(/\b\d{1,2}:\d{2}(?: [AP]M)?/g, "TIME").replace(/\d+ days? remaining/g, "N days remaining").trim();
 
 (async () => {
   const browser = await chromium.launch();
@@ -33,7 +33,7 @@ const clean = (s) => String(s ?? "").replace(/\s+/g, " ").replace(/\d{1,2} [A-Z]
     return {
       title: h.textContent.trim(),
       badge: [...cardRoot.querySelectorAll("span")].map((s) => s.textContent.trim()).find((t) => /^(Public|Password|Private)$/.test(t)) ?? null,
-      text: cardRoot.innerText.replace(/\s+/g, " ").replace(/\d{1,2} [A-Z][a-z]{2} \d{4}/g, "DATE").trim().slice(0, 120),
+      text: cardRoot.innerText.replace(/\s+/g, " ").replace(/(?:\d{1,2} [A-Z][a-z]{2}|[A-Z][a-z]{2} \d{1,2},?) \d{4}/g, "DATE").trim().slice(0, 120),
     };
   }));
   const titles = async () => (await cardsInfo()).map((c) => c.title);
@@ -44,7 +44,7 @@ const clean = (s) => String(s ?? "").replace(/\s+/g, " ").replace(/\d{1,2} [A-Z]
   const dialog = () => page.locator('[role="dialog"]').last();
   const headerFacts = () => page.evaluate(() => ({
     h1: document.querySelector("h1")?.textContent.trim(),
-    lines: [...document.querySelectorAll("h1 ~ p, h1 + div p, header ~ div p")].map((p) => p.textContent.replace(/\s+/g, " ").replace(/\d{1,2} [A-Z][a-z]{2} \d{4}/g, "DATE").replace(/\d+ days? remaining/g, "N days remaining").trim()).slice(0, 4),
+    lines: [...document.querySelectorAll("h1 ~ p, h1 + div p, header ~ div p")].map((p) => p.textContent.replace(/\s+/g, " ").replace(/(?:\d{1,2} [A-Z][a-z]{2}|[A-Z][a-z]{2} \d{1,2},?) \d{4}/g, "DATE").replace(/\d+ days? remaining/g, "N days remaining").trim()).slice(0, 4),
   }));
 
   // ---- sign in through the real login form

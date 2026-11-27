@@ -7,34 +7,18 @@ import { useRouter } from "next/navigation";
 import { updateProfile } from "firebase/auth";
 import { useAuth, updateUserProfile } from "@/components/auth/AuthProvider";
 import { LOCALES, useLanguage } from "@/lib/i18n";
-import { formatMoney } from "@/lib/shared/money";
 import { AvatarEditor } from "@/components/dashboard/AvatarEditor";
-
-type Payment = {
-  sessionId: string;
-  amountTotal: number | null;
-  currency: string | null;
-  activatedAt: number | null;
-  // What became of the payment (S2-15); paid unless refunded, disputed or lost in a dispute.
-  status?: "fulfilled" | "refunded" | "partially_refunded" | "disputed" | "dispute_lost";
-  refundedAmount?: number | null;
-  // Stripe issued an invoice for it (S4-06); purchases from before invoices were switched on have none.
-  hasInvoice?: boolean;
-};
+import { PaymentHistory, type Payment } from "@/components/dashboard/PaymentHistory";
 
 // (amounts are formatted with formatMoney, in the viewer's language)
 
-function formatDate(ms: number): string {
-  return new Date(ms).toLocaleDateString(undefined, {
+// In the app's language (English is US English), not the browser's own locale, so the page reads the same everywhere.
+function formatDate(ms: number, locale: string): string {
+  return new Date(ms).toLocaleDateString(locale, {
     year: "numeric",
     month: "short",
     day: "numeric",
   });
-}
-
-function formatAmount(p: Payment, locale: string): string {
-  if (p.amountTotal === null) return "—";
-  return formatMoney(p.amountTotal, p.currency ?? "usd", locale);
 }
 
 export default function AccountPage() {
@@ -51,30 +35,6 @@ export default function AccountPage() {
   const [savingName, setSavingName] = useState(false);
   const [nameError, setNameError] = useState("");
   const [avatarEditorOpen, setAvatarEditorOpen] = useState(false);
-  const [invoiceBusy, setInvoiceBusy] = useState<string | null>(null);
-  const [invoiceFailed, setInvoiceFailed] = useState<string | null>(null);
-
-  // Opens Stripe's hosted invoice for one payment. The window is opened first (inside the click) so the browser does not block it.
-  async function openInvoice(sessionId: string) {
-    if (!user || invoiceBusy) return;
-    setInvoiceBusy(sessionId);
-    setInvoiceFailed(null);
-    const win = window.open("", "_blank");
-    if (win) win.opener = null;
-    try {
-      const token = await user.getIdToken();
-      const res = await fetch(`/api/user/invoice?session=${encodeURIComponent(sessionId)}`, { headers: { Authorization: `Bearer ${token}` } });
-      if (!res.ok) throw new Error(String(res.status));
-      const { url } = (await res.json()) as { url: string };
-      if (win) win.location.href = url;
-      else window.location.href = url;
-    } catch {
-      win?.close();
-      setInvoiceFailed(sessionId);
-    } finally {
-      setInvoiceBusy(null);
-    }
-  }
 
   useEffect(() => {
     if (!loading && !user) router.replace("/login");
@@ -195,12 +155,15 @@ export default function AccountPage() {
                 <span className="text-xs text-fg-muted">
                   {expiresAt > 4102444800000
                     ? a.lifetime
-                    : `${a.expiresOn} ${formatDate(expiresAt)}${
+                    : `${a.expiresOn} ${formatDate(expiresAt, LOCALES[lang])}${
                         daysLeft !== null ? ` · ${daysLeft} ${a.daysRemaining}` : ""
                       }`}
                 </span>
               )}
             </div>
+            <Link href="/dashboard/billing" data-ui="account-billing-link" className="block text-xs font-semibold text-accent hover:text-fg underline-offset-2 hover:underline">
+              {t.billing.linkFromAccount} →
+            </Link>
             {!isActive && (
               <Link
                 href="/subscribe"
@@ -217,64 +180,7 @@ export default function AccountPage() {
         <h2 className="font-semibold text-fg mb-4" style={{ fontFamily: "var(--font-brand), sans-serif" }}>
           {a.paymentsTitle}
         </h2>
-        {payments === null ? (
-          <div className="space-y-2">
-            <div className="h-5 w-56 bg-surface-2 rounded animate-pulse" />
-            <div className="h-5 w-44 bg-surface-2 rounded animate-pulse" />
-          </div>
-        ) : payments.length === 0 ? (
-          <p className="text-sm text-fg-muted">{a.noPayments}</p>
-        ) : (
-          <ul className="divide-y divide-line">
-            {payments.map((p) => (
-              <li key={p.sessionId} className="py-3 first:pt-0 last:pb-0 flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5">
-                <div>
-                  <p className="text-sm text-fg font-medium">{a.annualLicense}</p>
-                  <p className="text-xs text-fg-muted">
-                    {p.activatedAt !== null ? formatDate(p.activatedAt) : ""}
-                  </p>
-                </div>
-                <div className="flex items-center gap-2.5 shrink-0">
-                  <span className="text-sm text-fg font-semibold">{formatAmount(p, LOCALES[lang])}</span>
-                  {p.hasInvoice && (
-                    <button
-                      type="button"
-                      onClick={() => openInvoice(p.sessionId)}
-                      disabled={invoiceBusy === p.sessionId}
-                      className="text-xs font-semibold text-accent hover:text-fg underline-offset-2 hover:underline disabled:opacity-50"
-                    >
-                      {a.invoice}
-                    </button>
-                  )}
-                  {(!p.status || p.status === "fulfilled") ? (
-                    <span className="inline-flex items-center gap-1 bg-emerald-500/10 text-success-bright text-xs font-semibold px-2 py-0.5 rounded-full border border-emerald-500/20">
-                      <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-                      </svg>
-                      {a.paymentPaid}
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center bg-amber-500/10 text-amber-300 text-xs font-semibold px-2 py-0.5 rounded-full border border-amber-500/20">
-                      {p.status === "refunded" ? a.paymentRefunded : p.status === "partially_refunded" ? a.paymentPartlyRefunded : p.status === "disputed" ? a.paymentDisputed : a.paymentDisputeLost}
-                    </span>
-                  )}
-                </div>
-                {invoiceFailed === p.sessionId && (
-                  <p role="alert" className="basis-full text-xs text-amber-300">{a.invoiceUnavailable}</p>
-                )}
-                {p.status && p.status !== "fulfilled" && (
-                  <p className="basis-full text-xs text-fg-muted leading-relaxed">
-                    {(p.status === "refunded" ? a.paymentRefundedNote
-                      : p.status === "partially_refunded" ? a.paymentPartlyRefundedNote
-                        : p.status === "disputed" ? a.paymentDisputedNote
-                          : a.paymentDisputeLostNote
-                    ).replace("{amount}", p.refundedAmount != null ? formatMoney(p.refundedAmount, p.currency ?? "usd", LOCALES[lang]) : "")}
-                  </p>
-                )}
-              </li>
-            ))}
-          </ul>
-        )}
+        <PaymentHistory payments={payments} />
       </section>
       {/* Danger zone: deleting the account used to be a small link in every page's footer */}
       <section className="rounded-card border border-danger/30 bg-danger/5 p-6">

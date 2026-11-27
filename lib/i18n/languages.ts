@@ -2,9 +2,9 @@
 export const LANGUAGES = ["el", "en", "nl", "de", "es", "it"] as const;
 export type Lang = (typeof LANGUAGES)[number];
 
-/** BCP-47 locale per UI language, for Intl date/number formatting. */
+/** BCP-47 locale per UI language, for Intl date/number formatting. English is US English (decision D19: the main market is the United States), so dates read "Dec 1, 2026". */
 export const LOCALES: Record<Lang, string> = {
-  el: "el-GR", en: "en-GB", nl: "nl-NL", de: "de-DE", es: "es-ES", it: "it-IT",
+  el: "el-GR", en: "en-US", nl: "nl-NL", de: "de-DE", es: "es-ES", it: "it-IT",
 };
 
 export const isLang = (v: unknown): v is Lang => typeof v === "string" && (LANGUAGES as readonly string[]).includes(v);

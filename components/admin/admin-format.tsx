@@ -6,7 +6,7 @@ export const LIFETIME_FROM = 4102444800000; // anything beyond 2100 is "lifetime
 
 export function formatDate(ts: number | string | null | undefined): string {
   if (!ts) return "—";
-  return new Date(ts).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+  return new Date(ts).toLocaleDateString("en-US", { day: "2-digit", month: "short", year: "numeric" });
 }
 export const formatPaid = (cents: number | null, currency: string | null) => (cents === null ? "—" : formatMoney(cents, currency ?? "usd", "en-US"));
 

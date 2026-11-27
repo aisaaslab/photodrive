@@ -92,5 +92,5 @@ export function visibleTiers(view: PricingView, mode: BillingMode): { tier: Plan
 }
 
 /** Locale used to format plan prices on the landing page. English is US English (D19: the main market is the United States), so a USD
- *  plan reads "$99"; `LOCALES` in lib/i18n/languages.ts (en-GB, used for dates in the account area) is a separate, later decision. */
+ *  plan reads "$99"; `LOCALES` in lib/i18n/languages.ts (dates) is en-US too. */
 export const PRICE_LOCALE: Record<string, string> = { en: "en-US", el: "el-GR", nl: "nl-NL", de: "de-DE", es: "es-ES", it: "it-IT" };
