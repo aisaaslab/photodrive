@@ -75,4 +75,12 @@ export type ContactMessageDoc = {
   userAgent?: string | null;
   read?: boolean;
   emailed?: boolean;
+  /** Support inbox (S8-02): `resolved` once an administrator has dealt with it; anything else is open. */
+  status?: "open" | "resolved";
+  resolvedAt?: number;
+  resolvedBy?: string;
+  /** An internal note by an administrator; never shown to the sender. */
+  note?: string;
+  noteAt?: number;
+  noteBy?: string;
 };

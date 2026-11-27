@@ -12,7 +12,7 @@
   - Files: `app/api/admin/payments/*`, `app/dashboard/admin/payments/*`
   - Done when: an operator can resolve a needs-review payment without leaving the page.
   - Refs: PAY-4, PAY-6
-- [ ] **S8-02** · M · Support inbox: list `contactMessages` with read/unread/resolved, search, link to the matching user (account + payments one click away), reply link, optional note.
+- [x] **S8-02** · M · Support inbox: list `contactMessages` with read/unread/resolved, search, link to the matching user (account + payments one click away), reply link, optional note.
   - Files: `app/api/admin/messages/*`, `app/dashboard/admin/support/*`
   - Done when: a message can be opened, matched to an account, and marked resolved with an audit entry.
 - [ ] **S8-03** · M · Plans and promo codes screens: restyle, zod validation, money per currency, live preview of how a plan appears on the landing page, cache revalidation on save.

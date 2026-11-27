@@ -10,6 +10,7 @@ const TABS = [
   { href: "/dashboard/admin/users", label: "Users" },
   { href: "/dashboard/admin/galleries", label: "Galleries" },
   { href: "/dashboard/admin/payments", label: "Payments" },
+  { href: "/dashboard/admin/support", label: "Support" },
   { href: "/dashboard/admin/plans", label: "Plans" },
   { href: "/dashboard/admin/promo-codes", label: "Promo codes" },
   { href: "/dashboard/admin/settings", label: "Settings" },
@@ -41,6 +42,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     }).catch(() => router.replace("/dashboard"));
   }, [user, loading, router]);
 
+  // On a phone the tabs scroll sideways: bring the current one into view.
+  useEffect(() => {
+    if (!allowed) return;
+    document.querySelector('[aria-label="Back office sections"] [aria-current="page"]')?.scrollIntoView({ inline: "center", block: "nearest" });
+  }, [pathname, allowed]);
+
   if (loading || checking) {
     return (
       <div className="flex items-center justify-center py-32">
@@ -54,9 +61,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     <div>
       {/* Back-office sub-nav */}
-      <div className="flex items-center justify-between gap-3 mb-8">
-        <div className="flex items-center gap-1.5 flex-wrap">
-          <span className="text-[10px] font-semibold tracking-widest uppercase text-accent border border-accent-deep/30 bg-accent-deep/10 rounded-md px-2 py-1 mr-1.5">
+      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 mb-8">
+        <div className="flex min-w-0 max-w-full items-center gap-1 overflow-x-auto pb-1" aria-label="Back office sections" role="navigation">
+          <span className="text-[10px] font-semibold tracking-widest uppercase text-accent border border-accent-deep/30 bg-accent-deep/10 rounded-md px-2 py-1 mr-1 shrink-0">
             Admin
           </span>
           {TABS.map((tab) => {
@@ -65,7 +72,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <Link
                 key={tab.href}
                 href={tab.href}
-                className={`px-4 py-1.5 rounded-pill text-sm font-medium transition-colors ${
+                aria-current={active ? "page" : undefined}
+                className={`shrink-0 whitespace-nowrap px-3 py-1.5 rounded-pill text-sm font-medium transition-colors ${
                   active
                     ? "bg-accent text-canvas"
                     : "text-fg-muted hover:text-fg hover:bg-surface-2"
