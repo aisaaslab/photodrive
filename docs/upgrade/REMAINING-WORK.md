@@ -1,6 +1,6 @@
 # Remaining work: what is left of the PhotoDrive upgrade (2026-11-27)
 
-Companion to [`HANDOFF.md`](HANDOFF.md). It splits the **55 open tasks** (59 of 114 are done) by *who can move them*, so it is clear what
+Companion to [`HANDOFF.md`](HANDOFF.md). It splits the **54 open tasks** (60 of 114 are done) by *who can move them*, so it is clear what
 is being built now and what is waiting for the owner. The landing-page review (S6-02/03/10/12/14) is **parked by the owner's decision**.
 
 Owner decisions of 2026-11-27 (new):
@@ -22,7 +22,8 @@ Owner decisions of 2026-11-27 (new):
 - 2026-11-27: **S8-02 support inbox** done: open/unread/resolved with counts, search, account matched to the sender with links to the account and payments, reply link, internal note, every change audited (see `evidence/S8.md`). The back-office tab bar no longer wraps.
 - 2026-11-27: **S8-03 plans and promo codes** done: plans in any of 13 currencies with exact minor-unit prices, live preview using the real landing pricing section, validation, cache expiry and audit on every save; promo codes restyled and validated (see `evidence/S8.md`). Lint cap lowered from 13 to 11.
 - 2026-11-27: **S8-04 admin Overview and Settings** done: live needs-attention strip and tab badges, revenue per currency in the right units (yen fix), numbers' age + Refresh, Settings validated as you type, changes audited only when real (see `evidence/S8.md`).
-- Next, in order: S8-05 remove the old admin pages + permission matrix.
+- 2026-11-27: **S8-05 permission matrix** done: every admin route, found from the file system, is 401 for visitors, 403 for customers (database untouched) and open to the administrator; found and fixed a 500 when editing a gallery that does not exist. No old admin page or endpoint was left to remove (see `evidence/S8.md`).
+- Next, in order: S5-12 (rest of the user-area redesign), S0-06 (Sentry wiring), S10-04 (polish); then the release gates.
 
 ### Before turning on lapse enforcement (`GALLERY_LAPSE_ENFORCE=1`)
 1. S6-14 shipped (old landing and its "link stays live" card gone) or that card reworded.

@@ -8,7 +8,6 @@ import type { MessageFilter } from "@/lib/shared/support";
  * Admin-only: one page of contact-form messages, newest first (S8-02), for the Support inbox. `?filter=` is all | unread | open | resolved,
  * `?q=` searches the sender, e-mail, subject, message and note (every word must match), `?cursor=` continues a page, `?limit=` is 1 to 50
  * (default 25). Each message carries the customer account that has the sender's e-mail address, if any, and `counts` for the filter chips.
- * Also feeds the older inbox in Settings, which only reads `messages`.
  */
 export const GET = route("admin.messages.list", async (req: NextRequest) => {
   const admin = await requireAdmin(req);

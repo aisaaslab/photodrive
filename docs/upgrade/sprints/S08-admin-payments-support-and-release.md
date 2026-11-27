@@ -22,7 +22,7 @@
   - Depends: S7-04
   - Done when: overview loads from one document read.
   - Refs: SEC-5
-- [ ] **S8-05** · M · Remove the old admin pages and endpoints; redirects; **permission matrix test** (non-admin → 403, admin → 200 for every admin route).
+- [x] **S8-05** · M · Remove the old admin pages and endpoints; redirects; **permission matrix test** (non-admin → 403, admin → 200 for every admin route).
   - Depends: S8-01 … S8-04
   - Done when: matrix runs in CI.
 - [ ] **S8-06** · M · **Gate R3 — Phase 3 release:** landing and admin sign-off, stats counters verified against a full recompute on production data (read-only), runbook entries for admin actions, monitoring for 72 h.

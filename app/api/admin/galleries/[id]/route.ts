@@ -60,6 +60,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   }
 
   const beforeDoc = await galleriesCol().doc(id).get();
+  if (!beforeDoc.exists) return NextResponse.json({ error: "Not found" }, { status: 404 });
   await galleriesCol().doc(id).update(update);
   const doc = await galleriesCol().doc(id).get();
   await writeAudit({ actorUid: uid, action: "gallery.update", targetType: "gallery", targetId: id, before: beforeDoc.data(), after: doc.data() });
