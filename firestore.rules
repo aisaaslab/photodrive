@@ -15,6 +15,14 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    // `emailLower` feeds the admin back office's search (S7-05). A user may keep it, but only as the lower-cased form of their own e-mail,
+    // so nobody can plant a value that makes them appear under someone else's address.
+    function validEmailLower() {
+      return !('emailLower' in request.resource.data)
+        || (request.resource.data.emailLower is string && 'email' in request.resource.data && request.resource.data.email is string
+            && request.resource.data.emailLower == request.resource.data.email.trim().lower());
+    }
+
     // Fields only the server (Admin SDK) is allowed to set.
     function locked() {
       // Everything about access and billing, written only by the server. A user can edit their own profile (name, photo) but must never
@@ -38,7 +46,8 @@ service cloud.firestore {
       // subscription/billing field.
       allow create: if request.auth != null
         && request.auth.uid == uid
-        && !request.resource.data.keys().hasAny(locked());
+        && !request.resource.data.keys().hasAny(locked())
+        && validEmailLower();
 
       // On later logins it may update profile fields, but cannot add/change/remove
       // any subscription/billing field.
@@ -47,7 +56,8 @@ service cloud.firestore {
       allow update: if request.auth != null
         && request.auth.uid == uid
         && !request.resource.data.diff(resource.data).affectedKeys().hasAny(locked())
-        && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['createdAt']);
+        && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['createdAt'])
+        && validEmailLower();
 
       allow delete: if false;
     }

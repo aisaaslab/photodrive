@@ -12,7 +12,8 @@ export type ProfileInput = { email: string; name: string; photoURL?: string };
 
 /** `createdAtNow` is where the server timestamp goes (`serverTimestamp()` in the browser); a plain value in tests. */
 export function buildProfileWrite<T>(uid: string, existing: StoredProfile, profile: ProfileInput, createdAtNow: T): Record<string, unknown> {
-  const data: Record<string, unknown> = { uid, email: profile.email };
+  // `emailLower` is what the admin search runs on (S7-05); it is rewritten with the e-mail so the two never disagree.
+  const data: Record<string, unknown> = { uid, email: profile.email, emailLower: profile.email.trim().toLowerCase() };
   if (existing === undefined || existing.createdAt === undefined || existing.createdAt === null) data.createdAt = createdAtNow;
   if (existing === undefined || !existing.name) data.name = profile.name;
   if ((existing === undefined || !existing.photoURL) && profile.photoURL) data.photoURL = profile.photoURL;

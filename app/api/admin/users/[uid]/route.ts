@@ -4,6 +4,18 @@ import { requireAdmin } from "@/lib/server/auth";
 import { writeAudit } from "@/lib/server/audit";
 import { deleteUserGalleries } from "@/lib/server/repos/galleries";
 import { usersCol } from "@/lib/server/repos/collections";
+import { getUserDetail } from "@/lib/server/repos/admin-users";
+
+/** Admin-only: everything the detail drawer shows for one user (S7-05): access, payments, galleries and the admin actions taken on them. */
+export async function GET(req: NextRequest, { params }: { params: Promise<{ uid: string }> }) {
+  const admin = await requireAdmin(req);
+  if (!admin.ok) return admin.response;
+  const { uid } = await params;
+  if (!uid) return NextResponse.json({ error: "Missing uid" }, { status: 400 });
+  const detail = await getUserDetail(uid);
+  if (!detail) return NextResponse.json({ error: "User not found" }, { status: 404 });
+  return NextResponse.json(detail);
+}
 
 /**
  * Admin-only: permanently delete a user account.

@@ -22,7 +22,7 @@
   - Files: `lib/server/repos/stats.ts`, `app/api/admin/stats/route.ts`, `app/api/cron/stats-recompute/route.ts`
   - Done when: counters match a full recompute on staging data; the endpoint reads one document.
   - Refs: SEC-5, PAY-6
-- [ ] **S7-05** · L · Users: `GET /api/admin/users?q&cursor&limit` (indexed `emailLower` search, Auth lookups only for the visible page); list UI with search, filters (active, expiring, lapsed, comped), paging; **detail drawer** with plan, expiry, galleries, payments and actions (extend, assign plan, revoke, delete) writing audit entries.
+- [~] **S7-05** · L · Users: `GET /api/admin/users?q&cursor&limit` (indexed `emailLower` search, Auth lookups only for the visible page); list UI with search, filters (active, expiring, lapsed, comped), paging; **detail drawer** with plan, expiry, galleries, payments and actions (extend, assign plan, revoke, delete) writing audit entries.
   - Depends: S7-02, S7-03
   - Files: `app/api/admin/users/*`, `app/dashboard/admin/users/*`, `components/admin/*`
   - Done when: smooth with 10k seeded users; no 1,000-user cap; actions audited.

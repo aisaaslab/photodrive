@@ -6,12 +6,12 @@ const NOW = "SERVER_TIMESTAMP";
 
 describe("buildProfileWrite (S4-01)", () => {
   it("first sign-in: creates the profile with createdAt, name and photo", () => {
-    expect(buildProfileWrite("u1", undefined, google, NOW)).toEqual({ uid: "u1", email: "a@example.com", createdAt: NOW, name: "Anna Google", photoURL: google.photoURL });
+    expect(buildProfileWrite("u1", undefined, google, NOW)).toEqual({ uid: "u1", email: "a@example.com", emailLower: "a@example.com", createdAt: NOW, name: "Anna Google", photoURL: google.photoURL });
   });
 
   it("every later sign-in leaves createdAt out, so the sign-up date is never reset", () => {
     const stored = { createdAt: 12345, name: "Anna Google", photoURL: google.photoURL };
-    expect(buildProfileWrite("u1", stored, google, NOW)).toEqual({ uid: "u1", email: "a@example.com" });
+    expect(buildProfileWrite("u1", stored, google, NOW)).toEqual({ uid: "u1", email: "a@example.com", emailLower: "a@example.com" });
     expect("createdAt" in buildProfileWrite("u1", stored, google, NOW)).toBe(false);
   });
 
@@ -31,5 +31,9 @@ describe("buildProfileWrite (S4-01)", () => {
     const w = buildProfileWrite("u1", { createdAt: 1, name: "", photoURL: undefined }, google, NOW);
     expect(w).toMatchObject({ name: "Anna Google", photoURL: google.photoURL });
     expect(buildProfileWrite("u1", { createdAt: 1, name: "x" }, { ...google, photoURL: undefined }, NOW)).not.toHaveProperty("photoURL");
+  });
+
+  it("writes the lower-cased e-mail the admin search runs on, in step with the e-mail", () => {
+    expect(buildProfileWrite("u1", { createdAt: 1, name: "x" }, { ...google, email: "  Anna.G@Example.COM " }, NOW).emailLower).toBe("anna.g@example.com");
   });
 });

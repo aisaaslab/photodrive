@@ -3,93 +3,26 @@ import { getAdminAuth } from "@/lib/firebase/admin";
 import { requireAdmin } from "@/lib/server/auth";
 import { writeAudit } from "@/lib/server/audit";
 import { assignPlanToUser, getPlanById } from "@/lib/plans";
-import { accessSourceOf, latestPaymentByUid, paymentFlagsByUid } from "@/lib/access-source";
-import { galleriesCol, paymentsCol, usersCol } from "@/lib/server/repos/collections";
-import { ownerGalleryOf } from "@/lib/server/repos/galleries";
+import { usersCol } from "@/lib/server/repos/collections";
+import { USER_FILTERS, decodeCursor, listUsersPage, type UserFilter } from "@/lib/server/repos/admin-users";
 
+/**
+ * Admin-only: one page of users (S7-05). `?q=` searches e-mails by prefix, `?filter=` is all | active | expiring | lapsed | comped,
+ * `?cursor=` continues a previous page, `?limit=` is 1 to 50 (default 25). Nothing here reads a whole collection.
+ */
 export async function GET(req: NextRequest) {
   const admin = await requireAdmin(req);
   if (!admin.ok) return admin.response;
 
-  const [listUsersResult, galleriesSnap, paymentsSnap] = await Promise.all([
-    getAdminAuth().listUsers(1000),
-    galleriesCol().get(),
-    paymentsCol().get(),
-  ]);
-  const latestPayment = latestPaymentByUid(paymentsSnap.docs);
-  const paymentFlags = paymentFlagsByUid(paymentsSnap.docs);
+  const params = new URL(req.url).searchParams;
+  const filter = (params.get("filter") ?? "all") as UserFilter;
+  if (!USER_FILTERS.includes(filter)) return NextResponse.json({ error: "Unknown filter" }, { status: 400 });
+  const limit = Number(params.get("limit") ?? 25);
+  const q = (params.get("q") ?? "").slice(0, 200);
+  if (params.get("cursor") && !decodeCursor(params.get("cursor"))) return NextResponse.json({ error: "Invalid cursor" }, { status: 400 });
 
-  // Passwords are stored sealed; decrypt for the admin view.
-  const galleries = galleriesSnap.docs.map(ownerGalleryOf);
-
-  // Count galleries per photographer
-  const galleryCounts: Record<string, number> = {};
-  const latestGallery: Record<string, number> = {};
-  for (const g of galleries) {
-    const pid = g.photographerId;
-    if (!pid) continue;
-    galleryCounts[pid] = (galleryCounts[pid] ?? 0) + 1;
-    if ((g.createdAt ?? 0) > (latestGallery[pid] ?? 0)) {
-      latestGallery[pid] = g.createdAt;
-    }
-  }
-
-  // Fetch subscription data from Firestore for all users. The Firestore
-  // `name` is also preferred for displayName — it's the source of truth the
-  // user can edit in Account settings (Auth displayName is the Google name).
-  const userDocs = await usersCol().get();
-  const subMap: Record<string, { status: string; expiresAt: number; comp: boolean; source?: unknown; promoCode?: string; name?: string; planId?: string; planName?: string; planInterval?: string }> = {};
-  for (const doc of userDocs.docs) {
-    const d = doc.data();
-    subMap[doc.id] = {
-      status: d.subscriptionStatus ?? "none",
-      expiresAt: d.subscriptionExpiresAt ?? 0,
-      comp: d.compGranted === true,
-      source: d.subscriptionSource,
-      promoCode: typeof d.promoCode === "string" ? d.promoCode : undefined,
-      name: typeof d.name === "string" && d.name ? d.name : undefined,
-      planId: typeof d.planId === "string" ? d.planId : undefined,
-      planName: typeof d.planName === "string" ? d.planName : undefined,
-      planInterval: typeof d.planInterval === "string" ? d.planInterval : undefined,
-    };
-  }
-
-  const now = Date.now();
-  const users = listUsersResult.users.map((u) => {
-    const sub = subMap[u.uid];
-    const isActive = sub?.status === "active" && sub?.expiresAt > now;
-    const latest = latestPayment.get(u.uid);
-    return {
-      uid: u.uid,
-      email: u.email ?? "",
-      displayName: sub?.name ?? u.displayName ?? "",
-      photoURL: u.photoURL ?? null,
-      createdAt: u.metadata.creationTime,
-      lastSignIn: u.metadata.lastSignInTime,
-      galleryCount: galleryCounts[u.uid] ?? 0,
-      lastGalleryAt: latestGallery[u.uid] ?? null,
-      subscriptionActive: isActive,
-      subscriptionExpiresAt: sub?.expiresAt ?? null,
-      compGranted: sub?.comp ?? false,
-      // How they got access: "admin" | "free_code" | "paid" | null (never had any).
-      accessSource: accessSourceOf({ compGranted: sub?.comp ?? false, subscriptionSource: sub?.source, latest }),
-      // The 100%-off code they used, when Stripe told us which one.
-      promoCode: sub?.promoCode ?? latest?.promoCode ?? null,
-      // Last Stripe payment (minor units), 0 for a free-code checkout.
-      lastPaymentCents: latest?.amountTotal ?? null,
-      lastPaymentCurrency: latest?.currency ?? null,
-      planId: sub?.planId ?? null,
-      planName: sub?.planName ?? null,
-      planInterval: sub?.planInterval ?? null,
-      // Refunded / disputed / needs-review payments, worst first (empty for most users).
-      paymentFlags: paymentFlags.get(u.uid) ?? [],
-    };
-  });
-
-  // Sort by gallery count desc
-  users.sort((a, b) => b.galleryCount - a.galleryCount);
-
-  return NextResponse.json({ users });
+  const page = await listUsersPage({ q, filter, cursor: params.get("cursor"), limit: Number.isFinite(limit) ? limit : 25 });
+  return NextResponse.json(page);
 }
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -174,7 +107,7 @@ export async function POST(req: NextRequest) {
   // Firestore profile (mirrors what upsertUser creates on first login).
   await usersCol()
     .doc(created.uid)
-    .set({ uid: created.uid, email, name: displayName, createdAt: Date.now() });
+    .set({ uid: created.uid, email, emailLower: email, name: displayName, createdAt: Date.now() });
 
   await writeAudit({ actorUid: adminUid, action: "user.create", targetType: "user", targetId: created.uid, after: { email, name: displayName, planId: planId ?? null } });
 

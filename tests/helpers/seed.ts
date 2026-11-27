@@ -2,7 +2,7 @@ import { testAuth, testDb } from "./db";
 
 export async function seedUser(uid: string, data: Record<string, unknown> = {}, email = `${uid}@example.com`) {
   await testAuth().createUser({ uid, email });
-  await testDb().collection("users").doc(uid).set({ email, createdAt: Date.now(), ...data });
+  await testDb().collection("users").doc(uid).set({ email, emailLower: email.trim().toLowerCase(), createdAt: Date.now(), ...data });
   return uid;
 }
 

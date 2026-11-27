@@ -85,6 +85,18 @@ describe("users/{uid}: access and billing fields are server-only", () => {
   });
 });
 
+describe("users/{uid}: emailLower (S7-05)", () => {
+  it("may be written as the lower-cased form of the profile's own e-mail", async () => {
+    await assertSucceeds(setDoc(doc(env.authenticatedContext("fresh").firestore(), "users/fresh"), { uid: "fresh", email: "Fresh@Example.com", emailLower: "fresh@example.com", name: "F" }));
+    await assertSucceeds(updateDoc(doc(me(), "users/me"), { email: "Me@Example.com", emailLower: "me@example.com" }));
+  });
+  it("cannot be set to anything else, so nobody can appear under another address", async () => {
+    await assertFails(setDoc(doc(env.authenticatedContext("fresh").firestore(), "users/fresh"), { uid: "fresh", email: "f@example.com", emailLower: "boss@example.com", name: "F" }));
+    await assertFails(updateDoc(doc(me(), "users/me"), { emailLower: "boss@example.com" }));
+    await assertFails(updateDoc(doc(me(), "users/me"), { emailLower: 5 }));
+  });
+});
+
 describe("users/{uid}: what the browser may still do", () => {
   it("create its own profile and edit its name and photo", async () => {
     await assertSucceeds(setDoc(doc(env.authenticatedContext("fresh").firestore(), "users/fresh"), { uid: "fresh", email: "f@example.com", name: "F" }));
