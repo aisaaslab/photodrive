@@ -117,7 +117,7 @@ export const nl: Translations = {
     invalidCredentials: "Onjuist e-mailadres of wachtwoord.",
     emailError: "Er ging iets mis. Probeer het opnieuw.",
   },
-  subscribe: {
+  subscribe: { planGroup: "Kies je abonnement", perMonthEquivalent: "≈ {price} / maand", 
     title: "Begin vandaag",
     subtitle: "Toegang tot alles, geen limieten.",
     offer: "Aanbieding",
@@ -140,7 +140,7 @@ export const nl: Translations = {
     expiredAccess: "Je toegang is verlopen op {date}.",
     renewBtn: "Verlengen met kaart →",
   },
-  subscribeSuccess: {
+  subscribeSuccess: { stepPaid: "Betaling ontvangen", stepActivating: "Je account wordt geactiveerd", stepActivated: "Je account is actief", stepStart: "Maak je eerste galerij", stepWaitBank: "Wachten op bevestiging van je bank", stepLogin: "Log in om te activeren", 
     processingTitle: "Betaling verwerken...",
     processingSubtitle: "Even geduld alsjeblieft.",
     successTitle: "Welkom bij PhotoDrive!",

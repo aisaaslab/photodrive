@@ -24,6 +24,7 @@ Owner decisions of 2026-11-27 (new):
 - 2026-11-27: **S8-04 admin Overview and Settings** done: live needs-attention strip and tab badges, revenue per currency in the right units (yen fix), numbers' age + Refresh, Settings validated as you type, changes audited only when real (see `evidence/S8.md`).
 - 2026-11-27: **S8-05 permission matrix** done: every admin route, found from the file system, is 401 for visitors, 403 for customers (database untouched) and open to the administrator; found and fixed a 500 when editing a gallery that does not exist. No old admin page or endpoint was left to remove (see `evidence/S8.md`).
 - 2026-11-27: **S5-12 part 4**: dashboard cards/list switch and phone card actions with whole labels (see `evidence/S5.md`); S5-12 stays in progress for owner review of the remaining areas.
+- 2026-11-27: **S5-12 part 5**: subscribe plan picker and thank-you progress steps (see `evidence/S5.md`).
 - Next, in order: S5-12 (rest of the user-area redesign), S0-06 (Sentry wiring), S10-04 (polish); then the release gates.
 
 ### Before turning on lapse enforcement (`GALLERY_LAPSE_ENFORCE=1`)

@@ -127,7 +127,7 @@ export const el: Translations = {
     emailError: "Κάτι πήγε στραβά. Δοκίμασε ξανά.",
   },
   // Subscribe
-  subscribe: {
+  subscribe: { planGroup: "Επίλεξε το πακέτο σου", perMonthEquivalent: "≈ {price} / μήνα", 
     title: "Ξεκίνα σήμερα",
     subtitle: "Πρόσβαση σε όλα, χωρίς όρια.",
     offer: "Προσφορά",
@@ -151,7 +151,7 @@ export const el: Translations = {
     renewBtn: "Ανανέωση με κάρτα →",
   },
   // Subscribe success
-  subscribeSuccess: {
+  subscribeSuccess: { stepPaid: "Η πληρωμή ελήφθη", stepActivating: "Ενεργοποίηση του λογαριασμού σου", stepActivated: "Ο λογαριασμός σου είναι ενεργός", stepStart: "Δημιούργησε την πρώτη σου gallery", stepWaitBank: "Αναμονή για επιβεβαίωση από την τράπεζά σου", stepLogin: "Συνδέσου για ενεργοποίηση", 
     processingTitle: "Επεξεργασία πληρωμής...",
     processingSubtitle: "Παρακαλώ περίμενε λίγα δευτερόλεπτα.",
     successTitle: "Καλώς ήρθες στο PhotoDrive!",

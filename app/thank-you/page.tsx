@@ -143,6 +143,16 @@ function ThankYouContent() {
   const ss = t.subscribeSuccess;
   const confirmed = order === "ok";
   const awaiting = activation === "awaiting";
+  type StepState = "done" | "active" | "waiting" | "todo";
+  const steps: { label: string; state: StepState }[] = [
+    ...(confirmed ? [{ label: ss.stepPaid, state: "done" as StepState }] : []), // not claimed when Stripe has not confirmed this order
+    activation === "ready" ? { label: ss.stepActivated, state: "done" }
+      : activation === "awaiting" ? { label: ss.stepWaitBank, state: "waiting" }
+      : activation === "login" ? { label: ss.stepLogin, state: "todo" }
+      : activation === "pending" ? { label: ss.stepActivating, state: "waiting" }
+      : { label: ss.stepActivating, state: "active" },
+    { label: ss.stepStart, state: "todo" },
+  ];
   const loginHref = `/login?next=${encodeURIComponent(
     sessionId ? `/thank-you?session_id=${sessionId}` : "/thank-you"
   )}`;
@@ -183,18 +193,27 @@ function ThankYouContent() {
                 )}
               </div>
               <h1 className="text-2xl font-bold mb-2" style={{ fontFamily: "var(--font-brand), sans-serif" }}>
-                {awaiting ? ss.awaitingTitle : confirmed ? ss.orderTitle : ss.pendingTitle}
+                {awaiting ? ss.awaitingTitle : confirmed ? ss.orderTitle : activation === "ready" ? ss.successTitle : ss.pendingTitle}
               </h1>
               <p className="text-fg-muted text-sm mb-6 leading-relaxed">
-                {awaiting ? ss.awaitingSubtitle : confirmed ? ss.orderSubtitle : ss.pendingSubtitle}
+                {awaiting ? ss.awaitingSubtitle : confirmed ? ss.orderSubtitle : activation === "ready" ? ss.stepActivated : ss.pendingSubtitle}
               </p>
 
-              {activation === "checking" && (
-                <div className="flex items-center justify-center gap-2 text-fg-muted text-xs mb-6">
-                  <div className="w-3.5 h-3.5 border-2 border-line border-t-white/50 rounded-full animate-spin" />
-                  {ss.processingTitle}
-                </div>
-              )}
+              {/* Where things stand: payment, activation, then the first gallery */}
+              <ol data-ui="order-steps" aria-label={ss.processingTitle} className="mx-auto mb-6 max-w-xs space-y-3 text-left">
+                {steps.map((st) => (
+                  <li key={st.label} data-state={st.state} className="flex items-center gap-3 text-sm">
+                    <span aria-hidden className={`grid size-6 shrink-0 place-items-center rounded-full border text-xs ${
+                      st.state === "done" ? "border-emerald-500/40 bg-emerald-500/15 text-success-bright"
+                      : st.state === "active" ? "border-accent/50 bg-accent-soft text-accent"
+                      : st.state === "waiting" ? "border-amber-500/40 bg-amber-500/15 text-amber-300"
+                      : "border-line text-fg-muted"}`}>
+                      {st.state === "done" ? "✓" : st.state === "active" ? <span className="size-3 animate-spin rounded-full border-2 border-accent/30 border-t-accent motion-reduce:animate-none" /> : st.state === "waiting" ? "…" : ""}
+                    </span>
+                    <span className={st.state === "todo" ? "text-fg-muted" : "text-fg"}>{st.label}</span>
+                  </li>
+                ))}
+              </ol>
               {activation === "pending" && confirmed && (
                 <p className="text-fg-muted text-xs mb-6 leading-relaxed">{ss.pendingSubtitle}</p>
               )}

@@ -115,7 +115,7 @@ export const en = {
     invalidCredentials: "Incorrect email or password.",
     emailError: "Something went wrong. Please try again.",
   },
-  subscribe: {
+  subscribe: { planGroup: "Choose your plan", perMonthEquivalent: "≈ {price} / month", 
     title: "Start today",
     subtitle: "Access to everything, no limits.",
     offer: "Offer",
@@ -138,7 +138,7 @@ export const en = {
     expiredAccess: "Your access ended on {date}.",
     renewBtn: "Renew with card →",
   },
-  subscribeSuccess: {
+  subscribeSuccess: { stepPaid: "Payment received", stepActivating: "Activating your account", stepActivated: "Your account is active", stepStart: "Create your first gallery", stepWaitBank: "Waiting for your bank to confirm", stepLogin: "Log in to activate", 
     processingTitle: "Processing payment...",
     processingSubtitle: "Please wait a few seconds.",
     successTitle: "Welcome to PhotoDrive!",

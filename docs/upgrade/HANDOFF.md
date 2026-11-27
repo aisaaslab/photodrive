@@ -86,7 +86,7 @@ native review of draft translations, copy review (S3-13), measurements that need
    *Still to do, in priority order (each is a real UX improvement, not a restyle; check every one with the snapshots and `user-area-shots.cjs`):*
    1. ~~Dashboard list~~ done (cards, filter chips, "gallery created" dialog, cards/list density switch, phone card actions keep their labels).
    2. ~~Account page layout~~ done (see above); still open there: show invoice links and payment status per payment more clearly.
-   3. **Subscribe and thank-you pages:** plan cards in the landing style when several plans exist, clearer renewal wording (extends access to a date), progress/awaiting states.
+   3. ~~Subscribe and thank-you pages~~ done (radio-group plan cards with saving / per-month / most popular, thank-you progress steps incl. awaiting and login states; renewal wording was already right).
    4. **Client gallery** (favourites tip done): hero and header polish (photographer identity, share); the lightbox top bar is already phone-friendly (icon buttons of 40 px, one-line counter, fullscreen hidden on phones), still open: swipe hints and loading states
       (swipe, larger targets), loading and empty states, password gate with the photographer's name/cover.
    5. **Admin area** (`app/dashboard/admin/*`): re-skin and layout once S7 defines the admin design; do not redesign it twice.
