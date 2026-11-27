@@ -92,7 +92,7 @@ native review of draft translations, copy review (S3-13), measurements that need
       (swipe, larger targets), loading and empty states, password gate with the photographer's name/cover.
    5. **Admin area** (`app/dashboard/admin/*`): re-skin and layout once S7 defines the admin design; do not redesign it twice.
    6. **Toasts, dialogs, error and 404 pages:** consistent copy and icons; undo for destructive actions where possible.
-   7. A last **mobile pass** (390) of every screen with real content and long translations (Greek, German), and a keyboard walkthrough of the dashboard.
+   7. A last **mobile pass** (390) with real content, and a keyboard walkthrough of the dashboard. The automated long-text part exists and passes: `scripts/verify/browser/user-area-langs.cjs` (German, Greek, Dutch, Spanish, Italian at 390 px on login, client gallery, password gate, dashboard, settings dialog, account, empty dashboard, subscribe: no overflow).
    *How to verify a UX change:* `scripts/verify/browser/dashboard-snapshot.cjs` and `gallery-snapshot.cjs` against `scripts/verify/browser/baselines/*.json` (API requests, toasts and validation must not change
    unless you mean them to; text/layout differences are expected, review them and update the baseline in the same commit). Selectors use `data-ui` hooks and roles, not CSS classes: add a hook rather than a class selector.
 3. **S7 → S8 admin back office** (see sprint files), then **S9/S10** features, then **S11** release.
@@ -137,7 +137,8 @@ scripts/verify/browser/serve-emu.sh                              # production se
 export NODE_PATH=$(npm root -g)                                  # Playwright is installed globally in the cloud sandbox; else `npm i -D playwright`
 WITH_PLANS=1 npx tsx scripts/verify/browser/landing.cjs          # new landing: 70+ checks, six languages, three widths
 node scripts/verify/browser/lp.cjs                               # /lp/* pages
-SHOT=/tmp/shots AXE_PATH=/path/to/axe.min.js node scripts/verify/browser/user-area-shots.cjs   # user-area screenshots + axe (15 screens, 2 widths)
+SHOT=/tmp/shots AXE_PATH=/path/to/axe.min.js node scripts/verify/browser/user-area-shots.cjs   # user-area screenshots + axe (18 screens, 2 widths)
+node scripts/verify/browser/user-area-langs.cjs                  # long-text overflow check, five languages at 390 px
 npx tsx scripts/verify/browser/i18n.cjs                          # one language per page, server-rendered, cookie
 # for the UI primitives check start the server with: SHOW_DEV_UI=1 scripts/verify/browser/serve-emu.sh
 node scripts/verify/browser/ui-primitives.cjs
