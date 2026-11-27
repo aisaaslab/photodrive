@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 
 /**
  * Accessible modal shell used by the dashboard dialogs.
@@ -29,9 +30,11 @@ interface Props {
   /** Classes for the dialog panel (size, background, border…). */
   className?: string;
   dismissOnBackdrop?: boolean;
+  /** "end" docks the panel to the right edge, full height (a detail drawer); the default is a centred dialog. */
+  align?: "center" | "end";
 }
 
-export function Modal({ onClose, ariaLabel, children, className = "", dismissOnBackdrop = true }: Props) {
+export function Modal({ onClose, ariaLabel, children, className = "", dismissOnBackdrop = true, align = "center" }: Props) {
   const panelRef = useRef<HTMLDivElement>(null);
   // Keep the latest onClose without re-running the mount effect (parents pass
   // inline arrow functions).
@@ -92,9 +95,9 @@ export function Modal({ onClose, ariaLabel, children, className = "", dismissOnB
     };
   }, []);
 
-  return (
+  const tree = (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-canvas/70 backdrop-blur-sm animate-fade-in motion-reduce:animate-none"
+      className={`fixed inset-0 z-50 flex bg-canvas/70 backdrop-blur-sm animate-fade-in motion-reduce:animate-none ${align === "end" ? "justify-end items-stretch" : "items-center justify-center p-4"}`}
       onClick={dismissOnBackdrop ? () => onCloseRef.current() : undefined}
     >
       <div
@@ -104,10 +107,13 @@ export function Modal({ onClose, ariaLabel, children, className = "", dismissOnB
         aria-label={ariaLabel}
         tabIndex={-1}
         onClick={(e) => e.stopPropagation()}
-        className={`outline-none animate-scale-in motion-reduce:animate-none ${className}`}
+        className={`outline-none ${align === "end" ? "animate-fade-in" : "animate-scale-in"} motion-reduce:animate-none ${className}`}
       >
         {children}
       </div>
     </div>
   );
+  // Rendered on <body>, not where it was declared: the dashboard's <main> is its own stacking context below the sticky header, which
+  // would otherwise paint over the top of a modal (and hide a drawer's close button).
+  return typeof document === "undefined" ? tree : createPortal(tree, document.body);
 }

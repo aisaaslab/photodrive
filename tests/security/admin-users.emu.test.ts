@@ -226,9 +226,9 @@ describe("the endpoints", () => {
     expect(res.status).toBe(200);
     expect(d.row.uid).toBe("u1");
     expect(d.payments.map((p: { id: string }) => p.id)).toEqual(["p1"]);
-    expect(d.galleries).toEqual([{ id: "g1", name: "Wedding", slug: "wedding", createdAt: NOW - DAY, visibility: "private" }]);
+    expect(d.galleries).toEqual([{ id: "g1", name: "Wedding", slug: "wedding", folderId: "", createdAt: NOW - DAY, visibility: "private", hasPassword: false, website: null, instagram: null, facebook: null }]);
     expect(d.activity.map((a: { action: string }) => a.action)).toEqual(["subscription.revoke", "subscription.grant_year"]);
-    expect(JSON.stringify(d)).not.toMatch(/password|stripeCustomerId/i);
+    expect(JSON.stringify(d)).not.toMatch(/"password"|passwordHash|passwordEnc|stripeCustomerId/);
     expect((await detailRoute(get("/api/admin/users/nope", token), { params: Promise.resolve({ uid: "nope" }) })).status).toBe(404);
   });
 });

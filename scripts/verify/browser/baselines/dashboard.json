@@ -474,15 +474,15 @@
  },
  "40 unpaid: the payment step replaces the form": {
   "requests": [],
-  "text": "EN U Welcome, Unpaid Create your first gallery below. New Gallery Subscription required Get access to create unlimited galleries Yearly Everything, for a year €99/ year Unlimited galleries Originals at full resolution Buy with card → Back to form No galleries yet No need to upload anything again. You use the Google Drive you already have. 1 Upload your photos & videos to Google Drive Use the Google Drive you already have — nothing new to learn. 2 Make the folder public Set the folder to “Anyone ",
+  "text": "Subscription required Get access to create unlimited galleries Yearly Everything, for a year €99/ year Unlimited galleries Originals at full resolution Buy with card → Back to form",
   "buttons": [
-   "EN",
-   "U",
-   "New Gallery",
-   "YearlyEverything, for a year€99/ year",
-   "Buy with card →",
    "Back to form",
-   "New Gallery"
+   "Buy with card →",
+   "EN",
+   "New Gallery",
+   "New Gallery",
+   "U",
+   "YearlyEverything, for a year€99/ year"
   ]
  },
  "41 unpaid: the plan list": [
@@ -501,7 +501,7 @@
   "url:https://instagram.com/username=https://instagram.com/wedding"
  ],
  "43 unpaid: checkout is attempted (payments are not configured here) and the form is kept for after payment": {
-  "text": "EN U Welcome, Unpaid Create your first gallery below. New Gallery Subscription required Get access to create unlimited galleries Yearly Everything, for a year €99/ year Unlimited galleries Originals at full resolution Buy with card → Something went wrong Back to form No galleries yet No need to uplo",
+  "text": "Subscription required Get access to create unlimited galleries Yearly Everything, for a year €99/ year Unlimited galleries Originals at full resolution Buy with card → Something went wrong Back to form",
   "pending": {
    "name": "Wedding Day",
    "driveUrl": "https://drive.google.com/drive/folders/1AbCdEfGhIjKlMnOpQrStUvWxYz012345",

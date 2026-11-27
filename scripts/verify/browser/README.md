@@ -42,3 +42,5 @@ It needs the browser pointed at the emulators: build with `NEXT_PUBLIC_FIREBASE_
 **User-area screens** (`user-area-shots.cjs`): screenshots plus an axe audit (set `AXE_PATH` to an `axe.min.js`, for example from `npm pack axe-core`) of login, dashboard, settings dialog, new-gallery form, favourites modal and account at 1280 and 390.
 
 Prints one PASS/FAIL line per check. On staging, run the same page checks by hand against a real private gallery (S3-11).
+
+**Admin Users screen** (`admin-users.cjs`, S7-05): 30 checks of the paged, searchable, filterable Users list and its detail drawer (paging to the end of 1,200+ profiles, search, the four filters, drawer actions, delete confirmation, focus, no overflow at 1440 and 390, axe with `AXE_PATH`). Setup: `emu-reset.sh`, `seed-users.cjs [N]` (bulk profiles plus five named people), then `ADMIN_UID=photographer1 serve-emu.sh` (the seeded photographer becomes the administrator), then `NODE_PATH=$(npm root -g) node scripts/verify/browser/admin-users.cjs` (`SHOT=<dir>` saves screenshots).

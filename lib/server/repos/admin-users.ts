@@ -3,6 +3,7 @@ import { FieldPath, type DocumentData, type Firestore, type Query, type QueryDoc
 import { getAdminAuth, getAdminDb } from "@/lib/firebase/admin";
 import { accessSourceOf, latestPaymentByUid, paymentFlagsByUid, type AccessSource, type PaymentFlag } from "@/lib/access-source";
 import { toMs } from "@/lib/server/migrations/restore-created-at";
+import { galleryVisibility } from "@/lib/gallery/visibility";
 import { auditLogCol, galleriesCol, paymentsCol, usersCol } from "./collections";
 
 /**
@@ -164,7 +165,7 @@ export type AdminUserDetail = {
   row: AdminUserRow;
   disabled: boolean; providers: string[];
   payments: { id: string; amountTotal: number | null; currency: string | null; status: string; needsReview: boolean; promoCode: string | null; refundedAmount: number | null; activatedAt: number }[];
-  galleries: { id: string; name: string; slug: string; createdAt: number | null; visibility: string | null }[];
+  galleries: { id: string; name: string; slug: string; folderId: string; createdAt: number | null; visibility: "public" | "private"; hasPassword: boolean; website: string | null; instagram: string | null; facebook: string | null }[];
   activity: { id: string; at: number; action: string; actorUid: string; note: string | null }[];
 };
 
@@ -188,7 +189,15 @@ export async function getUserDetail(uid: string, db: Firestore = getAdminDb(), n
       promoCode: typeof d.get("promoCode") === "string" ? d.get("promoCode") : null, refundedAmount: typeof d.get("refundedAmount") === "number" ? d.get("refundedAmount") : null,
       activatedAt: typeof d.get("activatedAt") === "number" ? d.get("activatedAt") : 0,
     })),
-    galleries: galleries.docs.map((d) => ({ id: d.id, name: String(d.get("name") ?? ""), slug: String(d.get("slug") ?? ""), createdAt: toMs(d.get("createdAt")), visibility: typeof d.get("visibility") === "string" ? d.get("visibility") : null })),
+    // What the edit form needs. The password itself is never sent: an administrator sets a new one or leaves it alone.
+    galleries: galleries.docs.map((d) => {
+      const str = (k: string) => (typeof d.get(k) === "string" && d.get(k) ? (d.get(k) as string) : null);
+      return {
+        id: d.id, name: String(d.get("name") ?? ""), slug: String(d.get("slug") ?? ""), folderId: String(d.get("folderId") ?? ""), createdAt: toMs(d.get("createdAt")),
+        visibility: galleryVisibility(d.data()), hasPassword: typeof d.get("passwordHash") === "string" && d.get("passwordHash").length > 0,
+        website: str("website"), instagram: str("instagram"), facebook: str("facebook"),
+      };
+    }),
     activity: audit.docs.map((d) => ({ id: d.id, at: Number(d.get("at") ?? 0), action: String(d.get("action") ?? ""), actorUid: String(d.get("actorUid") ?? ""), note: typeof d.get("note") === "string" ? d.get("note") : null })),
   };
 }

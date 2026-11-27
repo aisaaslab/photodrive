@@ -299,7 +299,7 @@ const clean = (s) => String(s ?? "").replace(/\s+/g, " ").replace(/\d{1,2} [A-Z]
   await page.click("button:has-text('Create Gallery')");
   await page.waitForSelector("text=/Subscri|Buy|plan/i", { timeout: 20000 });
   await page.waitForTimeout(1200);
-  step("40 unpaid: the payment step replaces the form", { requests: takeRequests(), text: clean(await page.innerText("body")).slice(0, 500), buttons: await page.$$eval("button", (els) => els.map((e) => e.textContent.trim().replace(/\s+/g, " ").slice(0, 40)).filter(Boolean)) });
+  step("40 unpaid: the payment step replaces the form", { requests: takeRequests(), text: clean(await page.innerText('[role="dialog"]')).slice(0, 500), buttons: (await page.$$eval("button", (els) => els.map((e) => e.textContent.trim().replace(/\s+/g, " ").slice(0, 40)).filter(Boolean))).sort() });
   step("41 unpaid: the plan list", await page.evaluate(() => [...document.querySelectorAll("button[aria-pressed]")].map((b) => ({ text: b.textContent.replace(/\s+/g, " ").trim(), pressed: b.getAttribute("aria-pressed") }))));
   await page.locator("text=/back to|Back/i").first().click();
   await page.waitForTimeout(400);
@@ -309,7 +309,7 @@ const clean = (s) => String(s ?? "").replace(/\s+/g, " ").replace(/\d{1,2} [A-Z]
   await page.locator("button:has-text('Buy'), button:has-text('Subscribe'), button:has-text('Get')").first().click();
   await page.waitForTimeout(1500);
   step("43 unpaid: checkout is attempted (payments are not configured here) and the form is kept for after payment", {
-    text: clean(await page.innerText("body")).slice(0, 300),
+    text: clean(await page.innerText('[role="dialog"]')).slice(0, 300),
     pending: await page.evaluate(() => JSON.parse(localStorage.getItem("pending_gallery") || "null")),
   });
   // after payment the dashboard restores the form and creates the gallery by itself; here the subscription never becomes active
