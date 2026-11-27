@@ -16,7 +16,13 @@ export type Payment = {
   refundedAmount?: number | null;
   // Stripe issued an invoice for it (S4-06); purchases from before invoices were switched on have none.
   hasInvoice?: boolean;
+  /** What it bought: the period, a free access code, and the date the access it gave ran to (absent on older payments). */
+  interval?: "monthly" | "yearly" | null;
+  freeCode?: boolean;
+  accessUntil?: number | null;
 };
+
+const LIFETIME_FROM = 4_000_000_000_000; // the "never expires" marker is far beyond any real date
 
 // In the app's language (English is US English), not the browser's own locale, so the page reads the same everywhere.
 const formatDate = (ms: number, locale: string) => new Date(ms).toLocaleDateString(locale, { year: "numeric", month: "short", day: "numeric" });
@@ -70,11 +76,16 @@ export function PaymentHistory({ payments }: { payments: Payment[] | null }) {
       {payments.map((p) => (
         <li key={p.sessionId} className="py-3 first:pt-0 last:pb-0 flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5">
           <div>
-            <p className="text-sm text-fg font-medium">{a.annualLicense}</p>
-            <p className="text-xs text-fg-muted">{p.activatedAt !== null ? formatDate(p.activatedAt, locale) : ""}</p>
+            <p className="text-sm text-fg font-medium">
+              {p.freeCode ? a.freeCodeAccess : p.interval === "monthly" ? a.monthlyAccess : p.interval === "yearly" ? a.annualAccess : a.annualLicense}
+            </p>
+            <p className="text-xs text-fg-muted">
+              {p.activatedAt !== null ? formatDate(p.activatedAt, locale) : ""}
+              {p.accessUntil && p.accessUntil < LIFETIME_FROM && (!p.status || p.status === "fulfilled") ? ` · ${a.accessUntil.replace("{date}", formatDate(p.accessUntil, locale))}` : ""}
+            </p>
           </div>
           <div className="flex items-center gap-2.5 shrink-0">
-            <span className="text-sm text-fg font-semibold">{p.amountTotal === null ? "—" : formatMoney(p.amountTotal, p.currency ?? "usd", locale)}</span>
+            <span className="text-sm text-fg font-semibold">{p.amountTotal === null ? "—" : p.amountTotal === 0 ? a.paymentFree : formatMoney(p.amountTotal, p.currency ?? "usd", locale)}</span>
             {p.hasInvoice && (
               <button
                 type="button"

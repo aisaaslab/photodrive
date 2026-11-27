@@ -34,6 +34,10 @@ export async function GET(req: NextRequest) {
       refundedAmount: typeof data.refundedAmount === "number" ? data.refundedAmount : null,
       changedAt: typeof data.revokedAt === "number" ? data.revokedAt : null,
       // Whether Stripe issued an invoice for it (S4-06): purchases made before invoices were switched on have none.
+      // What it bought (S5-12): the period, whether it was a free code, and when the access it gave ran to.
+      interval: data.interval === "monthly" || data.interval === "yearly" ? data.interval : null,
+      freeCode: data.source === "free_code",
+      accessUntil: typeof data.expiresAtAfter === "number" ? data.expiresAtAfter : null,
       hasInvoice: typeof data.invoiceId === "string" && data.invoiceId.length > 0,
     };
   });

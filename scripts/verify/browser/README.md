@@ -62,3 +62,5 @@ Prints one PASS/FAIL line per check. On staging, run the same page checks by han
 **Subscribe and thank-you** (`subscribe.cjs`, S5-12): plan picker as a radio group (saving, per-month figure, arrow keys), thank-you steps signed out and for an active account, 390 px, axe. Reset with `emu-reset.sh --plans`, start `serve-emu.sh`, then `NODE_PATH=$(npm root -g) [AXE_PATH=...] [SHOT=<dir>] node scripts/verify/browser/subscribe.cjs`.
 
 **Client password gate** (`password-gate.cjs`, S5-12): label and focus, "Shared by", show/hide, wrong password announced with the field selected, 390 px, axe, the right password opening the gallery. Reset with `emu-reset.sh`, start `serve-emu.sh`, then `NODE_PATH=$(npm root -g) [AXE_PATH=...] [SHOT=<dir>] node scripts/verify/browser/password-gate.cjs`.
+
+**Account payments** (`account-payments.cjs`, S5-12): payment rows on the Account page (what each bought, access date, free code, refund note, invoice link), 390 px, axe. Reset, start `serve-emu.sh` WITHOUT `ADMIN_UID` (an administrator has no payments), then `NODE_PATH=$(npm root -g) [AXE_PATH=...] [SHOT=<dir>] node scripts/verify/browser/account-payments.cjs`.

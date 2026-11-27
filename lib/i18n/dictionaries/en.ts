@@ -242,7 +242,7 @@ export const en = {
     lifetime: "Lifetime access",
     subscribeCta: "Subscribe",
     paymentsTitle: "Payments",
-    annualLicense: "Annual license",
+    monthlyAccess: "Monthly access", annualAccess: "Annual access", freeCodeAccess: "Free access code", accessUntil: "Access until {date}", paymentFree: "Free", annualLicense: "Annual license",
     paymentPaid: "Paid",
     paymentRefunded: "Refunded",
     paymentPartlyRefunded: "Partly refunded",

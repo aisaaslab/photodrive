@@ -255,7 +255,7 @@ export const el: Translations = {
     lifetime: "Πρόσβαση εφ' όρου ζωής",
     subscribeCta: "Συνδρομή",
     paymentsTitle: "Πληρωμές",
-    annualLicense: "Ετήσια άδεια",
+    monthlyAccess: "Μηνιαία πρόσβαση", annualAccess: "Ετήσια πρόσβαση", freeCodeAccess: "Δωρεάν κωδικός πρόσβασης", accessUntil: "Πρόσβαση έως {date}", paymentFree: "Δωρεάν", annualLicense: "Ετήσια άδεια",
     paymentPaid: "Πληρώθηκε",
     paymentRefunded: "Επιστράφηκε",
     paymentPartlyRefunded: "Μερική επιστροφή",

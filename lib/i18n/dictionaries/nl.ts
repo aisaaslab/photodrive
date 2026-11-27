@@ -242,7 +242,7 @@ export const nl: Translations = {
     lifetime: "Levenslange toegang",
     subscribeCta: "Abonneren",
     paymentsTitle: "Betalingen",
-    annualLicense: "Jaarlicentie",
+    monthlyAccess: "Maandelijkse toegang", annualAccess: "Jaartoegang", freeCodeAccess: "Gratis toegangscode", accessUntil: "Toegang tot {date}", paymentFree: "Gratis", annualLicense: "Jaarlicentie",
     paymentPaid: "Betaald",
     paymentRefunded: "Terugbetaald",
     paymentPartlyRefunded: "Deels terugbetaald",

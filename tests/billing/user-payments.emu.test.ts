@@ -48,6 +48,20 @@ describe("GET /api/user/payments", () => {
     for (const r of rows) expect(r).toMatchObject({ status: "fulfilled", refundedAmount: null, changedAt: null });
   });
 
+  it("says what each payment bought: the period, a free code, and the date its access ran to; junk values become null", async () => {
+    await seedPayment("cs_m", { uid: "u1", amountTotal: 1200, currency: "usd", activatedAt: 5, interval: "monthly", expiresAtAfter: 1_800_000_000_000 });
+    await seedPayment("cs_y", { uid: "u1", amountTotal: 9900, currency: "usd", activatedAt: 4, interval: "yearly", expiresAtAfter: 1_900_000_000_000 });
+    await seedPayment("cs_free", { uid: "u1", amountTotal: 0, currency: "usd", activatedAt: 3, interval: "yearly", source: "free_code" });
+    await seedPayment("cs_old", { uid: "u1", amountTotal: 900, currency: "usd", activatedAt: 2 });
+    await seedPayment("cs_junk", { uid: "u1", amountTotal: 900, currency: "usd", activatedAt: 1, interval: "weekly", expiresAtAfter: "soon" });
+    const by = Object.fromEntries(((await (await call()).json()).payments as Record<string, unknown>[]).map((r) => [r.sessionId as string, r]));
+    expect(by.cs_m).toMatchObject({ interval: "monthly", freeCode: false, accessUntil: 1_800_000_000_000 });
+    expect(by.cs_y).toMatchObject({ interval: "yearly", freeCode: false, accessUntil: 1_900_000_000_000 });
+    expect(by.cs_free).toMatchObject({ interval: "yearly", freeCode: true, accessUntil: null });
+    expect(by.cs_old).toMatchObject({ interval: null, freeCode: false, accessUntil: null });
+    expect(by.cs_junk).toMatchObject({ interval: null, freeCode: false, accessUntil: null });
+  });
+
   it("returns only the caller's own payments and none to an admin", async () => {
     await seedPayment("cs_mine", { uid: "u1", amountTotal: 900, currency: "usd", activatedAt: 2, status: "refunded" });
     await seedPayment("cs_theirs", { uid: "u2", amountTotal: 900, currency: "usd", activatedAt: 1, status: "disputed" });
