@@ -1,6 +1,6 @@
-# Flow Drive — Complete Setup Guide
+# PhotoDrive — Complete Setup Guide
 
-> This is the long, step-by-step guide for people who have never deployed a website: it takes you from an unopened folder to a live site with payments. If you just want an overview of the project, read the [README](../README.md) instead. (The code's built-in placeholder name is still "PhotoDrive"; Step 14 below shows how to change it to Flow Drive or any other name.)
+> This is the long, step-by-step guide for people who have never deployed a website: it takes you from an unopened folder to a live site with payments. If you just want an overview of the project, read the [README](../README.md) instead. ("PhotoDrive" is the default name; Step 14 below shows how to change it to your own brand.)
 
 **This one file is everything.** It takes you from an unopened folder to a live
 website at your own domain, taking payments, with you as the admin. No prior
