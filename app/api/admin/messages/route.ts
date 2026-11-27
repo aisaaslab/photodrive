@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getUidFromRequest, isAdmin } from "@/lib/firebase/admin-guard";
+import { requireAdmin } from "@/lib/server/auth";
 import { contactMessagesCol } from "@/lib/server/repos/collections";
 
 /** GET: latest contact-form messages for the admin inbox. */
 export async function GET(req: NextRequest) {
-  const uid = await getUidFromRequest(req);
-  if (!isAdmin(uid)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  const admin = await requireAdmin(req);
+  if (!admin.ok) return admin.response;
 
   const limit = Math.min(
     Number(req.nextUrl.searchParams.get("limit") || 50) || 50,

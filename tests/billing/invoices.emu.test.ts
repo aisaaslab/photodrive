@@ -34,6 +34,7 @@ beforeEach(async () => {
   await clearEmulators();
   vi.restoreAllMocks();
   vi.unstubAllEnvs();
+  vi.spyOn(testAuth(), "verifyIdToken").mockImplementation((async () => { if (!asUid) throw new Error("no user"); return { uid: asUid }; }) as never);
   vi.stubEnv("BILLING_FULFIL_V2", "1");
   vi.stubEnv("APP_ENV", "staging");
   vi.stubEnv("UPSTASH_REDIS_REST_URL", "");

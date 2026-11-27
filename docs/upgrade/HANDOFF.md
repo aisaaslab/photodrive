@@ -98,6 +98,12 @@ native review of draft translations, copy review (S3-13), measurements that need
 3. **S7 → S8 admin back office** (see sprint files), then **S9/S10** features, then **S11** release.
 4. Whenever the owner provides staging or test-mode access: S1-11, S2-10, S1-08 finishing, the R1/R2 gates.
 
+## 4b · S7 admin back office: where it stands (2026-11-27)
+
+S7-01 (design) is superseded by D9; **S7-02 (roles by custom claim) and S7-03 (audit log) are done** with tests (see `evidence/S7.md`). To add a second administrator the owner runs
+`npx tsx --env-file=.env.local scripts/admin/set-admin-claim.ts grant <email> --apply` with production credentials. Next in S7: **S7-04** stored counters (replace the full-scan stats endpoint),
+**S7-05** paginated Users with a detail drawer (needs `emailLower` backfill and a composite index), **S7-06** Galleries with disable/enable. The old admin pages keep working until S8-05.
+
 ## 5 · Decisions already made (do not re-ask)
 
 Full log: [`00-proposal-traceability-and-decisions.md`](00-proposal-traceability-and-decisions.md). The ones that shape the work:

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getAdminDb } from "@/lib/firebase/admin";
-import { getUidFromRequest, isAdmin } from "@/lib/firebase/admin-guard";
+import { requireAdmin } from "@/lib/server/auth";
 import { markReviewed } from "@/lib/server/billing/review";
 
 const Body = z.object({
@@ -12,8 +12,9 @@ const Body = z.object({
 
 /** Admin only: mark a payment item (a flagged payment or a Stripe event that needed review) as reviewed (S2-16). */
 export async function POST(req: NextRequest) {
-  const uid = await getUidFromRequest(req);
-  if (!isAdmin(uid)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  const admin = await requireAdmin(req);
+  if (!admin.ok) return admin.response;
+  const uid = admin.user.uid;
 
   let json: unknown;
   try {

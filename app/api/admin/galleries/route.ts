@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAdminAuth } from "@/lib/firebase/admin";
-import { getUidFromRequest, isAdmin } from "@/lib/firebase/admin-guard";
+import { requireAdmin } from "@/lib/server/auth";
 import { galleriesCol, usersCol } from "@/lib/server/repos/collections";
 import { newestFirst, ownerGalleryOf } from "@/lib/server/repos/galleries";
 
 export async function GET(req: NextRequest) {
-  const uid = await getUidFromRequest(req);
-  if (!isAdmin(uid)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  const admin = await requireAdmin(req);
+  if (!admin.ok) return admin.response;
 
   const snap = await galleriesCol().get();
   // Passwords are stored sealed; decrypt for the admin view.

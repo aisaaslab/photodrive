@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getUidFromRequest, isAdmin } from "@/lib/firebase/admin-guard";
+import { requireAdmin } from "@/lib/server/auth";
+import { writeAudit } from "@/lib/server/audit";
 import { revalidateTag } from "next/cache";
 import {
   getSiteSettings,
@@ -17,8 +18,9 @@ const TRACKING_FIELDS: TrackingField[] = ["gtmId", "googleAdsId", "metaPixelId"]
 
 /** GET: current site settings (support email, tracking IDs, last update info). */
 export async function GET(req: NextRequest) {
-  const uid = await getUidFromRequest(req);
-  if (!isAdmin(uid)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  const admin = await requireAdmin(req);
+  if (!admin.ok) return admin.response;
+  const uid = admin.user.uid;
   const [settings, tracking] = await Promise.all([getSiteSettings(uid), readTrackingIds()]);
   return NextResponse.json({ ...settings, ...tracking });
 }
@@ -29,8 +31,9 @@ export async function GET(req: NextRequest) {
  * tracking ID disables that tag.
  */
 export async function PATCH(req: NextRequest) {
-  const uid = await getUidFromRequest(req);
-  if (!isAdmin(uid)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  const admin = await requireAdmin(req);
+  if (!admin.ok) return admin.response;
+  const uid = admin.user.uid;
 
   let body: Record<string, unknown>;
   try {
@@ -52,6 +55,7 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: "Nothing to update" }, { status: 400 });
   }
 
+  const beforeSettings = (await siteSettingsDoc().get()).data() ?? {};
   await siteSettingsDoc().set(
     { ...update, updatedAt: Date.now(), updatedBy: uid },
     { merge: true }
@@ -59,6 +63,7 @@ export async function PATCH(req: NextRequest) {
   // Expire immediately (not stale-while-revalidate) so the next page render
   // already carries the new tags.
   revalidateTag(SITE_SETTINGS_TAG, { expire: 0 });
+  await writeAudit({ actorUid: uid, action: "settings.update", targetType: "settings", targetId: "site", before: beforeSettings, after: { ...beforeSettings, ...update } });
 
   const [settings, tracking] = await Promise.all([getSiteSettings(uid), readTrackingIds()]);
   return NextResponse.json({ ...settings, ...tracking });

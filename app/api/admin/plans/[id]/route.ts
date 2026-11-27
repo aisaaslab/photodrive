@@ -1,13 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getUidFromRequest, isAdmin } from "@/lib/firebase/admin-guard";
+import { requireAdmin } from "@/lib/server/auth";
+import { writeAudit } from "@/lib/server/audit";
 import { normalizePlanInput } from "@/lib/plans";
 import { plansCol } from "@/lib/server/repos/collections";
 import { expirePublicPlans } from "@/lib/server/public-plans";
 
 /** PATCH: update a plan (full replace of the editable fields). */
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const uid = await getUidFromRequest(req);
-  if (!isAdmin(uid)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  const admin = await requireAdmin(req);
+  if (!admin.ok) return admin.response;
+  const uid = admin.user.uid;
 
   const { id } = await params;
   const docRef = plansCol().doc(id);
@@ -33,6 +35,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     }
     await docRef.update(update);
     expirePublicPlans();
+    await writeAudit({ actorUid: uid, action: "plan.toggle", targetType: "plan", targetId: id, before: existing.data(), after: { ...existing.data(), ...update } });
     return NextResponse.json({ ok: true });
   }
 
@@ -45,6 +48,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
   await docRef.update({ ...input, currency: "usd", updatedAt: Date.now() });
   expirePublicPlans();
+  await writeAudit({ actorUid: uid, action: "plan.update", targetType: "plan", targetId: id, before: existing.data(), after: { ...existing.data(), ...input, currency: "usd" } });
 
   return NextResponse.json({ ok: true });
 }
@@ -52,8 +56,9 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 /** DELETE: remove a plan. Users already assigned keep their access and the
  * plan name snapshot stored on their profile. */
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const uid = await getUidFromRequest(req);
-  if (!isAdmin(uid)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  const admin = await requireAdmin(req);
+  if (!admin.ok) return admin.response;
+  const uid = admin.user.uid;
 
   const { id } = await params;
   const docRef = plansCol().doc(id);
@@ -63,5 +68,6 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
   }
   await docRef.delete();
   expirePublicPlans();
+  await writeAudit({ actorUid: uid, action: "plan.delete", targetType: "plan", targetId: id, before: existing.data() });
   return NextResponse.json({ ok: true });
 }

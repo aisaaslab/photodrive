@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getUidFromRequest, isAdmin } from "@/lib/firebase/admin-guard";
+import { requireAdmin } from "@/lib/server/auth";
+import { writeAudit } from "@/lib/server/audit";
 import { listAllPlans, normalizePlanInput } from "@/lib/plans";
 import { plansCol } from "@/lib/server/repos/collections";
 import { expirePublicPlans } from "@/lib/server/public-plans";
 
 /** GET: all plans (admin back office — includes private + inactive). */
 export async function GET(req: NextRequest) {
-  const uid = await getUidFromRequest(req);
-  if (!isAdmin(uid)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  const admin = await requireAdmin(req);
+  if (!admin.ok) return admin.response;
 
   const plans = await listAllPlans();
   return NextResponse.json({ plans });
@@ -15,8 +16,9 @@ export async function GET(req: NextRequest) {
 
 /** POST: create a payment plan. */
 export async function POST(req: NextRequest) {
-  const uid = await getUidFromRequest(req);
-  if (!isAdmin(uid)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  const admin = await requireAdmin(req);
+  if (!admin.ok) return admin.response;
+  const uid = admin.user.uid;
 
   let body: Record<string, unknown>;
   try {
@@ -41,5 +43,6 @@ export async function POST(req: NextRequest) {
   });
 
   expirePublicPlans();
+  await writeAudit({ actorUid: uid, action: "plan.create", targetType: "plan", targetId: ref.id, after: { ...input, currency: "usd" } });
   return NextResponse.json({ id: ref.id });
 }

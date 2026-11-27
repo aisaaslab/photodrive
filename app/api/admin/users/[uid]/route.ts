@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAdminAuth, getAdminDb } from "@/lib/firebase/admin";
-import { getUidFromRequest, isAdmin } from "@/lib/firebase/admin-guard";
+import { requireAdmin } from "@/lib/server/auth";
+import { writeAudit } from "@/lib/server/audit";
 import { deleteUserGalleries } from "@/lib/server/repos/galleries";
 import { usersCol } from "@/lib/server/repos/collections";
 
@@ -13,8 +14,9 @@ import { usersCol } from "@/lib/server/repos/collections";
  * - all galleries owned by the user, with their client favourites and submissions.
  */
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ uid: string }> }) {
-  const adminUid = await getUidFromRequest(req);
-  if (!isAdmin(adminUid)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  const admin = await requireAdmin(req);
+  if (!admin.ok) return admin.response;
+  const adminUid = admin.user.uid;
 
   const { uid } = await params;
   if (!uid) return NextResponse.json({ error: "Missing uid" }, { status: 400 });
@@ -23,6 +25,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ u
   }
 
   const db = getAdminDb();
+  const beforeProfile = (await usersCol(db).doc(uid).get()).data() ?? null;
 
   // Delete the Auth account first — 404 means it was already gone, which is
   // fine; we still clean up Firestore below.
@@ -50,5 +53,6 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ u
     console.error("[admin users] delete galleries failed", err);
   }
 
+  await writeAudit({ actorUid: adminUid, action: "user.delete", targetType: "user", targetId: uid, before: beforeProfile });
   return NextResponse.json({ ok: true });
 }

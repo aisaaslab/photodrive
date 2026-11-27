@@ -1,14 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAdminAuth } from "@/lib/firebase/admin";
-import { getUidFromRequest, isAdmin } from "@/lib/firebase/admin-guard";
+import { requireAdmin } from "@/lib/server/auth";
+import { writeAudit } from "@/lib/server/audit";
 import { assignPlanToUser, getPlanById } from "@/lib/plans";
 import { accessSourceOf, latestPaymentByUid, paymentFlagsByUid } from "@/lib/access-source";
 import { galleriesCol, paymentsCol, usersCol } from "@/lib/server/repos/collections";
 import { ownerGalleryOf } from "@/lib/server/repos/galleries";
 
 export async function GET(req: NextRequest) {
-  const uid = await getUidFromRequest(req);
-  if (!isAdmin(uid)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  const admin = await requireAdmin(req);
+  if (!admin.ok) return admin.response;
 
   const [listUsersResult, galleriesSnap, paymentsSnap] = await Promise.all([
     getAdminAuth().listUsers(1000),
@@ -109,8 +110,9 @@ function randomPassword(): string {
  * - planId: optional — immediately assigns the plan to the new account.
  */
 export async function POST(req: NextRequest) {
-  const adminUid = await getUidFromRequest(req);
-  if (!isAdmin(adminUid)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  const admin = await requireAdmin(req);
+  if (!admin.ok) return admin.response;
+  const adminUid = admin.user.uid;
 
   let body: Record<string, unknown>;
   try {
@@ -173,6 +175,8 @@ export async function POST(req: NextRequest) {
   await usersCol()
     .doc(created.uid)
     .set({ uid: created.uid, email, name: displayName, createdAt: Date.now() });
+
+  await writeAudit({ actorUid: adminUid, action: "user.create", targetType: "user", targetId: created.uid, after: { email, name: displayName, planId: planId ?? null } });
 
   let assignedPlan: { id: string; name: string; interval: string; expiresAt: number } | null = null;
   if (planId) {

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAdminDb } from "@/lib/firebase/admin";
-import { getUidFromRequest, isAdmin } from "@/lib/firebase/admin-guard";
+import { requireAdmin } from "@/lib/server/auth";
+import { writeAudit } from "@/lib/server/audit";
 import { normalizeCode, validAccessDays, MAX_ACCESS_DAYS } from "@/lib/promo-codes";
 import { paymentsCol, promoCodesCol } from "@/lib/server/repos/collections";
 
@@ -12,8 +13,8 @@ const CODE_RE = /^[A-Z0-9_-]{2,40}$/;
  * add one in a click).
  */
 export async function GET(req: NextRequest) {
-  const uid = await getUidFromRequest(req);
-  if (!isAdmin(uid)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  const admin = await requireAdmin(req);
+  if (!admin.ok) return admin.response;
 
   const db = getAdminDb();
   const [rulesSnap, paymentsSnap] = await Promise.all([
@@ -56,8 +57,9 @@ export async function GET(req: NextRequest) {
 
 /** POST: create a rule — { code, accessDays, note? }. */
 export async function POST(req: NextRequest) {
-  const uid = await getUidFromRequest(req);
-  if (!isAdmin(uid)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  const admin = await requireAdmin(req);
+  if (!admin.ok) return admin.response;
+  const uid = admin.user.uid;
 
   let body: Record<string, unknown>;
   try {
@@ -82,5 +84,6 @@ export async function POST(req: NextRequest) {
   }
   const now = Date.now();
   await ref.set({ code, accessDays, note, active: true, createdAt: now, updatedAt: now });
+  await writeAudit({ actorUid: uid, action: "promo.create", targetType: "promoCode", targetId: code, after: { code, accessDays, note, active: true } });
   return NextResponse.json({ ok: true, code });
 }

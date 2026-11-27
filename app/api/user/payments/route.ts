@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { isAdmin } from "@/lib/firebase/admin-guard";
-import { getUidFromRequest } from "@/lib/firebase/admin-guard";
+import { isAdminToken, requireUser } from "@/lib/server/auth";
 import { paymentsCol } from "@/lib/server/repos/collections";
 
 /**
@@ -9,9 +8,10 @@ import { paymentsCol } from "@/lib/server/repos/collections";
  * payment confirmation list on the account page.
  */
 export async function GET(req: NextRequest) {
-  const uid = await getUidFromRequest(req);
-  if (!uid) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  if (isAdmin(uid)) {
+  const auth = await requireUser(req);
+  if (!auth.ok) return auth.response;
+  const uid = auth.user.uid;
+  if (isAdminToken(auth.user)) {
     // Admin doesn't pay — return an empty list rather than "inactive".
     return NextResponse.json({ payments: [] });
   }

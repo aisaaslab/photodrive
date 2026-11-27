@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { parseJson } from "@/lib/server/http";
 import { GalleryBody } from "@/lib/shared/schemas/galleries";
-import { getUidFromRequest, isAdmin } from "@/lib/firebase/admin-guard";
+import { requireAdmin } from "@/lib/server/auth";
+import { writeAudit } from "@/lib/server/audit";
 import { hashPassword } from "@/lib/gallery/password";
 import { planUpdate } from "@/lib/gallery/visibility";
 import { sealPassword, forOwner } from "@/lib/gallery/password-vault";
@@ -9,8 +10,9 @@ import { extractFolderId } from "@/lib/drive/url-parser";
 import { galleriesCol } from "@/lib/server/repos/collections";
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const uid = await getUidFromRequest(req);
-  if (!isAdmin(uid)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  const admin = await requireAdmin(req);
+  if (!admin.ok) return admin.response;
+  const uid = admin.user.uid;
 
   const { id } = await params;
   const parsedBody = await parseJson(req, GalleryBody);
@@ -57,16 +59,21 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     if (key in body) update[key] = normUrl(body[key]);
   }
 
+  const beforeDoc = await galleriesCol().doc(id).get();
   await galleriesCol().doc(id).update(update);
   const doc = await galleriesCol().doc(id).get();
+  await writeAudit({ actorUid: uid, action: "gallery.update", targetType: "gallery", targetId: id, before: beforeDoc.data(), after: doc.data() });
   return NextResponse.json(forOwner({ id: doc.id, ...(doc.data() as Record<string, unknown>) }));
 }
 
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const uid = await getUidFromRequest(req);
-  if (!isAdmin(uid)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  const admin = await requireAdmin(req);
+  if (!admin.ok) return admin.response;
+  const uid = admin.user.uid;
 
   const { id } = await params;
+  const beforeDoc = await galleriesCol().doc(id).get();
   await galleriesCol().doc(id).delete();
+  await writeAudit({ actorUid: uid, action: "gallery.delete", targetType: "gallery", targetId: id, before: beforeDoc.data() });
   return NextResponse.json({ ok: true });
 }

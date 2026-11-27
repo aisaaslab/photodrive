@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 const verifyIdToken = vi.hoisted(() => vi.fn());
 vi.mock("@/lib/firebase/admin", () => ({ getAdminAuth: () => ({ verifyIdToken }), getAdminDb: () => ({}) }));
 
-const { isAdmin, requireAdmin, requireUser, verifyBearer } = await import("@/lib/server/auth");
+const { isAdmin, isAdminToken, requireAdmin, requireUser, verifyBearer } = await import("@/lib/server/auth");
 const { getUidFromRequest } = await import("@/lib/firebase/admin-guard");
 const { route } = await import("@/lib/server/http");
 
@@ -72,6 +72,42 @@ describe("requireUser / requireAdmin (S5-04)", () => {
     verifyIdToken.mockResolvedValue({ uid: "u9" });
     expect(await getUidFromRequest(req("Bearer t") as never)).toBe("u9");
     expect(await getUidFromRequest(req() as never)).toBeNull();
+  });
+});
+
+describe("administrator by custom claim (S7-02)", () => {
+  it("isAdminToken: the claim, or the bootstrap id, and nothing looser", () => {
+    expect(isAdminToken({ uid: "u1", admin: true })).toBe(true);
+    expect(isAdminToken({ uid: "boss" })).toBe(true);
+    expect(isAdminToken({ uid: "u1" })).toBe(false);
+    for (const odd of ["true", 1, "yes", null, {}]) expect(isAdminToken({ uid: "u1", admin: odd }), String(odd)).toBe(false);
+  });
+
+  it("a user with the admin claim passes, after the token is checked against the revocation list", async () => {
+    verifyIdToken.mockResolvedValue({ uid: "second-admin", admin: true });
+    const r = await requireAdmin(req("Bearer t"));
+    expect(r.ok).toBe(true);
+    expect(verifyIdToken).toHaveBeenNthCalledWith(1, "t");
+    expect(verifyIdToken).toHaveBeenNthCalledWith(2, "t", true);
+  });
+
+  it("a revoked admin is 403 at once, even though the token still carries the claim", async () => {
+    verifyIdToken.mockResolvedValueOnce({ uid: "second-admin", admin: true }).mockRejectedValueOnce(new Error("auth/id-token-revoked"));
+    const r = await requireAdmin(req("Bearer t"));
+    expect(!r.ok && r.response.status).toBe(403);
+  });
+
+  it("no claim is 403 without the extra check; the claim must be exactly true", async () => {
+    verifyIdToken.mockResolvedValue({ uid: "u1", admin: "true" });
+    const r = await requireAdmin(req("Bearer t"));
+    expect(!r.ok && r.response.status).toBe(403);
+    expect(verifyIdToken).toHaveBeenCalledTimes(1);
+  });
+
+  it("the bootstrap administrator still needs no claim (and no extra network check)", async () => {
+    verifyIdToken.mockResolvedValue({ uid: "boss" });
+    expect((await requireAdmin(req("Bearer t"))).ok).toBe(true);
+    expect(verifyIdToken).toHaveBeenCalledTimes(1);
   });
 });
 

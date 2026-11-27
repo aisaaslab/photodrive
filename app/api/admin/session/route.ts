@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getUidFromRequest, isAdmin } from "@/lib/firebase/admin-guard";
+import { requireAdmin } from "@/lib/server/auth";
 
 /** Lightweight admin check used by the back-office layout guard. */
 export async function GET(req: NextRequest) {
-  const uid = await getUidFromRequest(req);
-  if (!isAdmin(uid)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  const admin = await requireAdmin(req);
+  if (!admin.ok) return admin.response;
   return NextResponse.json({ ok: true });
 }

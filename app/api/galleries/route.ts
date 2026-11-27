@@ -2,13 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { parseJson, route } from "@/lib/server/http";
 import { GalleryBody } from "@/lib/shared/schemas/galleries";
 import { getAdminDb } from "@/lib/firebase/admin";
-import { requireUser } from "@/lib/server/auth";
+import { isAdminToken, requireUser } from "@/lib/server/auth";
 import { extractFolderId } from "@/lib/drive/url-parser";
 import { generateSlug } from "@/lib/gallery/slug";
 import { hashPassword } from "@/lib/gallery/password";
 import { planCreate } from "@/lib/gallery/visibility";
 import { sealPassword, forOwner } from "@/lib/gallery/password-vault";
-import { isAdmin } from "@/lib/firebase/admin-guard";
 import { newestFirst, ownerGalleryOf } from "@/lib/server/repos/galleries";
 import { galleriesCol, gallerySelectionsCol, usersCol } from "@/lib/server/repos/collections";
 
@@ -18,7 +17,7 @@ export const POST = route("galleries.post", async (req: NextRequest) => {
   const uid = auth.user.uid;
 
   // Paywall enforced server-side — the client-side subscription check alone is bypassable.
-  if (!isAdmin(uid)) {
+  if (!isAdminToken(auth.user)) {
     const userSnap = await usersCol().doc(uid).get();
     const u = userSnap.data();
     const active = u?.subscriptionStatus === "active" && (u?.subscriptionExpiresAt ?? 0) > Date.now();

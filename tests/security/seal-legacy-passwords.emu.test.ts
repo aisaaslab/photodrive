@@ -38,6 +38,7 @@ beforeEach(async () => {
   await clearEmulators();
   vi.restoreAllMocks();
   vi.unstubAllEnvs();
+  vi.spyOn(testAuth(), "verifyIdToken").mockImplementation((async () => { return { uid: "boss" }; }) as never);
   vi.stubEnv("GALLERY_JWT_SECRET", "test-secret-for-gallery-tokens-0123456789");
   vi.stubEnv("ADMIN_UID", "boss");
   for (const m of ["log", "warn", "error"] as const) vi.spyOn(console, m).mockImplementation(() => {});
@@ -111,6 +112,7 @@ describe("reading never writes (the lazy migration is gone)", () => {
     const req = () => new NextRequest("http://localhost/api/x", { headers: { authorization: "Bearer t" } });
     const mine = await (await ownerList(req())).json();
     expect(mine.galleries.find((g: { id: string }) => g.id === "legacy").password).toBe("secret-one");
+    vi.spyOn(testAuth(), "verifyIdToken").mockImplementation((async () => ({ uid: "boss" })) as never);
     const admin = await (await adminGalleries(req())).json();
     expect(JSON.stringify(admin)).toContain("secret-one");
     expect((await adminUsers(req())).status).toBe(200);

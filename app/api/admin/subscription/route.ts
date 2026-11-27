@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAdminDb } from "@/lib/firebase/admin";
-import { getUidFromRequest, isAdmin } from "@/lib/firebase/admin-guard";
+import { requireAdmin } from "@/lib/server/auth";
+import { writeAudit } from "@/lib/server/audit";
 import { assignPlanToUser, getPlanById } from "@/lib/plans";
 import { LIFETIME_SENTINEL, YEAR_MS } from "@/lib/shared/billing-access";
 import { extendUserAccess } from "@/lib/server/billing/extend";
@@ -14,16 +15,25 @@ import { usersCol } from "@/lib/server/repos/collections";
  * Body: { uid: string, action: "assign_plan" | "grant_lifetime" | "grant_year" | "revoke", planId?: string }
  */
 export async function POST(req: NextRequest) {
-  const adminUid = await getUidFromRequest(req);
-  if (!isAdmin(adminUid)) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  }
+  const admin = await requireAdmin(req);
+  if (!admin.ok) return admin.response;
+  const adminUid = admin.user.uid;
 
   const body = await parseJson(req, AdminSubscriptionBody, { message: "Missing or invalid uid or action" });
   if (!body.ok) return body.response;
   const { uid, action, planId } = body.data;
 
   const ref = usersCol().doc(uid);
+  // What an administrator can change about access: recorded before and after in the audit log.
+  const accessOf = (d: Record<string, unknown> | undefined) => ({
+    subscriptionStatus: d?.subscriptionStatus ?? null, subscriptionExpiresAt: d?.subscriptionExpiresAt ?? null,
+    compGranted: d?.compGranted ?? false, planId: d?.planId ?? null, planName: d?.planName ?? null, planInterval: d?.planInterval ?? null,
+  });
+  const beforeAccess = accessOf((await ref.get()).data());
+  const audit = async () => writeAudit({
+    actorUid: adminUid, action: `subscription.${action}`, targetType: "user", targetId: uid,
+    before: beforeAccess, after: accessOf((await ref.get()).data()), ...(planId && { note: `plan ${planId}` }),
+  });
 
   if (action === "assign_plan") {
     if (!planId) return NextResponse.json({ error: "Missing planId" }, { status: 400 });
@@ -33,6 +43,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "This plan is inactive — activate it first in the Plans tab" }, { status: 400 });
     }
     const expiresAt = await assignPlanToUser(uid, plan);
+    await audit();
     return NextResponse.json({ ok: true, expiresAt, plan: { id: plan.id, name: plan.name, interval: plan.interval } });
   } else if (action === "grant_lifetime") {
     await ref.set(
@@ -56,5 +67,6 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  await audit();
   return NextResponse.json({ ok: true });
 }

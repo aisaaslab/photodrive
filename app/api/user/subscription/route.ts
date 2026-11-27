@@ -1,6 +1,6 @@
 import { route } from "@/lib/server/http";
 import { NextRequest, NextResponse } from "next/server";
-import { isAdmin, requireUser } from "@/lib/server/auth";
+import { isAdminToken, requireUser } from "@/lib/server/auth";
 import { billingFulfilV2 } from "@/lib/server/billing/flags";
 import { usersCol } from "@/lib/server/repos/collections";
 
@@ -10,7 +10,7 @@ export const GET = route("user.subscription.get", async (req: NextRequest) => {
   const { uid } = auth.user;
 
   // Admin always has access
-  if (isAdmin(uid)) {
+  if (isAdminToken(auth.user)) {
     return NextResponse.json({ isActive: true, status: "admin", expiresAt: null });
   }
 

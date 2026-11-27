@@ -8,14 +8,14 @@
 
 ## Tasks
 
-- [ ] **S7-01** · M · **Admin design (Figma):** Overview, Users list + detail drawer, Galleries, Payments (+ Needs attention), Support, Plans/Promo codes, Settings, in the Concept B style (desktop). Owner reviews.
+- [x] **S7-01** · M · **SUPERSEDED (owner, 2026-11-26, D9): the admin area is designed in code on the Concept B tokens, no Figma frames; the information architecture below is the brief.** Was: Admin design (Figma): Overview, Users list + detail drawer, Galleries, Payments (+ Needs attention), Support, Plans/Promo codes, Settings, in the Concept B style (desktop). Owner reviews.
   - Files: Figma file `Aq966rDz8wrtnqVsk5esPB`, new page "Admin"
   - Done when: node ids recorded in this file and owner approves.
   - Refs: G3
-- [ ] **S7-02** · M · Roles: Firebase custom claim `admin`; `requireAdmin` accepts the claim or `ADMIN_UID` (bootstrap); script to grant/revoke an admin; tests for both paths.
+- [x] **S7-02** · M · Roles: Firebase custom claim `admin`; `requireAdmin` accepts the claim or `ADMIN_UID` (bootstrap); script to grant/revoke an admin; tests for both paths.
   - Files: `lib/server/auth.ts`, `scripts/admin/set-admin-claim.ts`
   - Done when: a second admin can sign in and use the back office; revoking works.
-- [ ] **S7-03** · M · Audit log: `audit_log` collection, `writeAudit()`; wrap every admin mutation (assign plan, grant, revoke, delete user, plan and promo CRUD, settings, gallery disable).
+- [x] **S7-03** · M · Audit log: `audit_log` collection, `writeAudit()`; wrap every admin mutation (assign plan, grant, revoke, delete user, plan and promo CRUD, settings, gallery disable).
   - Files: `lib/server/audit.ts`, all `app/api/admin/*`
   - Done when: each admin action creates an entry with actor, target, before/after (tests).
 - [ ] **S7-04** · L · Stored counters: `stats/overview` (users, active subscriptions, galleries, `revenueByCurrency{}`, payments) updated incrementally on user/gallery/payment events, nightly recompute cron as truth; use Firestore `count()` where cheap; replace the full-scan stats endpoint; revenue reported **per currency**.
