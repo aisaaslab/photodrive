@@ -12,7 +12,7 @@
   - Files: `app/api/galleries/[id]/selection/export/route.ts`, `components/dashboard/*`
   - Done when: copying yields exactly the selected filenames; a non-owner gets 404.
   - Refs: F2
-- [ ] **S10-02** · L · Gallery stats: record views, downloads and favourites server-side into `gallery_stats/{galleryId}` (+ 30 daily buckets); dedupe views per visitor session cookie; no personal data; dashboard card shows counts and last visit; privacy note in docs.
+- [x] **S10-02** · L · Gallery stats: record views, downloads and favourites server-side into `gallery_stats/{galleryId}` (+ 30 daily buckets); dedupe views per visitor session cookie; no personal data; dashboard card shows counts and last visit; privacy note in docs.
   - Files: `lib/server/repos/galleryStats.ts`, `app/gallery/[slug]/page.tsx`, media route, `components/dashboard/GalleryCard.tsx`
   - Done when: counts match a scripted visit pattern; reloads do not inflate views.
   - Refs: F3

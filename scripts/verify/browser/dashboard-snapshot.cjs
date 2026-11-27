@@ -79,7 +79,7 @@ const clean = (s) => String(s ?? "").replace(/\s+/g, " ").replace(/\d{1,2} [A-Z]
 
   // ---- the client's favourites (selections) panel
   const before = clean(await card("Public test").innerText());
-  await card("Public test").getByText("Favorites").first().click();
+  await card("Public test").getByRole("button", { name: /Favorites/ }).first().click();
   await page.waitForTimeout(700);
   step("07 favourites panel", { newBadgeBefore: /\bnew\b/i.test(before), text: clean(await dialog().innerText()), buttons: await dialog().locator("button").evaluateAll((els) => els.map((e) => (e.getAttribute("aria-label") || e.textContent).trim().replace(/\s+/g, " ")).filter(Boolean)) });
   const copyList = dialog().locator("button:has-text('Copy')").first();

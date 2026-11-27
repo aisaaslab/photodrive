@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { GalleryStatsLine } from "./GalleryStatsLine";
 import { useLanguage, LOCALES } from "@/lib/i18n";
 import type { GalleryDoc } from "@/lib/firestore/types";
 import { isPrivate } from "@/lib/gallery/visibility";
@@ -111,8 +112,10 @@ export function GalleryCardFace({ gallery, copied, hasNewSelections, onChooseCov
               )}
             </div>
             {createdDate && (
-              <p className="text-xs text-fg-muted mt-0.5 mb-4">{createdDate}</p>
+              <p className="text-xs text-fg-muted mt-0.5">{createdDate}</p>
             )}
+            <GalleryStatsLine stats={gallery.stats} />
+            <div className="mb-4" />
 
             {/* Copy link — primary action, full width so it's the obvious
                 thing to click after creating a gallery. */}

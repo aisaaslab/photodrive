@@ -283,7 +283,7 @@ export const nl: Translations = {
     downloadFiles: "Bestanden downloaden (.zip)",
     preparing: "Voorbereiden...",
     allowDownloadLabel: "Foto's downloaden toestaan",
-    allowDownloadHint: "Schakel uit als de klant alleen mag bekijken en kiezen (bijv. vóór betaling).", lockAfterSendLabel: "Downloads uitschakelen zodra een selectie is verstuurd", lockAfterSendHint: "Nadat je klant de selectie verstuurt, stoppen foto-downloads voor iedereen behalve jou. Zet dit uit om ze terug te geven.",
+    allowDownloadHint: "Schakel uit als de klant alleen mag bekijken en kiezen (bijv. vóór betaling).", lockAfterSendLabel: "Downloads uitschakelen zodra een selectie is verstuurd", lockAfterSendHint: "Nadat je klant de selectie verstuurt, stoppen foto-downloads voor iedereen behalve jou. Zet dit uit om ze terug te geven.", statsViews: "Weergaven", statsDownloads: "Downloads", statsFavorites: "Favorieten", statsLastVisit: "Laatste bezoek: {date}", statsNoVisits: "Nog geen bezoeken",
     copyLink: "Link kopiëren",
     copied: "Gekopieerd",
     openGallery: "Galerij openen",

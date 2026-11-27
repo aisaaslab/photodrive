@@ -1,4 +1,5 @@
 import { cache } from "react";
+import { ViewBeacon } from "@/components/gallery/ViewBeacon";
 import { downloadsAllowed } from "@/lib/gallery/downloads";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -269,7 +270,10 @@ export default async function GalleryPage({ params }: Props) {
         ) : photos.length === 0 ? (
           <GalleryStatus type="noPhotos" />
         ) : (
-          <MasonryGrid photos={clientPhotos} subfolders={clientFolders} galleryId={gallery.id} allowDownload={allowDownload} />
+          <>
+            <ViewBeacon galleryId={gallery.id} />
+            <MasonryGrid photos={clientPhotos} subfolders={clientFolders} galleryId={gallery.id} allowDownload={allowDownload} />
+          </>
         )}
       </div>
 

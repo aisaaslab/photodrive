@@ -52,6 +52,8 @@ export interface GalleryDoc {
   titleSize?: string | null;
   // Read-only summary of the client's favorites, attached by GET /api/galleries
   // from the gallery_selections collection (not stored on the gallery itself).
+  // Usage counts (S10-02), attached by GET /api/galleries from gallery_stats; absent until someone opens the gallery.
+  stats?: import("@/lib/gallery/stats").StatsSummary;
   selectionCount?: number;
   selectionUpdatedAt?: number;
   // When the client last pressed "Send selection" (see gallery_selections).

@@ -40,6 +40,7 @@ beforeEach(async () => {
     for (const [path, data] of Object.entries({
       "galleries/g1": { photographerId: "me", passwordHash: "x", passwordEnc: "y" },
       "gallery_selections/g1": { items: [], submission: { email: "client@example.com" } },
+      "gallery_stats/g1": { galleryId: "g1", views: 3 },
       "favorites/f1": { galleryId: "g1", photoId: "p", sessionId: "s" },
       "payments/cs_1": { uid: "me" },
       "plans/p1": { name: "Plan" },
@@ -126,7 +127,7 @@ describe("users/{uid}: what the browser may still do", () => {
 
 describe("everything else is server-only: no browser read or write, signed in or not", () => {
   const PATHS = [
-    "galleries/g1", "gallery_selections/g1", "favorites/f1", "payments/cs_1", "plans/p1", "stripe_events/evt_1",
+    "galleries/g1", "gallery_selections/g1", "gallery_stats/g1", "favorites/f1", "payments/cs_1", "plans/p1", "stripe_events/evt_1",
     "customer_notices/n1", "contactMessages/m1", "demo_galleries/d1", "settings/site", "never_heard_of_it/x",
   ];
   for (const path of PATHS) {

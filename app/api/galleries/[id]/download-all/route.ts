@@ -1,4 +1,5 @@
 import { NextRequest } from "next/server";
+import { recordGalleryEvent } from "@/lib/server/repos/galleryStats";
 import { downloadsAllowed } from "@/lib/gallery/downloads";
 import { cookies } from "next/headers";
 import { fetchDriveFolder } from "@/lib/drive/client";
@@ -71,6 +72,8 @@ export async function GET(
       }
     }
   }
+
+  await recordGalleryEvent(id, "download", { n: selected.length }); // S10-02: the originals of this zip (or part)
 
   const baseName = (gallery.name || "gallery").replace(/[^\p{L}\p{N} _-]/gu, "").trim() || "gallery";
   const fileName = part && totalParts > 1 ? `${baseName} - Part ${part}.zip` : `${baseName}.zip`;

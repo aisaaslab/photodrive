@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { recordGalleryEvent } from "@/lib/server/repos/galleryStats";
 import { clientIp, getRateLimiter, rateLimitHeaders } from "@/lib/server/rate-limit";
 import { requestLogger } from "@/lib/server/log";
 import { streamFromDrive } from "@/lib/server/drive-stream";
@@ -69,6 +70,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ gall
     }
     if (size === "full" && !gallery.allowDownload) return deny(403, "Downloads are turned off for this gallery");
   }
+
+  if (size === "full" && !owner && gallery.photographerId !== null) await recordGalleryEvent(gallery.id, "download"); // S10-02
 
   return streamFromDrive({ fileId: file.id, size, apiKey, range: req.headers.get("range"), sharedCache: !gallery.private, publicMaxAgeSec: 3600 });
 }

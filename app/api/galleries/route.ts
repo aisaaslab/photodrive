@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getStatsSummaries } from "@/lib/server/repos/galleryStats";
 import { parseJson, route } from "@/lib/server/http";
 import { GalleryBody } from "@/lib/shared/schemas/galleries";
 import { getAdminDb } from "@/lib/firebase/admin";
@@ -133,6 +134,13 @@ export const GET = route("galleries.get", async (req: NextRequest) => {
       part[idx].selectionUpdatedAt = typeof d.updatedAt === "number" ? d.updatedAt : 0;
       if (typeof d.submission?.submittedAt === "number") part[idx].selectionSubmittedAt = d.submission.submittedAt;
     });
+  }
+
+  // Usage counts (S10-02), one more batched read; a gallery nobody has opened has none.
+  const stats = await getStatsSummaries(galleries.map((g) => g.id), Date.now(), db);
+  for (const g of galleries) {
+    const s = stats.get(g.id);
+    if (s) g.stats = s;
   }
   return NextResponse.json({ galleries });
 });

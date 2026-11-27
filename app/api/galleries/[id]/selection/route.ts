@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { recordGalleryEvent } from "@/lib/server/repos/galleryStats";
 import { parseJson, route } from "@/lib/server/http";
 import { SelectionToggleBody } from "@/lib/shared/schemas/public";
 import { getAdminDb } from "@/lib/firebase/admin";
@@ -95,6 +96,7 @@ export const POST = route("galleries.selection.post", async (
   if (action === "add") {
     if (!items.some((i) => i.id === fileId)) {
       items.push({ id: fileId, name: String(item.name ?? "").slice(0, 300) });
+      if (!access.owner) await recordGalleryEvent(id, "favorite", { db }); // S10-02: a new favourite by a visitor
     }
   } else {
     items = items.filter((i) => i.id !== fileId);

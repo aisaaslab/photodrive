@@ -36,7 +36,7 @@ describe("repositories (S5-05)", () => {
 
   it("every collection has a distinct name, and the names are the ones the app has always used (no data moved)", () => {
     expect(Object.values(COLLECTIONS).sort()).toEqual(
-      ["audit_log", "contactMessages", "customer_notices", "demo_galleries", "favorites", "galleries", "gallery_selections", "payments", "plans", "promoCodes", "stripe_events", "users"].sort(),
+      ["audit_log", "contactMessages", "customer_notices", "demo_galleries", "favorites", "galleries", "gallery_selections", "gallery_stats", "payments", "plans", "promoCodes", "stripe_events", "users"].sort(),
     );
   });
 });

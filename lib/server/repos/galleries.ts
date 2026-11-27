@@ -9,6 +9,7 @@ import { forOwner } from "@/lib/gallery/password-vault";
  * forever. This is the one place that knows what belongs to a gallery; every deletion path goes through it.
  *
  *  - `gallery_selections/{galleryId}`: the shared favourites and the client's submission.
+ *  - `gallery_stats/{galleryId}`: usage counts (S10-02).
  *  - `favorites` (legacy, one document per favourite with a `galleryId` field; nothing writes it any more, but it may exist).
  *
  * The related documents are removed BEFORE the gallery document, so a failure part-way leaves the gallery in place and the
@@ -37,6 +38,8 @@ export async function deleteGalleriesCascade(db: Firestore, galleryIds: string[]
   // 1. shared favourites + client submissions (one document per gallery; delete() on a missing document is a no-op, so no read is needed)
   await commitDeletes(db, ids.map((id) => db.collection("gallery_selections").doc(id)));
   result.selections = ids.length;
+  // 1b. usage counts (S10-02)
+  await commitDeletes(db, ids.map((id) => db.collection("gallery_stats").doc(id)));
 
   // 2. legacy per-favourite documents
   const legacy: FirebaseFirestore.DocumentReference[] = [];

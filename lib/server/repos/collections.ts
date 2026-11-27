@@ -16,6 +16,7 @@ export const COLLECTIONS = {
   promoCodes: "promoCodes",
   demoGalleries: "demo_galleries",
   gallerySelections: "gallery_selections",
+  galleryStats: "gallery_stats",
   contactMessages: "contactMessages",
   stripeEvents: "stripe_events",
   customerNotices: "customer_notices",
@@ -36,6 +37,7 @@ export const plansCol = col(COLLECTIONS.plans);
 export const promoCodesCol = col(COLLECTIONS.promoCodes);
 export const demoGalleriesCol = col(COLLECTIONS.demoGalleries);
 export const gallerySelectionsCol = col(COLLECTIONS.gallerySelections);
+export const galleryStatsCol = col(COLLECTIONS.galleryStats);
 export const contactMessagesCol = col(COLLECTIONS.contactMessages);
 export const stripeEventsCol = col(COLLECTIONS.stripeEvents);
 export const customerNoticesCol = col(COLLECTIONS.customerNotices);

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { recordGalleryEvent } from "@/lib/server/repos/galleryStats";
 import { clientIp, getRateLimiter, rateLimitHeaders } from "@/lib/server/rate-limit";
 import { requestLogger } from "@/lib/server/log";
 import { streamFromDrive } from "@/lib/server/drive-stream";
@@ -59,8 +60,9 @@ export async function GET(req: NextRequest) {
     return deny(502, "Could not check access");
   }
 
+  let ownerFetch = false;
   if (size === "full") {
-    const owner = await isOwnerOrAdmin(req, gallery);
+    const owner = (ownerFetch = await isOwnerOrAdmin(req, gallery));
     if (!owner) {
       if (!gallery.allowDownload) return deny(403, "Downloads are turned off for this gallery");
       if (gallery.private && !(await hasGalleryAccess(req.cookies.get(`gallery_token_${gallery.id}`)?.value, gallery))) {
@@ -68,6 +70,9 @@ export async function GET(req: NextRequest) {
       }
     }
   }
+
+  // Counted as a download of an original by a visitor (the owner's own fetches are not usage) (S10-02).
+  if (size === "full" && gallery.photographerId !== null && !ownerFetch) await recordGalleryEvent(gallery.id, "download");
 
   return streamFromDrive({
     fileId,

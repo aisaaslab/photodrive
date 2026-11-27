@@ -88,6 +88,22 @@ refused when downloads are off, but the page's code contains Drive file ids and 
 
 ---
 
+## Usage counts (S10-02)
+
+The dashboard card of each gallery shows how many times it was opened, how many original photos were downloaded, how many photos
+visitors favourited, and when it was last opened. Privacy rules:
+
+- **Only counts and one timestamp are stored** (`gallery_stats/{galleryId}`: running totals, a count per day for the last 30 days, the
+  time of the last visit). No IP address, no browser details, no visitor id, nothing that identifies a person. The collection is
+  server-only (denied to browsers by the Firestore rules) and is deleted with the gallery.
+- **A view counts once per browser session.** The first request sets a session cookie that only says "counted" (it ends when the
+  browser closes and carries no identifier), so reloads and extra tabs do not inflate the number. A private gallery counts only for a
+  visitor who has unlocked it; demo galleries and switched-off galleries are not counted.
+- **A download is one original photo delivered to a visitor** (a "Download all" zip counts its photos). The photographer's own
+  downloads and an administrator's are not counted. A favourite is a photo newly added by a visitor.
+- Counting is best-effort: if it fails, the page, download or favourite still works. The photographer's own visits to the public
+  page are counted too (the page does not know who is looking).
+
 ## FAQ / help text (English source, for translation)
 
 **What is the difference between a public and a private gallery?**
