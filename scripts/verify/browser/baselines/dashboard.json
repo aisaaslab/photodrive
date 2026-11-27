@@ -71,7 +71,7 @@
  },
  "07 favourites panel": {
   "newBadgeBefore": true,
-  "text": "Client's favorites Public test SELECTION SENT Sent by Maria Client DATE, TIME · maria@example.com Note: Please retouch these 2 photos selected a.jpg b.jpg Without file extensions Download CSV Copy list Download files (.zip)",
+  "text": "Client's favorites Public test SELECTION SENT Sent by Maria Client DATE, TIME · maria@example.com Note: Please retouch these 2 photos selected a.jpg b.jpg Without file extensions Download CSV Paste the list into Lightroom's text filter, or open the CSV in a spreadsheet, to find these photos fast. Copy list Download files (.zip)",
   "buttons": [
    "Cancel",
    "Download CSV",

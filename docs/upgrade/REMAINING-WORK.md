@@ -32,6 +32,7 @@ Owner decisions of 2026-11-27 (new):
 - 2026-11-27: **S5-12 part 10**: final keyboard and phone pass (clear focus on all fields, focus return after menu dialogs, 24 px targets); every S5-12 item is done, the box stays `[~]` for the owner's screenshot review; see `evidence/S5.md`.
 - 2026-11-27: **S0-06 Sentry wiring** built, inert until a DSN is set, proved end to end against a local stand-in (release, environment, privacy filter, browser and server); stays `[~]` until the owner's Sentry project shows the staging test error; see `evidence/S0.md`.
 - 2026-11-27: **S10-04 polish** done except the native-speaker review of the strings (a review sheet is ready: `evidence/S10-strings-review.md`): help text, empty states and keyboard / screen-reader pass for the three features, README feature list; see `evidence/S10.md`.
+- 2026-11-27: **Next.js upgraded 16.2.1 → 16.4.6** (security: the audit no longer lists `next`); see `evidence/S3.md`. 20 transitive advisories remain (firebase-admin, nodemailer, build tools), left for a deliberate change.
 - Next: nothing left that can be built without the owner. See the sections below (decisions, owner actions, release gates).
 
 ### Before turning on lapse enforcement (`GALLERY_LAPSE_ENFORCE=1`)
