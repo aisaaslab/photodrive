@@ -33,6 +33,26 @@ describe("buildTiers", () => {
   });
 });
 
+describe("differently named monthly and yearly plans", () => {
+  const monthly = plan({ id: "m", name: "Monthly", interval: "monthly", priceCents: 1200 });
+  const yearly = plan({ id: "y", name: "Yearly", interval: "yearly", priceCents: 9900 });
+  it("a lone monthly and a lone yearly plan pair, so the yearly one shows its saving", () => {
+    const v = pricingView([monthly, yearly]);
+    expect(v.tiers).toHaveLength(1);
+    expect(v.showToggle).toBe(true);
+    expect(v.maxDiscount).toBe(31);
+    expect(visibleTiers(v, "yearly")[0].plan.name).toBe("Yearly");
+    expect(visibleTiers(v, "monthly")[0].plan.name).toBe("Monthly");
+  });
+  it("with more plans than that, only same-named plans pair", () => {
+    expect(buildTiers([monthly, yearly, plan({ id: "x", name: "Studio", interval: "monthly" })])).toHaveLength(3);
+  });
+  it("only monthly plans: no toggle and no saving; only yearly: shown as yearly, no saving", () => {
+    expect(pricingView([monthly])).toMatchObject({ showToggle: false, defaultMode: "monthly", maxDiscount: 0 });
+    expect(pricingView([yearly])).toMatchObject({ showToggle: false, defaultMode: "yearly", maxDiscount: 0 });
+  });
+});
+
 describe("tierDiscount", () => {
   it("needs both variants and one currency", () => {
     expect(tierDiscount(buildTiers([M, Y])[0])).toBe(31);

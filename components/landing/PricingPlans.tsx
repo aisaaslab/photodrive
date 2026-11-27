@@ -97,7 +97,7 @@ export function PricingPlans({ plans }: { plans: PublicPlan[] }) {
       )}
       <div className={cn("grid w-full gap-7", cols)}>
         {shown.map(({ tier, plan }) => (
-          <PlanCard key={plan.id} name={tier.name} plan={plan} savePct={plan.interval === "yearly" ? tierDiscount(tier) : 0} highlight={tier.monthly?.highlight === true || tier.yearly?.highlight === true} />
+          <PlanCard key={plan.id} name={plan.name} plan={plan} savePct={plan.interval === "yearly" ? tierDiscount(tier) : 0} highlight={tier.monthly?.highlight === true || tier.yearly?.highlight === true} />
         ))}
       </div>
     </div>

@@ -59,11 +59,13 @@ describe("gallery settings rules (S5-07)", () => {
     expect(settingsProblem(settingsFrom(gallery()), gallery())).toBeNull();
   });
 
-  it("after a save the server's password and visibility come back, the confirmation resets, and the Drive link field is cleared (existing behaviour)", () => {
+  it("after a save the server's password and visibility come back, the confirmation resets, and the Drive link keeps showing the folder", () => {
     const v = { ...settingsFrom(privateGallery()), confirmMakePublic: true, name: "kept" };
-    expect(settingsAfterSave(v, { password: null, visibility: "public" })).toMatchObject({ name: "kept", driveUrl: "", password: "", visibility: "public", confirmMakePublic: false });
+    expect(settingsAfterSave(v, { password: null, visibility: "public" })).toMatchObject({ name: "kept", driveUrl: "https://drive.google.com/drive/folders/FOLDER1", password: "", visibility: "public", confirmMakePublic: false });
     expect(settingsAfterSave(v, { password: "pw", visibility: "private" })).toMatchObject({ password: "pw", visibility: "private" });
     expect(settingsAfterSave(v, {})).toMatchObject({ password: "", visibility: "public" });
+    // The Drive link never goes blank after a save: it keeps the value, or follows the folder the server returns.
+    expect(settingsAfterSave(v, { folderId: "FOLDER2" }).driveUrl).toBe("https://drive.google.com/drive/folders/FOLDER2");
   });
 
   it("the card's 'new favourites' marker: only when there is something, and it changed after the photographer last looked", () => {

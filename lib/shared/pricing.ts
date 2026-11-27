@@ -17,7 +17,7 @@ export type PublicPlan = {
 export type PlanTier = { key: string; name: string; monthly: PublicPlan | null; yearly: PublicPlan | null; sortOrder: number };
 export type BillingMode = "monthly" | "yearly";
 
-/** Pair monthly/yearly variants by name, ordered by sort order then name. A tier only appears in the modes it has a variant for. */
+/** Pair monthly/yearly variants by name (or, for a lone monthly and a lone yearly plan, regardless of name), ordered by sort order then name. A tier only appears in the modes it has a variant for. */
 export function buildTiers(plans: PublicPlan[]): PlanTier[] {
   const map = new Map<string, PlanTier>();
   for (const p of plans) {
@@ -31,7 +31,16 @@ export function buildTiers(plans: PublicPlan[]): PlanTier[] {
     else tier.yearly = p;
     tier.sortOrder = Math.min(tier.sortOrder, p.sortOrder ?? 0);
   }
-  return [...map.values()].sort((a, b) => a.sortOrder - b.sortOrder || a.name.localeCompare(b.name, "en"));
+  const tiers = [...map.values()];
+  // The admin often names the two variants differently ("Monthly" / "Yearly", "Pro" / "Pro annual"). When the whole list is exactly one
+  // monthly and one yearly plan they are the two prices of the same offer, so they pair and the yearly one can show its saving.
+  const monthlyOnly = tiers.filter((t) => t.monthly && !t.yearly);
+  const yearlyOnly = tiers.filter((t) => t.yearly && !t.monthly);
+  if (tiers.length === 2 && monthlyOnly.length === 1 && yearlyOnly.length === 1) {
+    const [m, y] = [monthlyOnly[0], yearlyOnly[0]];
+    return [{ key: m.key, name: m.name, monthly: m.monthly, yearly: y.yearly, sortOrder: Math.min(m.sortOrder, y.sortOrder) }];
+  }
+  return tiers.sort((a, b) => a.sortOrder - b.sortOrder || a.name.localeCompare(b.name, "en"));
 }
 
 /** Whole-percent saving of the yearly price against twelve monthly payments; 0 when there is none. Both prices must be in one currency. */

@@ -23,11 +23,14 @@ export type SettingsValues = {
   headerBranding: boolean;
 };
 
+/** The Drive link shown for a gallery's folder in the settings dialog. */
+export const driveFolderUrl = (folderId: string) => `https://drive.google.com/drive/folders/${folderId}`;
+
 /** The dialog's values for a gallery: what it opens with, and what Cancel puts back. */
 export function settingsFrom(gallery: GalleryDoc): SettingsValues {
   return {
     name: gallery.name,
-    driveUrl: `https://drive.google.com/drive/folders/${gallery.folderId}`,
+    driveUrl: driveFolderUrl(gallery.folderId),
     password: gallery.password ?? "",
     // Public / private (D18). Switching a private gallery to public removes its password, so it needs a confirmation.
     visibility: galleryVisibility(gallery),
@@ -79,9 +82,18 @@ export function buildSettingsPatch(values: SettingsValues, gallery: GalleryDoc):
   return body;
 }
 
-/** What the dialog's values become after a successful save: the stored password and visibility come back from the server, the confirmation resets, and the Drive link field is cleared. */
-export function settingsAfterSave(values: SettingsValues, updated: { password?: string | null; visibility?: Visibility }): SettingsValues {
-  return { ...values, driveUrl: "", password: updated.password ?? "", visibility: updated.visibility ?? "public", confirmMakePublic: false };
+/**
+ * What the dialog's values become after a successful save: the stored password and visibility come back from the server, the
+ * confirmation resets, and the Drive link keeps showing the gallery's folder (it used to be cleared until the page was reloaded).
+ */
+export function settingsAfterSave(values: SettingsValues, updated: { password?: string | null; visibility?: Visibility; folderId?: string }): SettingsValues {
+  return {
+    ...values,
+    driveUrl: updated.folderId ? driveFolderUrl(updated.folderId) : values.driveUrl,
+    password: updated.password ?? "",
+    visibility: updated.visibility ?? "public",
+    confirmMakePublic: false,
+  };
 }
 
 /** The time up to which the photographer has seen a gallery's favourites. */
