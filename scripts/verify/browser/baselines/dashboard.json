@@ -71,14 +71,23 @@
  },
  "07 favourites panel": {
   "newBadgeBefore": true,
-  "text": "Client's favorites Public test SELECTION SENT Sent by Maria Client DATE, TIME · maria@example.com Note: Please retouch these 2 photos selected a.jpg b.jpg Copy list Download files (.zip)",
+  "text": "Client's favorites Public test SELECTION SENT Sent by Maria Client DATE, TIME · maria@example.com Note: Please retouch these 2 photos selected a.jpg b.jpg Without file extensions Download CSV Copy list Download files (.zip)",
   "buttons": [
    "Cancel",
+   "Download CSV",
    "Copy list",
    "Download files (.zip)"
   ]
  },
  "08 copy selection list": "a.jpg\nb.jpg",
+ "08b selection csv": {
+  "filename": "Public test.csv",
+  "content": "filename\r\na.jpg\r\nb.jpg\r\n"
+ },
+ "08c selection csv, no extensions": {
+  "filename": "Public test.csv",
+  "content": "filename\r\na\r\nb\r\n"
+ },
  "09 selection zip": {
   "filename": "Public test.zip",
   "entries": [
@@ -215,7 +224,7 @@
    "textarea|Description=A description",
    "date|Event date=2026-06-15",
    "text|Location=Santorini, Greece",
-   "text|Google Drive folder=",
+   "text|Google Drive folder=https://drive.google.com/drive/folders/1DriveFolderIdDDDDDDDDDDDDDDDDDDDDDD",
    "checkbox|Allow photo downloadsTurn off =false",
    "url|website=",
    "url|instagram=instagram.com/photographer",
@@ -382,6 +391,9 @@
   ],
   "requests": []
  },
+ "34b new gallery: the folder is checked": [
+  "Folder found: 3 photos and videos."
+ ],
  "35 new gallery: private without a password is blocked": {
   "invalid": [
    "Gallery password: invalid"

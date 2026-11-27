@@ -16,7 +16,7 @@
   - Files: `lib/server/repos/galleryStats.ts`, `app/gallery/[slug]/page.tsx`, media route, `components/dashboard/GalleryCard.tsx`
   - Done when: counts match a scripted visit pattern; reloads do not inflate views.
   - Refs: F3
-- [ ] **S10-03** · M · Drive folder check: `POST /api/drive/check` takes a folder URL and reports accessible/public, number of supported files, sub-folders, empty or unsupported states, with friendly error codes; used live in the create/edit form; translated in six languages.
+- [x] **S10-03** · M · Drive folder check: `POST /api/drive/check` takes a folder URL and reports accessible/public, number of supported files, sub-folders, empty or unsupported states, with friendly error codes; used live in the create/edit form; translated in six languages.
   - Files: `app/api/drive/check/route.ts`, `components/dashboard/NewGalleryForm.tsx`, `lib/drive/client.ts`
   - Done when: private, empty, invalid and valid folders each show the right message before the gallery is created; rate limited.
   - Refs: F4

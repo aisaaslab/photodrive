@@ -238,7 +238,7 @@ export const en = {
     namePlaceholder: "e.g. Anna & George Wedding 2026",
     driveLabel: "Google Drive folder link",
     drivePlaceholder: "https://drive.google.com/drive/folders/...",
-    driveHint: 'Make sure the folder is shared with "Anyone with the link"',
+    driveHint: 'Make sure the folder is shared with "Anyone with the link"', driveChecking: "Checking the folder…", driveOk: "Folder found: {n} photos and videos.", driveOkSub: "Folder found. Its photos are in sub-folders.", driveEmpty: "This folder is empty. Add photos in Google Drive first.", driveUnsupported: "This folder has files, but no photos or videos the gallery can show.", driveNotFound: "We cannot open this folder. Share it with \"Anyone with the link\" and try again.", driveNotFolder: "This link is a single file, not a folder. Share the whole folder instead.", driveUnavailable: "Could not check the folder just now. You can still create the gallery.",
     passwordLabel: "Password",
     passwordOptional: "(optional)",
     passwordPlaceholder: "Gallery password",

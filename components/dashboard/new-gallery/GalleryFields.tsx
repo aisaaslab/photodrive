@@ -1,12 +1,13 @@
 "use client";
 
 import type { useNewGalleryForm } from "./useNewGalleryForm";
+import { driveCheckView } from "@/lib/drive/check-message";
 
 type Form = ReturnType<typeof useNewGalleryForm>;
 
 /** Name, optional description / date / location, and the Google Drive folder link (with its inline validity hint). */
 export function GalleryFields({ form }: { form: Form }) {
-  const { f, driveValid, driveInvalid, setName, setDriveUrl, setDescription, setEventDate, setLocation } = form;
+  const { f, driveValid, driveInvalid, driveCheck, setName, setDriveUrl, setDescription, setEventDate, setLocation } = form;
   const { name, driveUrl, description, eventDate, location } = form.values;
   return (
     <>
@@ -100,6 +101,13 @@ export function GalleryFields({ form }: { form: Form }) {
             </div>
           )}
         </div>
+        {driveCheck && (() => {
+          const view = driveCheck === "checking" ? null : driveCheckView(driveCheck);
+          if (driveCheck !== "checking" && !view) return null;
+          const tone = view?.tone === "good" ? "text-success-bright" : view?.tone === "warn" ? "text-amber-400" : "text-fg-muted";
+          const text = view ? f[view.key].replace("{n}", String(view.count ?? 0)) : f.driveChecking;
+          return <p role="status" aria-live="polite" data-ui="drive-check" className={`mt-1.5 text-xs font-medium ${tone}`}>{text}</p>;
+        })()}
         <div className="flex items-center gap-1.5 mt-1.5">
           <svg className="w-3 h-3 text-amber-500 shrink-0" fill="currentColor" viewBox="0 0 24 24">
             <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>

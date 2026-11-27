@@ -27,6 +27,10 @@ globalThis.fetch = async (input, init) => {
     else body = isFolderQuery ? { files: [] } : { files: FILES };
     return new Response(JSON.stringify(body), { status: 200, headers: { "content-type": "application/json" } });
   }
+  // The folder check (S10-03) asks for a folder's name and type: every id here is a shared folder.
+  if (url.startsWith("https://www.googleapis.com/drive/v3/files/") && new URL(url).searchParams.get("fields") === "id,name,mimeType") {
+    return new Response(JSON.stringify({ id: "folder", name: "Test folder", mimeType: "application/vnd.google-apps.folder" }), { status: 200, headers: { "content-type": "application/json" } });
+  }
   if (url.startsWith("https://drive.google.com/thumbnail")) return new Response(PNG, { status: 200, headers: { "content-type": "image/png" } });
   if (url.startsWith("https://www.googleapis.com/drive/v3/files/")) return new Response(PNG, { status: 200, headers: { "content-type": "video/mp4", "content-length": String(PNG.length) } });
   return real(input, init);

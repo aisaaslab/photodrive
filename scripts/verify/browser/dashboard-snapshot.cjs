@@ -84,7 +84,21 @@ const clean = (s) => String(s ?? "").replace(/\s+/g, " ").replace(/\d{1,2} [A-Z]
   step("07 favourites panel", { newBadgeBefore: /\bnew\b/i.test(before), text: clean(await dialog().innerText()), buttons: await dialog().locator("button").evaluateAll((els) => els.map((e) => (e.getAttribute("aria-label") || e.textContent).trim().replace(/\s+/g, " ")).filter(Boolean)) });
   const copyList = dialog().locator("button:has-text('Copy')").first();
   if (await copyList.count()) { await copyList.click(); await page.waitForTimeout(250); step("08 copy selection list", await page.evaluate(() => navigator.clipboard.readText())); }
-  const zipBtn = dialog().locator("button:has-text('.zip'), button:has-text('Download')").first();
+  // S10-01: the CSV export, with and without file extensions, through the owner-only endpoint.
+  const csvBtn = dialog().locator("button:has-text('Download CSV')");
+  if (await csvBtn.count()) {
+    for (const strip of [false, true]) {
+      const box = dialog().getByLabel(/Without file extensions/);
+      if (strip) await box.check(); else await box.uncheck();
+      const [dl] = await Promise.all([page.waitForEvent("download", { timeout: 20000 }), csvBtn.click()]);
+      const file = "/tmp/claude-dash-selection.csv";
+      await dl.saveAs(file);
+      step(strip ? "08c selection csv, no extensions" : "08b selection csv", { filename: dl.suggestedFilename(), content: fs.readFileSync(file, "utf8") });
+      fs.unlinkSync(file);
+    }
+    await dialog().getByLabel(/Without file extensions/).uncheck();
+  }
+  const zipBtn = dialog().locator("button:has-text('.zip')").first();
   if (await zipBtn.count()) {
     const [download] = await Promise.all([page.waitForEvent("download", { timeout: 20000 }), zipBtn.click()]);
     const file = "/tmp/claude-dash-selection.zip";
@@ -239,6 +253,9 @@ const clean = (s) => String(s ?? "").replace(/\s+/g, " ").replace(/\d{1,2} [A-Z]
   await page.waitForTimeout(300);
   step("34 new gallery: a bad link is blocked", { invalid: await validity(), requests: takeRequests() });
   await page.fill('input[placeholder^="https://drive"]', "https://drive.google.com/drive/folders/1AbCdEfGhIjKlMnOpQrStUvWxYz012345");
+  // S10-03: once typing pauses, the form checks the folder and says what it found (here, the stand-in's shared folder with photos).
+  await page.locator('[data-ui="drive-check"]').filter({ hasText: /Folder found/ }).waitFor({ timeout: 5000 }).catch(() => {});
+  step("34b new gallery: the folder is checked", await page.locator('[data-ui="drive-check"]').allInnerTexts());
   await page.locator('[role="radio"]:has-text("Private")').click();
   await page.click("button:has-text('Create Gallery')");
   await page.waitForTimeout(300);

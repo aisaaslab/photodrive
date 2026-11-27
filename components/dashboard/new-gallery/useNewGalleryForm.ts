@@ -9,6 +9,7 @@ import {
   createGalleryBody, initialValues, isValidDriveUrl, pendingGalleryOf,
   type NewGalleryInitial, type NewGalleryValues, type SocialKey,
 } from "@/lib/gallery/new-gallery";
+import type { DriveCheckResult } from "@/lib/drive/check-message";
 import { usePaymentPlans } from "./usePaymentPlans";
 
 /**
@@ -50,6 +51,31 @@ export function useNewGalleryForm({
   const driveValid = driveUrl.length > 0 && isValidDriveUrl(driveUrl);
   const driveInvalid = driveUrl.length > 0 && !isValidDriveUrl(driveUrl);
   const submittingRef = useRef(false);
+
+  // Live check of the Drive folder (S10-03): once the link looks right and typing pauses, ask the server whether the folder can be read
+  // and what is in it. The answer is stored with the link it is for, so a stale answer is never shown for a newer link. It only informs:
+  // creating the gallery is never blocked by it.
+  const [checked, setChecked] = useState<{ url: string; result: DriveCheckResult } | null>(null);
+  useEffect(() => {
+    if (!driveValid || !user) return;
+    let cancelled = false;
+    const timer = setTimeout(async () => {
+      try {
+        const token = await user.getIdToken();
+        const res = await fetch("/api/drive/check", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ driveUrl }),
+        });
+        const result: DriveCheckResult = res.ok ? await res.json() : { status: "unavailable" };
+        if (!cancelled) setChecked({ url: driveUrl, result });
+      } catch {
+        if (!cancelled) setChecked({ url: driveUrl, result: { status: "unavailable" } });
+      }
+    }, 600);
+    return () => { cancelled = true; clearTimeout(timer); };
+  }, [driveUrl, driveValid, user]);
+  const driveCheck: DriveCheckResult | "checking" | null = !driveValid ? null : checked?.url === driveUrl ? checked.result : "checking";
 
   async function isSubscriptionActive(): Promise<boolean> {
     if (!user) return false;
@@ -204,7 +230,7 @@ export function useNewGalleryForm({
   }
 
   return {
-    f, values, error, loading, showPayment, checkoutLoading, payment, driveValid, driveInvalid,
+    f, values, error, loading, showPayment, checkoutLoading, payment, driveValid, driveInvalid, driveCheck,
     setName, setDriveUrl, setPassword, setVisibility, setSocial, setSocialOn, setDescription, setEventDate, setLocation,
     setShowPayment, handleSubmit, handleCheckout,
   };

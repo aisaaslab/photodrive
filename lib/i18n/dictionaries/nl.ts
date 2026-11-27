@@ -238,7 +238,7 @@ export const nl: Translations = {
     namePlaceholder: "bijv. Anna & George Wedding 2026",
     driveLabel: "Google Drive-maplink",
     drivePlaceholder: "https://drive.google.com/drive/folders/...",
-    driveHint: 'Zorg ervoor dat de map gedeeld is met "Iedereen met de link"',
+    driveHint: 'Zorg ervoor dat de map gedeeld is met "Iedereen met de link"', driveChecking: "Map controleren…", driveOk: "Map gevonden: {n} foto's en video's.", driveOkSub: "Map gevonden. De foto's staan in submappen.", driveEmpty: "Deze map is leeg. Voeg eerst foto's toe in Google Drive.", driveUnsupported: "Deze map bevat bestanden, maar geen foto's of video's die de galerie kan tonen.", driveNotFound: "We kunnen deze map niet openen. Deel hem met \"Iedereen met de link\" en probeer opnieuw.", driveNotFolder: "Deze link is één bestand, geen map. Deel de hele map.", driveUnavailable: "De map kon nu niet worden gecontroleerd. Je kunt de galerie nog steeds maken.",
     passwordLabel: "Wachtwoord",
     passwordOptional: "(optioneel)",
     passwordPlaceholder: "Galerij wachtwoord",
