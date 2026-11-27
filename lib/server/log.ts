@@ -1,4 +1,5 @@
 import "server-only";
+import { captureServerError } from "@/lib/server/monitor";
 /**
  * Structured JSON logger for server code (S0-07).
  *
@@ -48,6 +49,8 @@ export function createLogger(bindings: Record<string, unknown> = {}): Logger {
       ...(err !== undefined ? { err: serialiseError(err) } : {}),
     });
     (level === "error" ? console.error : level === "warn" ? console.warn : console.log)(line);
+    // An error that carries a real error object also goes to error monitoring (S0-06; a no-op until a DSN is set).
+    if (level === "error" && err !== undefined) captureServerError(err, { scope: String(bindings.scope ?? "server"), requestId: typeof bindings.requestId === "string" ? bindings.requestId : undefined });
   };
   return {
     debug: (m, f) => emit("debug", m, f),

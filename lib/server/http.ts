@@ -46,7 +46,7 @@ export async function parseJson<S extends z.ZodType>(
 
 /**
  * Wraps a route handler so an unexpected error is logged (with a request id) and answered as a plain 500, never as a stack trace or
- * an unhandled rejection (S5-04). A place to hook error monitoring in once there is one (S0-06). Expected outcomes (401, 400, 404 ...)
+ * an unhandled rejection (S5-04). The error is also reported to monitoring (S0-06), through the logger. Expected outcomes (401, 400, 404 ...)
  * are returned by the handler as before; this only catches what it did not expect.
  *
  *   export const GET = route("user.subscription", async (req) => { ... });

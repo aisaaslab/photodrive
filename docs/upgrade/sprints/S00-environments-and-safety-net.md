@@ -25,7 +25,7 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done. Sizes: S ≈ ½ day, M �
 - [~] **S0-05** · M · GitHub Actions CI: install, lint, typecheck, test (emulators), build; Node 20; dependency cache.
   - Files: `.github/workflows/ci.yml`
   - Done when: workflow green on a PR; set as a required check.
-- [ ] **S0-06** · M · Sentry (`@sentry/nextjs`): client, server, edge init; source maps; environment tag; release = commit SHA; PII scrubbing; capture in API error paths.
+- [~] **S0-06** · M · Sentry (`@sentry/nextjs`): client, server, edge init; source maps; environment tag; release = commit SHA; PII scrubbing; capture in API error paths.
   - Files: `sentry.*.config.ts`, `instrumentation.ts`, `next.config.ts`
   - Done when: a staging-only test route raises an error that shows up in Sentry with the release and environment.
   - Note: read the Next 16 docs for instrumentation and config wrapping first.

@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import Link from "next/link";
+import * as Sentry from "@sentry/nextjs";
 import { useLanguage } from "@/lib/i18n";
 import { Logo } from "@/components/ui/Logo";
 
@@ -12,7 +13,10 @@ import { Logo } from "@/components/ui/Logo";
 export default function ErrorPage({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
   const { t } = useLanguage();
   const n = t.notFound;
-  useEffect(() => { console.error("page error", error.digest ?? "", error.message); }, [error]);
+  useEffect(() => {
+    console.error("page error", error.digest ?? "", error.message);
+    Sentry.captureException(error); // a no-op until monitoring is switched on (S0-06)
+  }, [error]);
 
   return (
     <main className="bg-canvas text-fg flex min-h-screen flex-col">
