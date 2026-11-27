@@ -14,6 +14,9 @@ import { MasonryGrid } from "@/components/gallery/MasonryGrid";
 import { PasswordGate } from "@/components/gallery/PasswordGate";
 import { GalleryUnavailable } from "@/components/gallery/GalleryUnavailable";
 import { GalleryStatus } from "@/components/gallery/GalleryStatus";
+import { HeaderTitle } from "@/components/gallery/HeaderTitle";
+import { SkipToPhotos } from "@/components/gallery/SkipToPhotos";
+import { ViewPhotosCue } from "@/components/gallery/ViewPhotosCue";
 import { GalleryActions } from "@/components/gallery/GalleryActions";
 import { FooterCredit, PoweredBy } from "@/components/gallery/FooterCredit";
 import { HeroMeta } from "@/components/gallery/HeroMeta";
@@ -152,7 +155,7 @@ export default async function GalleryPage({ params }: Props) {
 
   return (
     <div className="min-h-screen bg-canvas relative">
-      
+      <SkipToPhotos targetId="photos" />
 
       {/* Sticky app header — sits ABOVE the hero, never overlapped.
           Left: PhotoDrive logo (links home) — or, when the photographer opted
@@ -192,12 +195,13 @@ export default async function GalleryPage({ params }: Props) {
               <Logo priority />
             </Link>
           )}
+          <HeaderTitle name={gallery.name} heroId="gallery-hero" />
           <LanguageSwitcher variant="light" />
         </div>
       </header>
 
       {/* Hero banner — starts below the sticky header, never overlaps it. */}
-      <section className="relative w-full h-[40vh] min-h-[300px] sm:min-h-[260px] max-h-[440px] overflow-hidden">
+      <section id="gallery-hero" className="relative w-full h-[40vh] min-h-[300px] sm:min-h-[260px] max-h-[440px] overflow-hidden">
         {coverPhoto && gallery.coverFileId ? (
           <HeroImage
             primaryUrl={protectedTier ? (protectedCover ?? "") : driveImageUrl(coverPhoto, 2048)}
@@ -234,6 +238,7 @@ export default async function GalleryPage({ params }: Props) {
             photoCount={totalPhotos}
             videoCount={totalVideos}
           />
+          {photos.length > 0 && !driveError && <ViewPhotosCue targetId="photos" />}
         </div>
       </section>
 
@@ -271,7 +276,7 @@ export default async function GalleryPage({ params }: Props) {
       </div>
 
       {/* Photos */}
-      <div className="px-2 sm:px-6 pb-20 pt-8 sm:pt-10 max-w-screen-2xl mx-auto">
+      <div id="photos" tabIndex={-1} className="scroll-mt-16 px-2 sm:px-6 pb-20 pt-8 sm:pt-10 max-w-screen-2xl mx-auto focus:outline-none">
         {driveError ? (
           <GalleryStatus type="driveError" />
         ) : photos.length === 0 ? (

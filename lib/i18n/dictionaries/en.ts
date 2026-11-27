@@ -552,7 +552,7 @@ export const en = {
     favorite: "Favorite",
     addFavorite: "Add to favorites",
     removeFavorite: "Remove from favorites",
-    sharedBy: "Shared by {name}", showPassword: "Show password", hidePassword: "Hide password", passwordProtected: "This gallery is password protected.",
+    skipToPhotos: "Skip to photos", viewPhotos: "View photos", sharedBy: "Shared by {name}", showPassword: "Show password", hidePassword: "Hide password", passwordProtected: "This gallery is password protected.",
     passwordInstruction: "Enter the access code sent to you.",
     passwordPlaceholder: "Password",
     enter: "Enter",

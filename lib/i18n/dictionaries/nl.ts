@@ -547,7 +547,7 @@ export const nl: Translations = {
     favorite: "Favoriet",
     addFavorite: "Toevoegen aan favorieten",
     removeFavorite: "Verwijderen uit favorieten",
-    sharedBy: "Gedeeld door {name}", showPassword: "Wachtwoord tonen", hidePassword: "Wachtwoord verbergen", passwordProtected: "Deze galerij is beveiligd met een wachtwoord.",
+    skipToPhotos: "Naar de foto's", viewPhotos: "Foto's bekijken", sharedBy: "Gedeeld door {name}", showPassword: "Wachtwoord tonen", hidePassword: "Wachtwoord verbergen", passwordProtected: "Deze galerij is beveiligd met een wachtwoord.",
     passwordInstruction: "Voer de toegangscode in die naar u is gestuurd.",
     passwordPlaceholder: "Wachtwoord",
     enter: "Invoeren",

@@ -27,6 +27,7 @@ Owner decisions of 2026-11-27 (new):
 - 2026-11-27: **S5-12 part 5**: subscribe plan picker and thank-you progress steps (see `evidence/S5.md`).
 - 2026-11-27: **S5-12 part 6**: client password gate (photographer identity, label, show/hide, announced errors); see `evidence/S5.md`.
 - 2026-11-27: **S5-12 part 7**: Account / Billing payment rows say what each payment bought and until when; see `evidence/S5.md`.
+- 2026-11-27: **S5-12 part 8**: client gallery hero and header (name in the header on scroll, View photos cue, skip link); see `evidence/S5.md`.
 - Next, in order: S5-12 (rest of the user-area redesign), S0-06 (Sentry wiring), S10-04 (polish); then the release gates.
 
 ### Before turning on lapse enforcement (`GALLERY_LAPSE_ENFORCE=1`)
