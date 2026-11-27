@@ -26,6 +26,11 @@ export class UnmatchedPayment extends Error {
 
 export type FulfilOptions = {
   source: FulfilSource;
+  /**
+   * The customer to credit, chosen by an administrator for a payment that could not be matched on its own (S8-01). Skips the automatic
+   * lookup; the caller must have checked that the user exists. Ignored if the session was already fulfilled for someone.
+   */
+  uid?: string;
   /** Clock override for tests. */
   now?: () => number;
 };
@@ -95,14 +100,14 @@ const idOf = (v: string | { id: string } | null | undefined): string | null =>
  */
 export async function fulfilCheckoutSession(
   sessionOrId: Stripe.Checkout.Session | string,
-  { source, now = Date.now }: FulfilOptions,
+  { source, now = Date.now, uid: forcedUid }: FulfilOptions,
 ): Promise<FulfilResult> {
   const session =
     typeof sessionOrId === "string" ? await getStripe().checkout.sessions.retrieve(sessionOrId) : sessionOrId;
 
   if (!isSessionSettled(session)) return { state: "pending", sessionId: session.id };
 
-  const uid = await resolveUid(session);
+  const uid = forcedUid ?? (await resolveUid(session));
   if (!uid) throw new UnmatchedPayment(session.id);
 
   const db = getAdminDb();

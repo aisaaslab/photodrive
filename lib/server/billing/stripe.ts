@@ -14,7 +14,17 @@ export class StripeConfigError extends Error {
   }
 }
 
-let cached: { key: string; client: Stripe } | null = null;
+let cached: { key: string; base: string; client: Stripe } | null = null;
+
+/**
+ * For tests and staging only: `STRIPE_API_BASE_URL=http://127.0.0.1:PORT` points the client at a local stand-in for Stripe (the browser
+ * checks use one). It is ignored in production, so a stray variable there can never redirect real payment calls.
+ */
+function apiBase(): URL | null {
+  const raw = process.env.STRIPE_API_BASE_URL?.trim();
+  if (!raw || appEnv() === "production") return null;
+  try { return new URL(raw); } catch { return null; }
+}
 
 export function getStripe(): Stripe {
   const key = process.env.STRIPE_SECRET_KEY?.trim();
@@ -27,7 +37,14 @@ export function getStripe(): Stripe {
     );
   }
 
-  if (cached?.key !== key) cached = { key, client: new Stripe(key) };
+  const base = apiBase();
+  const baseKey = base?.origin ?? "";
+  if (cached?.key !== key || cached.base !== baseKey) {
+    const client = base
+      ? new Stripe(key, { host: base.hostname, port: base.port || undefined, protocol: base.protocol === "https:" ? "https" : "http" })
+      : new Stripe(key);
+    cached = { key, base: baseKey, client };
+  }
   return cached.client;
 }
 

@@ -103,3 +103,32 @@ describe("routes fail loudly and safely when Stripe is misconfigured", () => {
     expect(await res.json()).toEqual({ error: "Webhook not configured" });
   });
 });
+
+describe("STRIPE_API_BASE_URL (a local stand-in for Stripe, tests and staging only)", () => {
+  const field = (name: string) => (getStripe() as unknown as { getApiField(n: string): string }).getApiField(name);
+
+  it("points the client at the stand-in outside production", () => {
+    vi.stubEnv("STRIPE_SECRET_KEY", "sk_test_standin");
+    vi.stubEnv("APP_ENV", "local");
+    vi.stubEnv("STRIPE_API_BASE_URL", "http://127.0.0.1:12111");
+    expect([field("host"), field("port"), field("protocol")]).toEqual(["127.0.0.1", "12111", "http"]);
+  });
+
+  it("is ignored in production, so a stray variable can never redirect real payment calls", () => {
+    vi.stubEnv("STRIPE_SECRET_KEY", "sk_test_standin");
+    vi.stubEnv("APP_ENV", "production");
+    vi.stubEnv("STRIPE_API_BASE_URL", "http://127.0.0.1:12111");
+    expect(field("host")).toBe("api.stripe.com");
+  });
+
+  it("an unusable value falls back to Stripe, and unsetting it switches back", () => {
+    vi.stubEnv("STRIPE_SECRET_KEY", "sk_test_standin");
+    vi.stubEnv("APP_ENV", "local");
+    vi.stubEnv("STRIPE_API_BASE_URL", "not a url");
+    expect(field("host")).toBe("api.stripe.com");
+    vi.stubEnv("STRIPE_API_BASE_URL", "http://127.0.0.1:12111");
+    expect(field("host")).toBe("127.0.0.1");
+    vi.stubEnv("STRIPE_API_BASE_URL", "");
+    expect(field("host")).toBe("api.stripe.com");
+  });
+});

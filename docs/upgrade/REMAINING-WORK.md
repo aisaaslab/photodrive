@@ -18,7 +18,8 @@ Owner decisions of 2026-11-27 (new):
 - 2026-11-27: **S9-03 renewal reminder e-mails** done, shipped off (`REMINDERS_MODE=off`) with a dry-run mode for the owner to review (see `evidence/S9.md`).
 - 2026-11-27: **S9-02 billing page** done (all plan states, truthful lapse wording, shared payment list) and **English dates are US** everywhere (owner decision).
 - 2026-11-27: **S9-07 public copy** written (Terms section 7, three FAQ answers, six languages); waiting for the owner's review of the wording (checkbox stays `[~]` until then). The old landing's `TrustSection` card is left for S6-14.
-- Next, in order: S8-01 … S8-05.
+- 2026-11-27: **S8-01 admin Payments screen** done: totals per currency, needs-attention queue resolved in place (credit a customer, mark reviewed, re-sync), filters/search/drawer, every action audited (see `evidence/S8.md`).
+- Next, in order: S8-02 support inbox, S8-03 plans and promo codes, S8-04 overview and settings, S8-05 remove the old admin pages + permission matrix.
 
 ### Before turning on lapse enforcement (`GALLERY_LAPSE_ENFORCE=1`)
 1. S6-14 shipped (old landing and its "link stays live" card gone) or that card reworded.

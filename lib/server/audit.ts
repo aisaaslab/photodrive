@@ -10,7 +10,7 @@ import { createLogger } from "@/lib/server/log";
  * Entries are append-only and only the server can write them (Firestore rules deny every client access to `audit_log`). Secrets are never
  * stored: any field whose name looks like a password, token or secret is replaced by "[redacted]".
  */
-export type AuditTarget = "user" | "gallery" | "plan" | "promoCode" | "settings" | "message" | "admin";
+export type AuditTarget = "user" | "gallery" | "plan" | "promoCode" | "settings" | "message" | "admin" | "payment";
 
 export type AuditEntry = {
   /** The signed-in administrator (uid), or a script name such as "script:set-admin-claim". */

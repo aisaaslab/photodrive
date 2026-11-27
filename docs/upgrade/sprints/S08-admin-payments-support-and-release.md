@@ -8,7 +8,7 @@
 
 ## Tasks
 
-- [ ] **S8-01** · L · Payments: paginated list from `payments` + `stripe_events` with statuses (`paid`, `refunded`, `disputed`, `needs_review`), totals per currency, link to the Stripe dashboard, event history, and a **"re-sync this Checkout session"** action (`fulfilCheckoutSession` with `source: admin`) that writes an audit entry; **Needs attention** queue (unmatched, disputed, partial refunds).
+- [x] **S8-01** · L · Payments: paginated list from `payments` + `stripe_events` with statuses (`paid`, `refunded`, `disputed`, `needs_review`), totals per currency, link to the Stripe dashboard, event history, and a **"re-sync this Checkout session"** action (`fulfilCheckoutSession` with `source: admin`) that writes an audit entry; **Needs attention** queue (unmatched, disputed, partial refunds).
   - Files: `app/api/admin/payments/*`, `app/dashboard/admin/payments/*`
   - Done when: an operator can resolve a needs-review payment without leaving the page.
   - Refs: PAY-4, PAY-6

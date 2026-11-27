@@ -8,6 +8,10 @@ export function formatDate(ts: number | string | null | undefined): string {
   if (!ts) return "—";
   return new Date(ts).toLocaleDateString("en-US", { day: "2-digit", month: "short", year: "numeric" });
 }
+export function formatDateTime(ts: number | null | undefined): string {
+  if (!ts) return "—";
+  return new Date(ts).toLocaleString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" });
+}
 export const formatPaid = (cents: number | null, currency: string | null) => (cents === null ? "—" : formatMoney(cents, currency ?? "usd", "en-US"));
 
 export const SOURCE_LABEL = { admin: "Admin grant", free_code: "Free code", paid: "Paid" } as const;
