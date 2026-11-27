@@ -1,5 +1,6 @@
 "use client";
 
+import type { GalleryDoc } from "@/lib/firestore/types";
 import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { useLanguage } from "@/lib/i18n";
@@ -19,7 +20,7 @@ import { usePaymentPlans } from "./usePaymentPlans";
 export function useNewGalleryForm({
   onCreated, initialData, autoSubmit,
 }: {
-  onCreated: () => void;
+  onCreated: (gallery: GalleryDoc) => void;
   initialData?: NewGalleryInitial;
   /** After payment, auto-submit the restored form once the subscription is active. */
   autoSubmit?: boolean;
@@ -98,7 +99,7 @@ export function useNewGalleryForm({
       setDescription("");
       setEventDate("");
       setLocation("");
-      onCreated();
+      onCreated(data as GalleryDoc);
       return true;
     }
 

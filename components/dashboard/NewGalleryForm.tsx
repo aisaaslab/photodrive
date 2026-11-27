@@ -1,6 +1,7 @@
 "use client";
 
 import type { Visibility } from "@/lib/gallery/visibility";
+import type { GalleryDoc } from "@/lib/firestore/types";
 import { GalleryFields } from "./new-gallery/GalleryFields";
 import { VisibilityField } from "./new-gallery/VisibilityField";
 import { SocialLinksField } from "./new-gallery/SocialLinksField";
@@ -8,7 +9,7 @@ import { PaymentStep } from "./new-gallery/PaymentStep";
 import { useNewGalleryForm } from "./new-gallery/useNewGalleryForm";
 
 interface Props {
-  onCreated: () => void;
+  onCreated: (gallery: GalleryDoc) => void;
   onCancel?: () => void;
   initialData?: { name: string; driveUrl: string; password: string; visibility?: Visibility; website?: string; instagram?: string; facebook?: string; description?: string; eventDate?: string; location?: string };
   /** After payment, auto-submit the restored form once the subscription is active. */

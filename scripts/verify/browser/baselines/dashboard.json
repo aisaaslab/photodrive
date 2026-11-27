@@ -34,7 +34,7 @@
  ],
  "03 search nothing": {
   "titles": [],
-  "page": "EN T Welcome, Test 4 galleries Subscription: Yearly · until DATE (N days remaining) New Gallery Newest first Oldest first Name A→Z Name Z→A No gallery found with the name \"zzz-nothing\" No galleries yet No need to upload anything again. You use the Google Drive you already have. 1 Upload your photos & videos to Google Drive Use the Google Drive you already have — nothing new to learn. 2 Make the fo"
+  "page": "EN T Welcome, Test 4 galleries Subscription: Yearly · until DATE (N days remaining) New Gallery Newest first Oldest first Name A→Z Name Z→A All 4 Public 3 Private 1 New favourites 1 No gallery found with the name \"zzz-nothing\" No galleries yet No need to upload anything again. You use the Google Drive you already have. 1 Upload your photos & videos to Google Drive Use the Google Drive you already "
  },
  "04 sort Oldest first": [
   "Big gallery",
@@ -430,6 +430,7 @@
   },
   "toast": ""
  },
+ "36b new gallery: success dialog (link and share options)": "Gallery created My New Gallery Share this link with your client. Copy link Open gallery Send by e-mail Send on WhatsAppDone",
  "37 new gallery: private created": {
   "requests": [
    {
@@ -457,6 +458,7 @@
    ]
   }
  },
+ "37b new gallery: success dialog shows the password of a private gallery": "Gallery created My Private Gallery Share this link with your client. Copy link Password: my-secret-12 Open gallery Send by e-mail Send on WhatsAppDone",
  "38 signed out": {
   "url": "/login"
  },

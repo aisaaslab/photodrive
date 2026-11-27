@@ -8,6 +8,10 @@ import { useLanguage, LOCALES } from "@/lib/i18n";
 import { NewGalleryForm } from "@/components/dashboard/NewGalleryForm";
 import { GalleryList } from "@/components/dashboard/GalleryList";
 import { Modal } from "@/components/ui/Modal";
+import { GalleryCreatedModal } from "@/components/dashboard/GalleryCreatedModal";
+import { isPrivate } from "@/lib/gallery/visibility";
+import { hasNewSelections } from "@/lib/gallery/gallery-settings";
+import { cn, focusRing } from "@/lib/ui/cn";
 import { GalleryDoc } from "@/lib/firestore/types";
 import { useToast } from "@/components/ui/Toast";
 import { PaymentNotice } from "@/components/dashboard/PaymentNotice";
@@ -23,6 +27,8 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
   const [showForm, setShowForm] = useState(false);
+  const [createdGallery, setCreatedGallery] = useState<GalleryDoc | null>(null);
+  const [visibilityFilter, setVisibilityFilter] = useState<"all" | "public" | "private" | "new">("all");
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<SortOption>("newest");
   const toast = useToast();
@@ -131,9 +137,19 @@ export default function DashboardPage() {
     return true;
   }
 
+  // "New favourites" uses the same per-browser "last seen" marker as the card badge.
+  const seenAt = (id: string) => { try { return Number(localStorage.getItem(`pd_sel_seen_${id}`)) || 0; } catch { return 0; } };
+  const matchesFilter = (g: GalleryDoc) =>
+    visibilityFilter === "all" ? true :
+    visibilityFilter === "private" ? isPrivate(g) :
+    visibilityFilter === "public" ? !isPrivate(g) :
+    hasNewSelections(g, seenAt(g.id));
+  const newCount = galleries.filter((g) => hasNewSelections(g, seenAt(g.id))).length;
+  const privateCount = galleries.filter(isPrivate).length;
+
   const filteredAndSorted = useMemo(() => {
     let result = galleries.filter((g) =>
-      g.name.toLowerCase().includes(search.toLowerCase())
+      g.name.toLowerCase().includes(search.toLowerCase()) && matchesFilter(g)
     );
     switch (sort) {
       case "newest":
@@ -150,7 +166,7 @@ export default function DashboardPage() {
         break;
     }
     return result;
-  }, [galleries, search, sort]);
+  }, [galleries, search, sort, visibilityFilter]); // eslint-disable-line react-hooks/exhaustive-deps -- matchesFilter reads only these
 
   // Firestore profile is the source of truth — the user can edit their
   // display name in Account settings.
@@ -243,8 +259,9 @@ export default function DashboardPage() {
           }}
         >
           <NewGalleryForm
-            onCreated={() => {
+            onCreated={(created) => {
               loadGalleries();
+              if (created?.slug) setCreatedGallery(created);
               setShowForm(false);
               setPendingGallery(null);
               setRestoredFromPayment(false);
@@ -261,6 +278,8 @@ export default function DashboardPage() {
           />
         </Modal>
       )}
+
+      {createdGallery && <GalleryCreatedModal gallery={createdGallery} onClose={() => setCreatedGallery(null)} />}
 
       {/* Divider */}
       <div className="h-px bg-surface-2" />
@@ -308,6 +327,25 @@ export default function DashboardPage() {
       )}
 
       {/* Empty search result */}
+      {/* Filter chips: only worth showing when there is something to tell apart */}
+      {!loading && galleries.length > 1 && (privateCount > 0 || newCount > 0) && (
+        <div role="group" aria-label={t.dashboard.myGalleries} className="flex flex-wrap gap-2">
+          {([
+            ["all", t.gallery.filterAll, galleries.length],
+            ["public", t.galleryCard.publicBadge, galleries.length - privateCount],
+            ["private", t.galleryCard.visibilityPrivate, privateCount],
+            ...(newCount > 0 ? [["new", t.dashboard.filterNew, newCount] as const] : []),
+          ] as const).map(([id, label, count]) => (
+            <button
+              key={id} type="button" aria-pressed={visibilityFilter === id} onClick={() => setVisibilityFilter(id)}
+              className={cn("inline-flex h-9 items-center gap-2 rounded-pill border px-4 text-xs font-semibold transition-colors", visibilityFilter === id ? "border-accent bg-accent-soft text-accent" : "border-line bg-surface text-fg-soft hover:border-fg-muted/40 hover:text-fg", focusRing)}
+            >
+              {label}<span className="text-fg-muted">{count}</span>
+            </button>
+          ))}
+        </div>
+      )}
+
       {!loading && search && filteredAndSorted.length === 0 && galleries.length > 0 && (
         <div className="text-center py-12">
           <p className="text-fg-muted text-sm">{t.dashboard.noResults} &quot;{search}&quot;</p>

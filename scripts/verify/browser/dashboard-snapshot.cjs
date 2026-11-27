@@ -250,6 +250,10 @@ const clean = (s) => String(s ?? "").replace(/\s+/g, " ").replace(/\d{1,2} [A-Z]
   await page.click("button:has-text('Create Gallery')");
   await page.waitForTimeout(1500);
   step("36 new gallery: public created", { requests: takeRequests(), titles: await titles(), header: await headerFacts(), toast: await toastText() });
+  // The success dialog: the link, ways to send it, and Done
+  step("36b new gallery: success dialog (link and share options)", clean(await dialog().innerText()).replace(/https?:\/\/\S+/g, "URL"));
+  await dialog().locator("button:has-text('Done')").click();
+  await page.waitForTimeout(300);
   await clearToasts();
   await page.click("button:has-text('New Gallery')");
   await page.waitForTimeout(300);
@@ -260,6 +264,9 @@ const clean = (s) => String(s ?? "").replace(/\s+/g, " ").replace(/\d{1,2} [A-Z]
   await page.click("button:has-text('Create Gallery')");
   await page.waitForTimeout(1500);
   step("37 new gallery: private created", { requests: takeRequests(), titles: await titles(), header: await headerFacts() });
+  step("37b new gallery: success dialog shows the password of a private gallery", clean(await dialog().innerText()).replace(/https?:\/\/\S+/g, "URL"));
+  await dialog().locator("button:has-text('Done')").click();
+  await page.waitForTimeout(300);
 
   // ---- sign out
   await page.click('header button[aria-haspopup="menu"]');

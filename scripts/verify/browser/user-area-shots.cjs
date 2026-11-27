@@ -56,6 +56,12 @@ async function login(page, email) {
     await page.locator("[role=menu] >> text=Edit").click(); await dialogShot("settings");
     await page.getByRole("button", { name: /New Gallery/ }).first().click(); await page.waitForTimeout(500);
     await page.screenshot({ path: `${SHOT}/ua-newgallery-${w}.png`, fullPage: true }); await audit(page, `new gallery form ${w}`);
+    await page.fill('input[placeholder^="e.g. Anna"]', "Shots gallery");
+    await page.fill('input[placeholder^="https://drive"]', "https://drive.google.com/drive/folders/1AbCdEfGhIjKlMnOpQrStUvWxYz012345");
+    await page.click("button:has-text('Create Gallery')");
+    await page.waitForSelector('[role="dialog"]:has-text("Gallery created")', { timeout: 8000 }).catch(() => {});
+    await page.waitForTimeout(400);
+    await page.screenshot({ path: `${SHOT}/ua-created-${w}.png` }); await audit(page, `gallery created dialog ${w}`);
     await page.reload({ waitUntil: "load" }); await page.waitForSelector('button[aria-label="More"]');
     await page.locator("button:has-text('Favori')").first().click(); await dialogShot("favourites");
     await page.goto(`${BASE}/dashboard/account`, { waitUntil: "load" }); await page.waitForTimeout(1500);
