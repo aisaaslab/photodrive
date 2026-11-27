@@ -159,7 +159,7 @@ export const nl: Translations = {
     subscription: "Abonnement:",
     daysLeft: "dagen resterend",
     newGallery: "Nieuwe galerij",
-    searchPlaceholder: "Galerij zoeken...", filterNew: "Nieuwe favorieten",
+    searchPlaceholder: "Galerij zoeken...", filterNew: "Nieuwe favorieten", viewCards: "Kaarten", viewList: "Lijst", viewLabel: "Weergave van galerijen",
     sortNewest: "Nieuwste eerst",
     sortOldest: "Oudste eerst",
     sortNameAZ: "Naam A→Z",

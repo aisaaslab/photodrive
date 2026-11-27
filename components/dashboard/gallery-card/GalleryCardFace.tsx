@@ -14,6 +14,8 @@ import { usePopoverMenu } from "./usePopoverMenu";
 
 interface Props {
   gallery: GalleryDoc;
+  /** One compact row: a small cover on the left, the details and actions on the right (from `sm` up; on a phone it stacks like a card). */
+  compact?: boolean;
   copied: boolean;
   /** The client has new favourites or a new submission since the photographer last looked. */
   hasNewSelections: boolean;
@@ -27,8 +29,13 @@ interface Props {
 const menuItemCls =
   "w-full flex items-center gap-2.5 px-3 py-2 text-xs text-left text-fg-soft hover:bg-white/[0.07] hover:text-fg transition-colors";
 
+/** The name / date / stats block. In the compact row it is one flexible column; in a card it adds no element of its own. */
+function Info({ compact, children }: { compact: boolean; children: React.ReactNode }) {
+  return compact ? <div className="sm:min-w-0 sm:flex-1 sm:basis-56">{children}</div> : <>{children}</>;
+}
+
 /** What a gallery looks like in the dashboard list: cover, name, visibility badge (with a password reminder), and its actions. */
-export function GalleryCardFace({ gallery, copied, hasNewSelections, onChooseCover, onCopyLink, onOpenSelections, onEdit, onDelete }: Props) {
+export function GalleryCardFace({ gallery, compact = false, copied, hasNewSelections, onChooseCover, onCopyLink, onOpenSelections, onEdit, onDelete }: Props) {
   const { t, lang } = useLanguage();
   const c = t.galleryCard;
   const [showPassword, setShowPassword] = useState(false);
@@ -40,11 +47,11 @@ export function GalleryCardFace({ gallery, copied, hasNewSelections, onChooseCov
     : null;
 
   return (
-  <div className="bg-surface border border-line rounded-card overflow-hidden hover:border-white/[0.18] transition-all duration-200 group animate-fade-up">
+  <div className={`bg-surface border border-line rounded-card overflow-hidden hover:border-white/[0.18] transition-all duration-200 group animate-fade-up ${compact ? "sm:flex sm:items-stretch" : ""}`}>
           {/* Cover banner — shows the chosen cover photo, or a branded
               gradient if no cover is set. Clicking it opens the cover
               picker directly (no need to enter edit mode first). */}
-          <div className="relative h-32 w-full overflow-hidden">
+          <div className={`relative w-full overflow-hidden ${compact ? "h-24 sm:h-auto sm:w-44 sm:shrink-0" : "h-32"}`}>
             <a
               href={galleryUrl(gallery)} target="_blank" rel="noopener noreferrer" aria-label={`${t.gallery.open}: ${gallery.name}`} tabIndex={-1}
               className="absolute inset-0 block"
@@ -87,7 +94,8 @@ export function GalleryCardFace({ gallery, copied, hasNewSelections, onChooseCov
           </div>
 
           {/* Card body */}
-          <div className="p-4">
+          <div className={compact ? "p-4 sm:min-w-0 sm:flex-1 sm:flex sm:flex-wrap sm:items-center sm:gap-x-6 sm:gap-y-2" : "p-4"}>
+            <Info compact={compact}>
             <div className="flex items-center gap-2 mb-0.5">
               <h3 className="font-semibold text-fg text-sm leading-snug truncate flex-1">{gallery.name}</h3>
               {isPrivate(gallery) ? (
@@ -117,13 +125,14 @@ export function GalleryCardFace({ gallery, copied, hasNewSelections, onChooseCov
             )}
             <GalleryAvailabilityLine gallery={gallery} />
             <GalleryStatsLine stats={gallery.stats} />
-            <div className="mb-4" />
+            </Info>
+            <div className={compact ? "mb-4 sm:mb-0" : "mb-4"} />
 
             {/* Copy link — primary action, full width so it's the obvious
                 thing to click after creating a gallery. */}
             <button
               onClick={onCopyLink}
-              className={`w-full flex items-center justify-center gap-1.5 text-xs rounded-pill py-2.5 transition-all font-semibold border ${
+              className={`${compact ? "sm:w-auto sm:px-5 " : ""}w-full flex items-center justify-center gap-1.5 text-xs rounded-pill py-2.5 transition-all font-semibold border ${
                 copied
                   ? "border-emerald-500/30 bg-emerald-500/10 text-success-bright"
                   : "bg-accent text-canvas border-transparent hover:brightness-110"
@@ -148,29 +157,29 @@ export function GalleryCardFace({ gallery, copied, hasNewSelections, onChooseCov
 
     {/* Secondary actions. Two labeled buttons (icons alone aren't
         discoverable on touch) + a "more" menu for the rarer ones. */}
-    <div className="mt-2 flex gap-2">
+    <div className={`flex flex-wrap gap-2 ${compact ? "mt-2 sm:mt-0" : "mt-2"}`}>
       <a
         href={galleryUrl(gallery)}
         target="_blank"
         rel="noopener noreferrer"
         title={c.openGallery}
-        className="flex-1 min-w-0 flex items-center justify-center gap-1.5 py-2 px-2 text-xs font-medium text-fg-soft hover:text-fg border border-line hover:border-fg-muted/30 hover:bg-surface-2 rounded-lg transition-colors"
+        className="flex-1 min-w-[6.5rem] flex items-center justify-center gap-1.5 py-2 px-2 text-xs font-medium text-fg-soft hover:text-fg border border-line hover:border-fg-muted/30 hover:bg-surface-2 rounded-lg transition-colors"
       >
         <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
         </svg>
-        <span className="truncate">{t.gallery.open}</span>
+        <span className="whitespace-nowrap">{t.gallery.open}</span>
       </a>
 
       <button
         onClick={onOpenSelections}
         title={c.selections}
-        className="relative flex-1 min-w-0 flex items-center justify-center gap-1.5 py-2 px-2 text-xs font-medium text-fg-soft hover:text-accent border border-line hover:border-accent/40 hover:bg-accent-deep/15 rounded-lg transition-colors"
+        className="relative flex-1 min-w-[6.5rem] flex items-center justify-center gap-1.5 py-2 px-2 text-xs font-medium text-fg-soft hover:text-accent border border-line hover:border-accent/40 hover:bg-accent-deep/15 rounded-lg transition-colors"
       >
         <svg className="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill={(gallery.selectionCount ?? 0) > 0 ? "currentColor" : "none"} stroke="currentColor" strokeWidth={2}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
         </svg>
-        <span className="truncate">{t.gallery.filterFavorites}</span>
+        <span className="whitespace-nowrap">{t.gallery.filterFavorites}</span>
         {(gallery.selectionCount ?? 0) > 0 && (
           <span
             className={`shrink-0 min-w-[1.25rem] h-5 px-1 rounded-full text-[10px] font-bold flex items-center justify-center ${

@@ -5,6 +5,8 @@ import { GalleryCard } from "./GalleryCard";
 import { useLanguage } from "@/lib/i18n";
 
 interface Props {
+  /** "cards" (default): a grid of cards with a cover banner. "list": one compact row per gallery. */
+  density?: "cards" | "list";
   galleries: GalleryDoc[];
   /** Opens the new-gallery form; shown as the main button of the empty state. */
   onCreate?: () => void;
@@ -12,7 +14,7 @@ interface Props {
   onUpdate: (updated: GalleryDoc) => void;
 }
 
-export function GalleryList({ galleries, onCreate, onDelete, onUpdate }: Props) {
+export function GalleryList({ density = "cards", galleries, onCreate, onDelete, onUpdate }: Props) {
   const { t } = useLanguage();
 
   if (galleries.length === 0) {
@@ -45,9 +47,9 @@ export function GalleryList({ galleries, onCreate, onDelete, onUpdate }: Props) 
   }
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 stagger-children">
+    <div data-ui="gallery-list" data-density={density} className={density === "list" ? "flex flex-col gap-3 stagger-children" : "grid gap-4 sm:grid-cols-2 lg:grid-cols-3 stagger-children"}>
       {galleries.map((g) => (
-        <GalleryCard key={g.id} gallery={g} onDelete={onDelete} onUpdate={onUpdate} />
+        <GalleryCard key={g.id} compact={density === "list"} gallery={g} onDelete={onDelete} onUpdate={onUpdate} />
       ))}
     </div>
   );

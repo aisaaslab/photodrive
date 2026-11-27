@@ -15,6 +15,8 @@ import { useGallerySelections } from "./gallery-card/useGallerySelections";
 
 interface Props {
   gallery: GalleryDoc;
+  /** One compact row instead of a card. */
+  compact?: boolean;
   onDelete: (id: string) => void | boolean | Promise<void | boolean>;
   onUpdate: (updated: GalleryDoc) => void;
 }
@@ -24,7 +26,7 @@ interface Props {
  * face, the settings dialog (its values and Save in useGallerySettings, its rules in lib/gallery/gallery-settings.ts), the client's
  * favourites panel (useGallerySelections), and the delete confirmation. This file holds the few things they share.
  */
-export function GalleryCard({ gallery, onDelete, onUpdate }: Props) {
+export function GalleryCard({ gallery, compact = false, onDelete, onUpdate }: Props) {
   const { t } = useLanguage();
   const c = t.galleryCard;
   const toast = useToast();
@@ -54,6 +56,7 @@ export function GalleryCard({ gallery, onDelete, onUpdate }: Props) {
     <>
       <GalleryCardFace
         gallery={gallery}
+        compact={compact}
         copied={copied}
         hasNewSelections={selections.hasNew}
         onChooseCover={() => setShowCoverPicker(true)}

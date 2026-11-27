@@ -84,8 +84,7 @@ native review of draft translations, copy review (S3-13), measurements that need
    Evidence: `evidence/S5.md` (S5-12 section). axe is clean on 15 screens at 1280 and 390.
 
    *Still to do, in priority order (each is a real UX improvement, not a restyle; check every one with the snapshots and `user-area-shots.cjs`):*
-   1. **Dashboard list (cards, filter chips and the "gallery created" dialog are done):** grid/list density choice, better phone layout of the card actions (the
-      Favorites button truncates its label at 3 columns).
+   1. ~~Dashboard list~~ done (cards, filter chips, "gallery created" dialog, cards/list density switch, phone card actions keep their labels).
    2. ~~Account page layout~~ done (see above); still open there: show invoice links and payment status per payment more clearly.
    3. **Subscribe and thank-you pages:** plan cards in the landing style when several plans exist, clearer renewal wording (extends access to a date), progress/awaiting states.
    4. **Client gallery** (favourites tip done): hero and header polish (photographer identity, share); the lightbox top bar is already phone-friendly (icon buttons of 40 px, one-line counter, fullscreen hidden on phones), still open: swipe hints and loading states

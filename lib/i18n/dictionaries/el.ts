@@ -171,7 +171,7 @@ export const el: Translations = {
     subscription: "Συνδρομή:",
     daysLeft: "ημέρες απομένουν",
     newGallery: "Νέα Gallery",
-    searchPlaceholder: "Αναζήτηση gallery...", filterNew: "Νέα αγαπημένα",
+    searchPlaceholder: "Αναζήτηση gallery...", filterNew: "Νέα αγαπημένα", viewCards: "Κάρτες", viewList: "Λίστα", viewLabel: "Προβολή γκαλερί",
     sortNewest: "Νεότερα πρώτα",
     sortOldest: "Παλαιότερα πρώτα",
     sortNameAZ: "Όνομα Α→Ω",

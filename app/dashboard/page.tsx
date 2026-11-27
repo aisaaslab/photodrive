@@ -42,6 +42,15 @@ export default function DashboardPage() {
       if (saved && ["newest", "oldest", "name_asc", "name_desc"].includes(saved)) setSort(saved);
     } catch {}
   }, []);
+  // Cards (default) or a compact list; remembered between visits.
+  const [density, setDensity] = useState<"cards" | "list">("cards");
+  useEffect(() => {
+    try { if (localStorage.getItem("dashboard_density") === "list") setDensity("list"); } catch {}
+  }, []);
+  function changeDensity(next: "cards" | "list") {
+    setDensity(next);
+    try { localStorage.setItem("dashboard_density", next); } catch {}
+  }
   function changeSort(next: SortOption) {
     setSort(next);
     try { localStorage.setItem("dashboard_sort", next); } catch {}
@@ -335,6 +344,18 @@ export default function DashboardPage() {
             <option value="name_asc">{t.dashboard.sortNameAZ}</option>
             <option value="name_desc">{t.dashboard.sortNameZA}</option>
           </select>
+
+          {/* Layout: cards or a compact list. Hidden on a phone, where both stack the same way and the search needs the room. */}
+          <div role="group" aria-label={t.dashboard.viewLabel} className="hidden shrink-0 overflow-hidden rounded-xl border border-line bg-surface sm:flex">
+            {([["cards", t.dashboard.viewCards, "M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"], ["list", t.dashboard.viewList, "M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"]] as const).map(([id, label, icon]) => (
+              <button
+                key={id} type="button" data-ui={`density-${id}`} aria-pressed={density === id} aria-label={label} title={label} onClick={() => changeDensity(id)}
+                className={cn("grid size-[2.6rem] place-items-center transition-colors", density === id ? "bg-accent-soft text-accent" : "text-fg-muted hover:text-fg", focusRing)}
+              >
+                <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8} aria-hidden><path strokeLinecap="round" strokeLinejoin="round" d={icon} /></svg>
+              </button>
+            ))}
+          </div>
         </div>
       )}
 
@@ -389,7 +410,7 @@ export default function DashboardPage() {
           ))}
         </div>
       ) : !loadError ? (
-        <GalleryList galleries={filteredAndSorted} onCreate={() => setShowForm(true)} onDelete={handleDelete} onUpdate={handleUpdate} />
+        <GalleryList density={density} galleries={filteredAndSorted} onCreate={() => setShowForm(true)} onDelete={handleDelete} onUpdate={handleUpdate} />
       ) : null}
     </div>
   );

@@ -158,7 +158,7 @@ export const en = {
     daysLeft: "days remaining",
     newGallery: "New Gallery",
     searchPlaceholder: "Search gallery...",
-    filterNew: "New favourites",
+    filterNew: "New favourites", viewCards: "Cards", viewList: "List", viewLabel: "Gallery layout",
     sortNewest: "Newest first",
     sortOldest: "Oldest first",
     sortNameAZ: "Name A→Z",
