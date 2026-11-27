@@ -1,6 +1,6 @@
 You are helping me install and deploy a Next.js 16 SaaS application called
 PhotoDrive that I have just purchased. I am not a developer. The complete
-documentation is in README.md in this folder — read it before you start,
+documentation is in docs/SETUP-GUIDE.md in this folder — read it before you start,
 especially Steps 1 through 18.
 
 HOW TO WORK WITH ME
