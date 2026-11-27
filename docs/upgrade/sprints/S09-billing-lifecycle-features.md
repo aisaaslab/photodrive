@@ -14,7 +14,7 @@
 - [ ] **S9-02** · M · Billing page `/dashboard/billing`: current plan, expiry, status, payment history, invoice links, renew/upgrade button, and a clear "what happens when your plan lapses" block that states the D3 behaviour; links from Account.
   - Files: `app/dashboard/billing/page.tsx`, `app/dashboard/account/page.tsx`
   - Done when: states for active, expiring, in grace, lapsed, comped/lifetime all render correctly in six languages.
-- [ ] **S9-03** · M · Reminder engine: daily cron `/api/cron/reminders` finds users expiring in 14 and 3 days, plus a lapsed notice; idempotent through `users.remindersSent` keyed by the expiry date; emails via `sendEmail` in the user's language; excludes lifetime/comped; tests with a fake clock.
+- [x] **S9-03** · M · Reminder engine: daily cron `/api/cron/reminders` finds users expiring in 14 and 3 days, plus a lapsed notice; idempotent through `users.remindersSent` keyed by the expiry date; emails via `sendEmail` in the user's language; excludes lifetime/comped; tests with a fake clock.
   - Files: `app/api/cron/reminders/route.ts`, `lib/server/reminders.ts`, `lib/email.ts`, `vercel.json`
   - Done when: running the job twice sends once; test account receives all three emails on a simulated timeline.
   - Refs: F1
