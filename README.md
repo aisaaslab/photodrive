@@ -1,12 +1,12 @@
-# Flow Drive
+# PhotoDrive
 
 **Turn any Google Drive folder into a private, professional photo gallery for your clients.**
 
-Flow Drive is a subscription web app for photographers, studios and event shooters. The photographer pastes a Google Drive folder link and gets a shareable gallery. The client opens the link with no account and no signup, browses full screen, marks favourites and downloads. The photographer sees exactly which photos were chosen.
+PhotoDrive is a subscription web app for photographers, studios and event shooters. The photographer pastes a Google Drive folder link and gets a shareable gallery. The client opens the link with no account and no signup, browses full screen, marks favourites and downloads. The photographer sees exactly which photos were chosen.
 
 **The photos never leave the photographer's own Google Drive.** There is no re-upload, no storage bill and no third party holding the client's files: images are served from Google, or through the app's own protected delivery for private galleries.
 
-> **Name.** Flow Drive is the product name. The source still carries the working name "PhotoDrive" in its built-in copy (about 160 places) and as the fallback of `APP_NAME` in `lib/branding.ts`. Set `NEXT_PUBLIC_APP_NAME="Flow Drive"` to change what is read dynamically (page titles, header, social preview); the marketing copy needs the one-time project-wide find and replace described in [Step 14 of the setup guide](docs/SETUP-GUIDE.md).
+> **White-label.** "PhotoDrive" is the default product name. To ship under your own brand, set `NEXT_PUBLIC_APP_NAME` (page titles, header, social preview) and do the one-time project-wide find and replace described in [Step 14 of the setup guide](docs/SETUP-GUIDE.md) for the marketing copy.
 
 ---
 
