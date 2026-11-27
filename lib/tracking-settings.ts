@@ -2,6 +2,7 @@ import "server-only";
 // Server-only helper (import from server components / API routes only).
 import { unstable_cache } from "next/cache";
 import { siteSettingsDoc } from "@/lib/server/repos/collections";
+import { checkTrackingId, type TrackingField } from "@/lib/shared/site-rules";
 
 /** Cache tag — bust it after saving so changes reach the site right away. */
 export const SITE_SETTINGS_TAG = "site-settings";
@@ -20,28 +21,16 @@ export type TrackingIds = {
   metaPixelId: string;
 };
 
-export type TrackingField = keyof TrackingIds;
-
-const PATTERNS: Record<TrackingField, { re: RegExp; label: string; example: string }> = {
-  gtmId: { re: /^GTM-[A-Z0-9]{4,12}$/, label: "Google Tag Manager ID", example: "GTM-XXXXXXX" },
-  googleAdsId: { re: /^AW-\d{6,15}$/, label: "Google Ads tag ID", example: "AW-123456789" },
-  metaPixelId: { re: /^\d{10,20}$/, label: "Meta Pixel ID", example: "1234567890123456" },
-};
+export type { TrackingField };
 
 /**
- * Validates one tracking ID. Empty string is valid and means "disabled".
- * Only the bare ID is accepted — never pasted script — so a compromised admin
- * session can't inject arbitrary JavaScript into every visitor's page.
+ * Validates one tracking ID (the rules are in lib/shared/site-rules.ts, shared with the Settings form). Empty string is valid and means
+ * "disabled". Throws a message the caller can return as a 400.
  */
 export function validateTrackingId(field: TrackingField, value: unknown): string {
-  const v = String(value ?? "").trim();
-  if (v === "") return "";
-  const { re, label, example } = PATTERNS[field];
-  const normalized = field === "metaPixelId" ? v : v.toUpperCase();
-  if (!re.test(normalized)) {
-    throw new Error(`${label} looks invalid. Expected something like ${example}, or leave empty to disable.`);
-  }
-  return normalized;
+  const r = checkTrackingId(field, value);
+  if (!r.ok) throw new Error(r.error);
+  return r.value;
 }
 
 const DEFAULTS: TrackingIds = {

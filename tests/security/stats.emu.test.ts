@@ -9,7 +9,7 @@ vi.mock("@/lib/firebase/admin", async () => {
   return { getAdminDb: db.testDb, getAdminAuth: db.testAuth };
 });
 
-const { computeOverview, readOverview, recomputeOverview, OVERVIEW_TTL_MS } = await import("@/lib/server/repos/stats");
+const { computeOverview, readOverview, recomputeOverview, OVERVIEW_TTL_MS, REFRESH_MIN_AGE_MS } = await import("@/lib/server/repos/stats");
 const { GET: statsRoute } = await import("@/app/api/admin/stats/route");
 const { GET: cron } = await import("@/app/api/cron/stats-recompute/route");
 
@@ -130,5 +130,50 @@ describe("the endpoints", () => {
   it("the cron endpoint refuses to run without CRON_SECRET", async () => {
     vi.stubEnv("CRON_SECRET", "");
     expect((await cron(new NextRequest("http://localhost/api/cron/stats-recompute"))).status).toBe(500);
+  });
+});
+
+describe("revenue per currency in the right units (S8-04)", () => {
+  const pay = (id: string, amountTotal: number, currency: string) => testDb().collection("payments").doc(id).set({ amountTotal, currency, activatedAt: NOW - DAY });
+
+  it("a zero-decimal currency is not divided by 100 (¥4,800 is 4800), and the exact minor-unit figures are kept", async () => {
+    await pay("a", 9900, "usd");
+    await pay("b", 8900, "eur");
+    await pay("c", 4800, "jpy");
+    const { stats } = await computeOverview(testDb(), NOW);
+    expect(stats.revenueByCurrency).toEqual({ usd: 99, eur: 89, jpy: 4800 });
+    expect(stats.revenueMinor).toEqual({ usd: 9900, eur: 8900, jpy: 4800 });
+  });
+
+  it("a currency nobody paid in is absent, not zero", async () => {
+    const { stats } = await computeOverview(testDb(), NOW);
+    expect(stats.revenueMinor).toEqual({});
+  });
+});
+
+describe("refreshing the overview on demand", () => {
+  it("recomputes only when the stored numbers are at least 30 seconds old; without a refresh it waits for the ten-minute cache", async () => {
+    await seed();
+    const first = await readOverview(testDb(), NOW);
+    expect(first.cached).toBe(false);
+    const tooSoon = await readOverview(testDb(), NOW + REFRESH_MIN_AGE_MS - 1000, { refresh: true });
+    expect(tooSoon.cached).toBe(true);
+    expect(tooSoon.overview.computedAt).toBe(NOW);
+    const later = await readOverview(testDb(), NOW + REFRESH_MIN_AGE_MS + 1000, { refresh: true });
+    expect(later.cached).toBe(false);
+    expect(later.overview.computedAt).toBe(NOW + REFRESH_MIN_AGE_MS + 1000);
+    const noRefresh = await readOverview(testDb(), NOW + REFRESH_MIN_AGE_MS + 61_000);
+    expect(noRefresh.cached).toBe(true); // well inside the ten minutes
+  });
+
+  it("the endpoint honours ?refresh=1 for an administrator", async () => {
+    await seed();
+    vi.spyOn(testAuth(), "verifyIdToken").mockImplementation((async () => ({ uid: "boss" })) as never);
+    await testDb().collection("system_state").doc("stats-overview").set({ ...(await computeOverview(testDb(), Date.now() - 120_000)) });
+    const call = (q = "") => statsRoute(new NextRequest(`http://localhost/api/admin/stats${q}`, { headers: { authorization: "Bearer t" } }));
+    expect((await (await call()).json()).cached).toBe(true);
+    const forced = await (await call("?refresh=1")).json();
+    expect(forced.cached).toBe(false);
+    expect(Date.now() - forced.computedAt).toBeLessThan(10_000);
   });
 });

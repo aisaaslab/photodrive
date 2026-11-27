@@ -4,13 +4,14 @@ import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/components/auth/AuthProvider";
+import { useAttention } from "@/components/admin/useAttention";
 
-const TABS = [
+const TABS: { href: string; label: string; badge?: "payments" | "support" }[] = [
   { href: "/dashboard/admin", label: "Overview" },
   { href: "/dashboard/admin/users", label: "Users" },
   { href: "/dashboard/admin/galleries", label: "Galleries" },
-  { href: "/dashboard/admin/payments", label: "Payments" },
-  { href: "/dashboard/admin/support", label: "Support" },
+  { href: "/dashboard/admin/payments", label: "Payments", badge: "payments" },
+  { href: "/dashboard/admin/support", label: "Support", badge: "support" },
   { href: "/dashboard/admin/plans", label: "Plans" },
   { href: "/dashboard/admin/promo-codes", label: "Promo codes" },
   { href: "/dashboard/admin/settings", label: "Settings" },
@@ -28,6 +29,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const pathname = usePathname();
   const [checking, setChecking] = useState(true);
   const [allowed, setAllowed] = useState(false);
+  const attention = useAttention();
 
   useEffect(() => {
     if (loading) return;
@@ -80,6 +82,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 }`}
               >
                 {tab.label}
+                {(() => {
+                  const n = tab.badge === "payments" ? attention?.payments : tab.badge === "support" ? attention?.supportUnread : 0;
+                  return n ? (
+                    <span className={`relative ml-1.5 inline-flex min-w-5 items-center justify-center rounded-full px-1.5 text-[11px] font-bold tabular-nums ${active ? "bg-canvas text-accent" : "bg-amber-500/20 text-amber-300"}`}>
+                      {n > 99 ? "99+" : n}
+                      <span className="sr-only"> {tab.badge === "payments" ? "to review" : "unread"}</span>
+                    </span>
+                  ) : null;
+                })()}
               </Link>
             );
           })}

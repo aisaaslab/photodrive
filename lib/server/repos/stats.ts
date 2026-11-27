@@ -4,6 +4,7 @@ import { getAdminAuth, getAdminDb } from "@/lib/firebase/admin";
 import { listAllPlans } from "@/lib/plans";
 import { galleriesCol, paymentsCol, systemStateDoc, usersCol } from "./collections";
 import { toMs } from "@/lib/server/migrations/restore-created-at";
+import { fromMinorUnits } from "@/lib/shared/money";
 
 /**
  * The numbers on the admin overview (S7-04, SEC-5). The old endpoint read every user, gallery and payment on every page view and
@@ -31,8 +32,10 @@ export type Overview = {
     totalUsers: number; newUsers7d: number; newUsers30d: number;
     activeSubscriptions: number; monthlySubscriptions: number; yearlySubscriptions: number; compSubscriptions: number;
     freeCodeSignups: number; totalGalleries: number; newGalleries30d: number;
-    /** Major units per currency, e.g. { usd: 1234.5, eur: 99 }. */
+    /** Major units per currency, e.g. { usd: 1234.5, eur: 99, jpy: 4800 } (a yen is a major unit: not divided by 100). */
     revenueByCurrency: Record<string, number>;
+    /** The same in each currency's minor units (cents, or whole yen), exactly as Stripe reports them: what `formatMoney` wants. */
+    revenueMinor: Record<string, number>;
     /** Kept for the existing overview page: the USD figure. */
     revenueUsd: number;
     paymentCount: number; expiringSoonCount: number; planCount: number; publicPlanCount: number;
@@ -96,10 +99,14 @@ export async function computeOverview(db: Firestore = getAdminDb(), now = Date.n
   for (const p of plans) if (p.currency) currencies.add(p.currency.toLowerCase());
   for (const d of recentPayments.docs) { const c = d.get("currency"); if (typeof c === "string" && c) currencies.add(c.toLowerCase()); }
   const revenueByCurrency: Record<string, number> = {};
+  const revenueMinor: Record<string, number> = {};
   for (const currency of currencies) {
     const sum = await payments.where("currency", "==", currency).aggregate({ total: AggregateField.sum("amountTotal") }).get();
-    const total = Number(sum.data().total ?? 0);
-    if (total > 0) revenueByCurrency[currency] = Math.round(total) / 100; // minor units; zero-decimal currencies are handled when displaying (PAY-6)
+    const total = Math.round(Number(sum.data().total ?? 0));
+    if (total > 0) {
+      revenueMinor[currency] = total;
+      revenueByCurrency[currency] = fromMinorUnits(total, currency); // by the currency's own minor unit: ¥4,800 is 4800, not 48 (PAY-6)
+    }
   }
 
   const recent = await users.orderBy("createdAt", "desc").limit(5).select("name", "createdAt", "subscriptionStatus", "subscriptionExpiresAt").get();
@@ -113,7 +120,7 @@ export async function computeOverview(db: Firestore = getAdminDb(), now = Date.n
     computedAt: now,
     stats: {
       totalUsers, newUsers7d, newUsers30d, activeSubscriptions: active.length, monthlySubscriptions: monthly, yearlySubscriptions: yearly, compSubscriptions: comp,
-      freeCodeSignups, totalGalleries, newGalleries30d, revenueByCurrency, revenueUsd: revenueByCurrency.usd ?? 0, paymentCount: paidCount,
+      freeCodeSignups, totalGalleries, newGalleries30d, revenueByCurrency, revenueMinor, revenueUsd: revenueByCurrency.usd ?? 0, paymentCount: paidCount,
       expiringSoonCount: expiring.length, planCount: plans.length, publicPlanCount: plans.filter((p) => p.active && p.isPublic).length,
     },
     expiringSoon: expiringTop.map((x) => ({ ...person(x.id, x.name), expiresAt: x.at, daysLeft: Math.max(0, Math.ceil((x.at - now) / DAY)), planName: x.planName })),
@@ -134,10 +141,18 @@ export async function recomputeOverview(db: Firestore = getAdminDb(), now = Date
   return overview;
 }
 
-/** The stored overview if it is younger than ten minutes, otherwise a fresh one (which is stored). One document read in the common case. */
-export async function readOverview(db: Firestore = getAdminDb(), now = Date.now()): Promise<{ overview: Overview; cached: boolean }> {
+/** A forced refresh is ignored when the stored numbers are younger than this, so the button cannot be used to hammer the database. */
+export const REFRESH_MIN_AGE_MS = 30 * 1000;
+
+/**
+ * The stored overview if it is younger than ten minutes, otherwise a fresh one (which is stored). One document read in the common case.
+ * `refresh` asks for a recompute now, unless the stored numbers are under 30 seconds old.
+ */
+export async function readOverview(db: Firestore = getAdminDb(), now = Date.now(), opts: { refresh?: boolean } = {}): Promise<{ overview: Overview; cached: boolean }> {
   const snap = await overviewDoc(db).get();
   const stored = snap.exists ? (snap.data() as Overview) : null;
-  if (stored && typeof stored.computedAt === "number" && now - stored.computedAt < OVERVIEW_TTL_MS) return { overview: stored, cached: true };
+  const age = stored && typeof stored.computedAt === "number" ? now - stored.computedAt : Infinity;
+  const wanted = opts.refresh ? REFRESH_MIN_AGE_MS : OVERVIEW_TTL_MS;
+  if (stored && age < wanted) return { overview: stored, cached: true };
   return { overview: await recomputeOverview(db, now), cached: false };
 }
