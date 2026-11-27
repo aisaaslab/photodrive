@@ -18,7 +18,7 @@
 - [x] **S7-03** · M · Audit log: `audit_log` collection, `writeAudit()`; wrap every admin mutation (assign plan, grant, revoke, delete user, plan and promo CRUD, settings, gallery disable).
   - Files: `lib/server/audit.ts`, all `app/api/admin/*`
   - Done when: each admin action creates an entry with actor, target, before/after (tests).
-- [ ] **S7-04** · L · Stored counters: `stats/overview` (users, active subscriptions, galleries, `revenueByCurrency{}`, payments) updated incrementally on user/gallery/payment events, nightly recompute cron as truth; use Firestore `count()` where cheap; replace the full-scan stats endpoint; revenue reported **per currency**.
+- [x] **S7-04** · L · Stored counters: `stats/overview` (users, active subscriptions, galleries, `revenueByCurrency{}`, payments) updated incrementally on user/gallery/payment events, nightly recompute cron as truth; use Firestore `count()` where cheap; replace the full-scan stats endpoint; revenue reported **per currency**.
   - Files: `lib/server/repos/stats.ts`, `app/api/admin/stats/route.ts`, `app/api/cron/stats-recompute/route.ts`
   - Done when: counters match a full recompute on staging data; the endpoint reads one document.
   - Refs: SEC-5, PAY-6
