@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { useLanguage } from "@/lib/i18n";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { Logo } from "@/components/ui/Logo";
 import { trackPurchase } from "@/lib/tracking";
 
 const MAX_TRIES = 40; // 40 × 1.5s ≈ 60s — the webhook is normally <5s but this
@@ -150,7 +151,7 @@ function ThankYouContent() {
     <main className="min-h-screen bg-canvas text-fg flex flex-col px-6">
       
       <div className="relative z-10 flex items-center justify-between py-5">
-        <span className="font-bold text-fg text-lg" style={{ fontFamily: "var(--font-brand), sans-serif" }}>PhotoDrive</span>
+        <Logo />
         <LanguageSwitcher />
       </div>
 

@@ -67,6 +67,8 @@ async function login(page, email) {
     await p2.route(/^https?:\/\/(?!localhost|127\.0\.0\.1)/, (r) => r.abort());
     await login(p2, "unpaid@example.com"); await p2.waitForTimeout(1200);
     await p2.screenshot({ path: `${SHOT}/ua-empty-${w}.png`, fullPage: true }); await audit(p2, `empty dashboard ${w}`);
+    await p2.goto(`${BASE}/subscribe`, { waitUntil: "load" }); await p2.waitForTimeout(1500);
+    await p2.screenshot({ path: `${SHOT}/ua-subscribe-${w}.png`, fullPage: true }); await audit(p2, `subscribe ${w}`);
     await c2.close();
   }
   await browser.close();

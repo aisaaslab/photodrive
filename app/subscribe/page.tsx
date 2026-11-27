@@ -6,7 +6,7 @@ import { LOCALES, useLanguage } from "@/lib/i18n";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
-import { APP_NAME } from "@/lib/branding";
+import { Logo } from "@/components/ui/Logo";
 import { computeExpiry, isLifetime, periodMs } from "@/lib/shared/billing-access";
 import { formatMoney } from "@/lib/shared/money";
 
@@ -179,9 +179,7 @@ export default function SubscribePage() {
       
 
       <nav className="relative z-50 flex items-center justify-between px-6 py-5">
-        <Link href="/" className="font-bold text-fg text-lg" style={{ fontFamily: "var(--font-brand), sans-serif" }}>
-          {APP_NAME}
-        </Link>
+        <Link href="/" className="rounded-tile"><Logo /></Link>
         <LanguageSwitcher />
       </nav>
 
@@ -284,6 +282,14 @@ export default function SubscribePage() {
                   </p>
                 )}
               </div>
+              <ul className="mb-5 space-y-2 border-t border-line pt-4">
+                {(selectedPlan.features.length > 0 ? selectedPlan.features : [t.pricing.f1, t.pricing.f2, t.pricing.f3, t.pricing.f4, t.pricing.f5, t.pricing.f6, t.pricing.f7]).map((f) => (
+                  <li key={f} className="flex items-start gap-2.5 text-sm text-fg-soft">
+                    <svg className="mt-0.5 size-4 shrink-0 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5} aria-hidden><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+                    {f}
+                  </li>
+                ))}
+              </ul>
               <button
                 onClick={handleCheckout}
                 disabled={loading}

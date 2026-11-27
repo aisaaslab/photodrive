@@ -14,7 +14,7 @@ export default function PrivacyPage() {
 
   return (
     <main className="bg-canvas text-fg min-h-screen">
-      <nav className="fixed top-0 inset-x-0 z-50 border-b border-line bg-[#080808]/90 backdrop-blur-xl">
+      <nav className="fixed top-0 inset-x-0 z-50 border-b border-line bg-canvas/90 backdrop-blur-xl">
         <div className="max-w-2xl mx-auto px-6 h-14 flex items-center justify-between">
           <Link href="/" className="text-sm text-fg-muted hover:text-fg transition-colors">{p.back}</Link>
           <LanguageSwitcher />

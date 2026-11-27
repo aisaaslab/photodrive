@@ -13,7 +13,7 @@ import { GalleryToolbar } from "./GalleryToolbar";
 import { SelectionBar } from "./SelectionBar";
 import { PhotoGrid } from "./PhotoGrid";
 import { SendSelectionButton } from "./SendSelectionButton";
-import { FavoritesSharedNote, NoFavorites, NoSearchResults } from "./GalleryNotices";
+import { FavoritesSharedNote, FavoritesTip, NoFavorites, NoSearchResults } from "./GalleryNotices";
 import { useFavorites } from "./useFavorites";
 import { useGalleryDownloads } from "./useGalleryDownloads";
 import { useProgressiveLimit } from "./useProgressiveLimit";
@@ -65,6 +65,8 @@ export function MasonryGrid({ photos, subfolders = [], galleryId, allowDownload 
     });
   }
 
+  const [tipDismissed, setTipDismissed] = useState(false);
+
   function toggleSelectionMode() {
     setSelectionMode((v) => !v);
     setSelected(new Set());
@@ -112,6 +114,7 @@ export function MasonryGrid({ photos, subfolders = [], galleryId, allowDownload 
         <SelectionBar count={selected.size} zipping={zipping} zipProgress={zipProgress} onDownload={() => downloadFiles([...selected])} />
       )}
 
+      {filter === "all" && favorites.size === 0 && !tipDismissed && displayed.length > 0 && !selectionMode && <FavoritesTip onDismiss={() => setTipDismissed(true)} />}
       {filter === "favorites" && displayed.length > 0 && <FavoritesSharedNote />}
       {filter === "favorites" && displayed.length === 0 && <NoFavorites />}
       {search && displayed.length === 0 && filter !== "favorites" && <NoSearchResults />}

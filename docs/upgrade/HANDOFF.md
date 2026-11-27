@@ -80,15 +80,15 @@ native review of draft translations, copy review (S3-13), measurements that need
    *Done (commits `73370f5`, `636c6cf` and the one after):* every screen now uses the tokens (no raw colours), Manrope, the original logo, accent pill buttons,
    flat canvas backgrounds; the client gallery is dark; shared language menu. UX improvements already in: **account menu** in the dashboard header,
    **subscription status pill**, **guided empty state** (three steps + button), **new-gallery form as a dialog** (no longer pushes the list down),
-   **section chips with scroll-spy** in the gallery settings dialog, proper **no-results copy**, labels and names on every control.
+   **section chips with scroll-spy** in the gallery settings dialog, proper **no-results copy**, labels and names on every control; then (second pass): **gallery cards** (the cover opens the gallery instead of the cover picker, a "♥ N new" badge on the cover, "Send by e-mail" and "Send on WhatsApp" in the card menu, a separate "Choose cover" button), **account page** (Profile first, then Membership and Payments, a real Danger zone replacing the tiny "Delete account" link that used to sit in every dashboard page's footer; the delete dialog is now an accessible modal), **subscribe page** (original logo, the plan's features above the buy button), **client gallery** (a one-line favourites tip until the client has picked something), original logo on thank-you and 404.
    Evidence: `evidence/S5.md` (S5-12 section). axe is clean on 15 screens at 1280 and 390.
 
    *Still to do, in priority order (each is a real UX improvement, not a restyle; check every one with the snapshots and `user-area-shots.cjs`):*
-   1. **Dashboard gallery cards and list:** surface what a photographer needs at a glance (new favourites, visibility, last activity), a clear single primary action,
-      grid/list density choice, and better phone layout; consider a "gallery created" success state with the link ready to copy and share (WhatsApp/e-mail) instead of only a toast.
-   2. **Account page layout** (`app/dashboard/account/page.tsx`, 344 lines): group into clear cards (profile, plan and payments with the invoice link, language, danger zone), one primary action per card.
-   3. **Subscribe and thank-you pages:** plan cards in the landing style, clearer renewal wording (extends access to a date), progress/awaiting states.
-   4. **Client gallery:** hero and header polish (photographer identity, share), an obvious selection flow ("pick favourites, then send"), lightbox ergonomics on phones
+   1. **Dashboard list (cards are done):** grid/list density choice, filters by visibility or "has new favourites", better phone layout of the card actions (the
+      Favorites button truncates its label at 3 columns); a "gallery created" success state with the link ready to copy/share (not only a toast).
+   2. ~~Account page layout~~ done (see above); still open there: show invoice links and payment status per payment more clearly.
+   3. **Subscribe and thank-you pages:** plan cards in the landing style when several plans exist, clearer renewal wording (extends access to a date), progress/awaiting states.
+   4. **Client gallery** (favourites tip done): hero and header polish (photographer identity, share), lightbox ergonomics on phones
       (swipe, larger targets), loading and empty states, password gate with the photographer's name/cover.
    5. **Admin area** (`app/dashboard/admin/*`): re-skin and layout once S7 defines the admin design; do not redesign it twice.
    6. **Toasts, dialogs, error and 404 pages:** consistent copy and icons; undo for destructive actions where possible.

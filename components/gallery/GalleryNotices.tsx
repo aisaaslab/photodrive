@@ -47,3 +47,19 @@ export function NoSearchResults() {
     </div>
   );
 }
+
+/** A one-line hint for a client who has not picked anything yet: how favourites work and what happens next. */
+export function FavoritesTip({ onDismiss }: { onDismiss: () => void }) {
+  const { t } = useLanguage();
+  return (
+    <div data-ui="favorites-tip" className="mb-4 flex items-start gap-3 rounded-tile border border-line bg-surface px-4 py-3 text-sm text-fg-soft">
+      <svg className="mt-0.5 size-4 shrink-0 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} aria-hidden>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
+      </svg>
+      <p className="flex-1">{t.gallery.favoritesTip}</p>
+      <button type="button" onClick={onDismiss} aria-label={t.gallery.closeViewer} className="shrink-0 rounded-full p-1 text-fg-muted transition-colors hover:text-fg">
+        <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} aria-hidden><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+      </button>
+    </div>
+  );
+}

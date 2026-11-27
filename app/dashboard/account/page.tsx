@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { DeleteAccountButton } from "@/components/dashboard/DeleteAccountButton";
 import { useRouter } from "next/navigation";
 import { updateProfile } from "firebase/auth";
 import { useAuth, updateUserProfile } from "@/components/auth/AuthProvider";
@@ -162,6 +163,8 @@ export default function AccountPage() {
         </h1>
       </div>
 
+      {renderProfileSection()}
+
       <section className="bg-surface border border-line rounded-card p-6">
         <h2 className="font-semibold text-fg mb-4" style={{ fontFamily: "var(--font-brand), sans-serif" }}>
           {a.membershipTitle}
@@ -273,7 +276,12 @@ export default function AccountPage() {
           </ul>
         )}
       </section>
-      {renderProfileSection()}
+      {/* Danger zone: deleting the account used to be a small link in every page's footer */}
+      <section className="rounded-card border border-danger/30 bg-danger/5 p-6">
+        <h2 className="font-semibold text-fg" style={{ fontFamily: "var(--font-brand), sans-serif" }}>{t.deleteAccount.title}</h2>
+        <p className="mt-1.5 mb-4 max-w-xl text-sm text-fg-soft">{t.deleteAccount.body}</p>
+        <DeleteAccountButton variant="danger" />
+      </section>
     </div>
   );
 

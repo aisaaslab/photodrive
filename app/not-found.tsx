@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useLanguage } from "@/lib/i18n";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
-import { APP_NAME } from "@/lib/branding";
+import { Logo } from "@/components/ui/Logo";
 
 /**
  * Shown for any unmatched route, and for the notFound() calls in the gallery
@@ -19,11 +19,9 @@ export default function NotFound() {
     <main className="bg-canvas text-fg min-h-screen flex flex-col">
       
 
-      <nav className="relative z-10 border-b border-line bg-[#080808]/90 backdrop-blur-xl">
+      <nav className="relative z-10 border-b border-line bg-canvas/90 backdrop-blur-xl">
         <div className="max-w-2xl mx-auto px-6 h-14 flex items-center justify-between">
-          <Link href="/" className="font-bold text-fg" style={{ fontFamily: "var(--font-brand), sans-serif" }}>
-            {APP_NAME}
-          </Link>
+          <Link href="/" className="rounded-tile"><Logo className="h-9" /></Link>
           <LanguageSwitcher />
         </div>
       </nav>

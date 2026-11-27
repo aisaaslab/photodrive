@@ -6,7 +6,6 @@ import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase/client";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
-import { DeleteAccountButton } from "@/components/dashboard/DeleteAccountButton";
 import { AvatarEditor } from "@/components/dashboard/AvatarEditor";
 import { AccountMenu } from "@/components/dashboard/AccountMenu";
 import { ToastProvider } from "@/components/ui/Toast";
@@ -70,10 +69,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <main className="relative z-10 flex-1 max-w-5xl mx-auto w-full px-4 sm:px-6 py-6 sm:py-10">
         {children}
       </main>
-
-      <footer className="relative z-10 max-w-5xl mx-auto w-full px-4 sm:px-6 pb-8 flex justify-center">
-        <DeleteAccountButton />
-      </footer>
 
       {avatarEditorOpen && <AvatarEditor onClose={() => setAvatarEditorOpen(false)} />}
     </div>
