@@ -88,7 +88,7 @@ native review of draft translations, copy review (S3-13), measurements that need
       Favorites button truncates its label at 3 columns).
    2. ~~Account page layout~~ done (see above); still open there: show invoice links and payment status per payment more clearly.
    3. **Subscribe and thank-you pages:** plan cards in the landing style when several plans exist, clearer renewal wording (extends access to a date), progress/awaiting states.
-   4. **Client gallery** (favourites tip done): hero and header polish (photographer identity, share), lightbox ergonomics on phones
+   4. **Client gallery** (favourites tip done): hero and header polish (photographer identity, share); the lightbox top bar is already phone-friendly (icon buttons of 40 px, one-line counter, fullscreen hidden on phones), still open: swipe hints and loading states
       (swipe, larger targets), loading and empty states, password gate with the photographer's name/cover.
    5. **Admin area** (`app/dashboard/admin/*`): re-skin and layout once S7 defines the admin design; do not redesign it twice.
    6. **Toasts, dialogs, error and 404 pages:** consistent copy and icons; undo for destructive actions where possible.
