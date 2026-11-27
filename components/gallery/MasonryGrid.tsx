@@ -30,9 +30,12 @@ interface Props {
  * The pieces live next to it (S5-08): view rules in lib/gallery/view.ts, favourites / downloads / progressive loading as hooks, and
  * the toolbar, selection bar, grid and notices as components. This file only holds the state they share and puts them together.
  */
-export function MasonryGrid({ photos, subfolders = [], galleryId, allowDownload = true }: Props) {
+export function MasonryGrid({ photos, subfolders = [], galleryId, allowDownload: allowedByServer = true }: Props) {
   const { t } = useLanguage();
   const g = t.gallery;
+  // The photographer can switch downloads off once a selection is sent (S9-06): hide the buttons at once; the server refuses them anyway.
+  const [lockedAfterSend, setLockedAfterSend] = useState(false);
+  const allowDownload = allowedByServer && !lockedAfterSend;
   // The lightbox navigates the photos that were on screen when it opened (the
   // filtered/sorted `displayed` list), not the whole gallery — so with the
   // Favorites tab open, next/prev walks favorites only. It's a snapshot so
@@ -152,7 +155,7 @@ export function MasonryGrid({ photos, subfolders = [], galleryId, allowDownload 
       )}
 
       {showSend && (
-        <SendSelectionModal galleryId={galleryId} count={favorites.size} onClose={() => setShowSend(false)} />
+        <SendSelectionModal galleryId={galleryId} count={favorites.size} onClose={() => setShowSend(false)} onSent={(r) => r.downloadsLocked && setLockedAfterSend(true)} />
       )}
 
       {lightboxIndex !== null && (

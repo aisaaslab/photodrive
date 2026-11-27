@@ -20,6 +20,10 @@ export interface GalleryDoc {
   // When false, download buttons are hidden in the gallery (e.g. show photos
   // for album selection before the client has paid). Defaults to true.
   allowDownload?: boolean;
+  // S9-06: "switch off downloads once a selection is sent". `downloadsLockedAt` is stamped when a selection is submitted while the
+  // option is on; see lib/gallery/downloads.ts. Turning the option off or on again clears the stamp.
+  disableDownloadAfterSubmit?: boolean;
+  downloadsLockedAt?: number | null;
   // Optional subtitle shown under the gallery name on the public page.
   description?: string;
   // Optional event date as "YYYY-MM-DD"; rendered locale-aware on the gallery.

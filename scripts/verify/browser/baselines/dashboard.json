@@ -97,7 +97,7 @@
  },
  "10 after closing, the New badge is gone": false,
  "11 edit private: initial": {
-  "text": "Gallery settings Private test Details Appearance Privacy & downloads Contact & links DETAILS Name Description Event date Location Google Drive folder APPEARANCE Preview Private test Current cover Title font Aa Classic Aa Elegant Aa Script Aa Modern Aa Mono Title color Title size Aa Small Aa Medium Aa Large Aa Extra Show my name in the gallery header Replaces the PhotoDrive logo at the top of the gallery with your avatar and name. PRIVACY & DOWNLOADS Who can open this gallery? Public Private New password (leave blank to keep current) Allow photo downloads Turn off if the client should only view and choose (e.g. before paying). CONTACT & LINKS Book this photographer button Links Cancel Save",
+  "text": "Gallery settings Private test Details Appearance Privacy & downloads Contact & links DETAILS Name Description Event date Location Google Drive folder APPEARANCE Preview Private test Current cover Title font Aa Classic Aa Elegant Aa Script Aa Modern Aa Mono Title color Title size Aa Small Aa Medium Aa Large Aa Extra Show my name in the gallery header Replaces the PhotoDrive logo at the top of the gallery with your avatar and name. PRIVACY & DOWNLOADS Who can open this gallery? Public Private New password (leave blank to keep current) Allow photo downloads Turn off if the client should only view and choose (e.g. before paying). Switch off downloads once a selection is sent After your client sends their selection, photo downloads stop for everyone but you. Turn this off to give them back. CONTACT & LINKS Book this photographer button Links Cancel Save",
   "fields": {
    "inputs": [
     "text|Name=Private test",
@@ -107,6 +107,7 @@
     "text|Google Drive folder=https://drive.google.com/drive/folders/1DriveFolderIdDDDDDDDDDDDDDDDDDDDDDD",
     "text|New password (leave blank to k=",
     "checkbox|Allow photo downloadsTurn off =true",
+    "checkbox|Switch off downloads once a se=false",
     "url|website=",
     "url|instagram=",
     "url|facebook="
@@ -132,6 +133,7 @@
      "instagram": "",
      "facebook": "",
      "allowDownload": true,
+     "disableDownloadAfterSubmit": false,
      "description": "",
      "eventDate": "",
      "location": "",
@@ -149,12 +151,12 @@
  },
  "12b card: password revealed": "Private test new-secret-9 DATE Copy link Open Favorites",
  "12c card: password hidden again": "Private test Password DATE Copy link Open Favorites",
- "13 edit private: choose Public shows the warning": "Gallery settings Private test Details Appearance Privacy & downloads Contact & links DETAILS Name Description Event date Location Google Drive folder APPEARANCE Preview Private test Current cover Title font Aa Classic Aa Elegant Aa Script Aa Modern Aa Mono Title color Title size Aa Small Aa Medium Aa Large Aa Extra Show my name in the gallery header Replaces the PhotoDrive logo at the top of the gallery with your avatar and name. PRIVACY & DOWNLOADS Who can open this gallery? Public Private Switching to Public removes the password. Anyone with the link will be able to open this gallery. Yes, remove the password and make it public Allow photo downloads Turn off if the client should only view and choose (e.g. before paying). CONTACT & LINKS Book this photographer button Links Cancel Save",
+ "13 edit private: choose Public shows the warning": "Gallery settings Private test Details Appearance Privacy & downloads Contact & links DETAILS Name Description Event date Location Google Drive folder APPEARANCE Preview Private test Current cover Title font Aa Classic Aa Elegant Aa Script Aa Modern Aa Mono Title color Title size Aa Small Aa Medium Aa Large Aa Extra Show my name in the gallery header Replaces the PhotoDrive logo at the top of the gallery with your avatar and name. PRIVACY & DOWNLOADS Who can open this gallery? Public Private Switching to Public removes the password. Anyone with the link will be able to open this gallery. Yes, remove the password and make it public Allow photo downloads Turn off if the client should only view and choose (e.g. before paying). Switch off downloads once a selection is sent After your client sends their selection, photo downloads stop for everyone but you. Turn this off to give them back. CONTACT & LINKS Book this photographer button Links Cancel Save",
  "14 edit private: Save without confirming is refused": {
   "requests": [],
   "toast": "Please confirm that you want to remove the password.",
   "dialogOpen": true,
-  "text": "Gallery settings Private test Details Appearance Privacy & downloads Contact & links DETAILS Name Description Event date Location Google Drive folder APPEARANCE Preview Private test Current cover Title font Aa Classic Aa Elegant Aa Script Aa Modern Aa Mono Title color Title size Aa Small Aa Medium Aa Large Aa Extra Show my name in the gallery header Replaces the PhotoDrive logo at the top of the gallery with your avatar and name. PRIVACY & DOWNLOADS Who can open this gallery? Public Private Switching to Public removes the password. Anyone with the link will be able to open this gallery. Yes, remove the password and make it public Allow photo downloads Turn off if the client should only view and choose (e.g. before paying). CONTACT & LINKS Book this photographer button Links Please confirm that you want to remove the password. Cancel Save"
+  "text": "Gallery settings Private test Details Appearance Privacy & downloads Contact & links DETAILS Name Description Event date Location Google Drive folder APPEARANCE Preview Private test Current cover Title font Aa Classic Aa Elegant Aa Script Aa Modern Aa Mono Title color Title size Aa Small Aa Medium Aa Large Aa Extra Show my name in the gallery header Replaces the PhotoDrive logo at the top of the gallery with your avatar and name. PRIVACY & DOWNLOADS Who can open this gallery? Public Private Switching to Public removes the password. Anyone with the link will be able to open this gallery. Yes, remove the password and make it public Allow photo downloads Turn off if the client should only view and choose (e.g. before paying). Switch off downloads once a selection is sent After your client sends their selection, photo downloads stop for everyone but you. Turn this off to give them back. CONTACT & LINKS Book this photographer button Links Please confirm that you want to remove the password. Cancel Save"
  },
  "15 edit private: Cancel leaves it private": {
   "dialogOpen": false,
@@ -164,7 +166,7 @@
   "requests": [],
   "toast": "A private gallery needs a password.",
   "dialogOpen": true,
-  "text": "Gallery settings Public test Details Appearance Privacy & downloads Contact & links DETAILS Name Description Event date Location Google Drive folder APPEARANCE Preview Public test Current cover Title font Aa Classic Aa Elegant Aa Script Aa Modern Aa Mono Title color Title size Aa Small Aa Medium Aa Large Aa Extra Show my name in the gallery header Replaces the PhotoDrive logo at the top of the gallery with your avatar and name. PRIVACY & DOWNLOADS Who can open this gallery? Public Private Password (required for a private gallery) Allow photo downloads Turn off if the client should only view and choose (e.g. before paying). CONTACT & LINKS Book this photographer button Links A private gallery needs a password. Cancel Save"
+  "text": "Gallery settings Public test Details Appearance Privacy & downloads Contact & links DETAILS Name Description Event date Location Google Drive folder APPEARANCE Preview Public test Current cover Title font Aa Classic Aa Elegant Aa Script Aa Modern Aa Mono Title color Title size Aa Small Aa Medium Aa Large Aa Extra Show my name in the gallery header Replaces the PhotoDrive logo at the top of the gallery with your avatar and name. PRIVACY & DOWNLOADS Who can open this gallery? Public Private Password (required for a private gallery) Allow photo downloads Turn off if the client should only view and choose (e.g. before paying). Switch off downloads once a selection is sent After your client sends their selection, photo downloads stop for everyone but you. Turn this off to give them back. CONTACT & LINKS Book this photographer button Links A private gallery needs a password. Cancel Save"
  },
  "17 edit public: fields before saving": {
   "inputs": [
@@ -197,6 +199,7 @@
      "instagram": "instagram.com/photographer",
      "facebook": "",
      "allowDownload": false,
+     "disableDownloadAfterSubmit": false,
      "description": "A description",
      "eventDate": "2026-06-15",
      "location": "Santorini, Greece",
@@ -250,6 +253,7 @@
      "instagram": "",
      "facebook": "",
      "allowDownload": true,
+     "disableDownloadAfterSubmit": false,
      "description": "",
      "eventDate": "",
      "location": "",
@@ -266,7 +270,7 @@
   "dialogOpen": false,
   "card": "Big gallery Password DATE Copy link Open Favorites"
  },
- "21 edit private: confirmation controls": "Gallery settings Private test Details Appearance Privacy & downloads Contact & links DETAILS Name Description Event date Location Google Drive folder APPEARANCE Preview Private test Current cover Title font Aa Classic Aa Elegant Aa Script Aa Modern Aa Mono Title color Title size Aa Small Aa Medium Aa Large Aa Extra Show my name in the gallery header Replaces the PhotoDrive logo at the top of the gallery with your avatar and name. PRIVACY & DOWNLOADS Who can open this gallery? Public Private Switching to Public removes the password. Anyone with the link will be able to open this gallery. Yes, remove the password and make it public Allow photo downloads Turn off if the client should only view and choose (e.g. before paying). CONTACT & LINKS Book this photographer button Links Cancel Save",
+ "21 edit private: confirmation controls": "Gallery settings Private test Details Appearance Privacy & downloads Contact & links DETAILS Name Description Event date Location Google Drive folder APPEARANCE Preview Private test Current cover Title font Aa Classic Aa Elegant Aa Script Aa Modern Aa Mono Title color Title size Aa Small Aa Medium Aa Large Aa Extra Show my name in the gallery header Replaces the PhotoDrive logo at the top of the gallery with your avatar and name. PRIVACY & DOWNLOADS Who can open this gallery? Public Private Switching to Public removes the password. Anyone with the link will be able to open this gallery. Yes, remove the password and make it public Allow photo downloads Turn off if the client should only view and choose (e.g. before paying). Switch off downloads once a selection is sent After your client sends their selection, photo downloads stop for everyone but you. Turn this off to give them back. CONTACT & LINKS Book this photographer button Links Cancel Save",
  "22 edit private: switched to public": {
   "requests": [
    {
@@ -279,6 +283,7 @@
      "instagram": "",
      "facebook": "",
      "allowDownload": true,
+     "disableDownloadAfterSubmit": false,
      "description": "",
      "eventDate": "",
      "location": "",

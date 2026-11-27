@@ -13,6 +13,8 @@ interface Props {
   galleryId: string;
   count: number;
   onClose: () => void;
+  /** Called once the selection is saved; `downloadsLocked` is true when the photographer switches downloads off after sending (S9-06). */
+  onSent?: (result: { downloadsLocked: boolean }) => void;
 }
 
 const NAME_KEY = "send_selection_name";
@@ -26,7 +28,7 @@ function remembered(key: string): string {
   }
 }
 
-export function SendSelectionModal({ galleryId, count, onClose }: Props) {
+export function SendSelectionModal({ galleryId, count, onClose, onSent }: Props) {
   const { t } = useLanguage();
   const g = t.gallery;
   const [name, setName] = useState(() => remembered(NAME_KEY));
@@ -52,6 +54,8 @@ export function SendSelectionModal({ galleryId, count, onClose }: Props) {
         body: JSON.stringify({ name, email, note, website: honeypot }),
       });
       if (!res.ok) throw new Error();
+      const result = (await res.json().catch(() => ({}))) as { downloadsLocked?: boolean };
+      onSent?.({ downloadsLocked: result.downloadsLocked === true });
       try {
         localStorage.setItem(NAME_KEY, name.trim());
         localStorage.setItem(EMAIL_KEY, email.trim());

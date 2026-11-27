@@ -1,4 +1,5 @@
 import { cache } from "react";
+import { downloadsAllowed } from "@/lib/gallery/downloads";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -62,6 +63,8 @@ export default async function GalleryPage({ params }: Props) {
     instagram?: string;
     facebook?: string;
     allowDownload?: boolean;
+    disableDownloadAfterSubmit?: boolean;
+    downloadsLockedAt?: number | null;
     description?: string;
     eventDate?: string;
     location?: string;
@@ -124,7 +127,7 @@ export default async function GalleryPage({ params }: Props) {
 
   // Protected tier (D15, S3-03): private galleries and galleries with downloads off (when MEDIA_PROTECTED_TIER=1) send the
   // browser opaque tokens and signed same-site URLs instead of Drive ids and Google URLs.
-  const allowDownload = gallery.allowDownload !== false;
+  const allowDownload = downloadsAllowed(gallery);
   const protectedTier = usesProtectedTier({ private: isPrivate(gallery), allowDownload });
   const clientPhotos = protectedTier ? toProtectedPhotos(gallery.id, photos, allowDownload) : photos;
   const clientFolders = protectedTier ? toProtectedFolders(gallery.id, subfolders) : subfolders;

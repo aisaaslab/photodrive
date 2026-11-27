@@ -1,4 +1,5 @@
 import { NextRequest } from "next/server";
+import { downloadsAllowed } from "@/lib/gallery/downloads";
 import { cookies } from "next/headers";
 import { fetchDriveFolder } from "@/lib/drive/client";
 import { verifyGalleryToken } from "@/lib/gallery/session";
@@ -28,7 +29,7 @@ export async function GET(
   const gallery = snap.data()!;
 
   // Respect the per-gallery download switch.
-  if (gallery.allowDownload === false) {
+  if (!downloadsAllowed(gallery)) {
     return new Response("Downloads are disabled for this gallery", { status: 403 });
   }
 

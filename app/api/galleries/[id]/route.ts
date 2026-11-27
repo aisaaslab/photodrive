@@ -65,6 +65,13 @@ export const PATCH = route("galleries.item.patch", async (
     }
   }
   if (typeof body.allowDownload === "boolean") updates.allowDownload = body.allowDownload;
+  // S9-06. Changing the option starts afresh: the stamp of an earlier submission is cleared, so turning it on later does not lock
+  // retroactively and turning it off gives downloads back. Saving with the option unchanged (the dialog sends every field) must NOT
+  // clear it, or any save would re-open downloads after a client sent their selection.
+  if (typeof body.disableDownloadAfterSubmit === "boolean" && body.disableDownloadAfterSubmit !== ((gallery.data as { disableDownloadAfterSubmit?: boolean }).disableDownloadAfterSubmit === true)) {
+    updates.disableDownloadAfterSubmit = body.disableDownloadAfterSubmit;
+    updates.downloadsLockedAt = null;
+  }
 
   // Optional gallery metadata. Each is stored as null when cleared (empty
   // string / invalid date), so the field disappears from the public render.

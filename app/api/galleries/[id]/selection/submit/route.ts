@@ -80,6 +80,10 @@ export async function POST(
     { merge: true }
   );
 
+  // "Switch off downloads once a selection is sent" (S9-06): stamp the gallery so every download route refuses from now on.
+  const downloadsLocked = gallery.disableDownloadAfterSubmit === true;
+  if (downloadsLocked) await galSnap.ref.update({ downloadsLockedAt: submittedAt });
+
   // Notify the photographer (best-effort — the submission is already saved).
   let emailed = false;
   try {
@@ -110,5 +114,5 @@ export async function POST(
     console.error("selection submit: notify failed", err);
   }
 
-  return NextResponse.json({ ok: true, emailed });
+  return NextResponse.json({ ok: true, emailed, downloadsLocked });
 }

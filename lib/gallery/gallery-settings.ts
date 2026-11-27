@@ -11,6 +11,8 @@ export type SettingsValues = {
   /** The "yes, remove the password" tick needed to switch a private gallery to public. */
   confirmMakePublic: boolean;
   allowDownload: boolean;
+  /** "Switch off downloads once a client sends their selection" (S9-06). */
+  disableDownloadAfterSubmit: boolean;
   social: { website: string; instagram: string; facebook: string };
   description: string;
   eventDate: string;
@@ -36,6 +38,7 @@ export function settingsFrom(gallery: GalleryDoc): SettingsValues {
     visibility: galleryVisibility(gallery),
     confirmMakePublic: false,
     allowDownload: gallery.allowDownload !== false,
+    disableDownloadAfterSubmit: gallery.disableDownloadAfterSubmit === true,
     social: { website: gallery.website ?? "", instagram: gallery.instagram ?? "", facebook: gallery.facebook ?? "" },
     description: gallery.description ?? "",
     eventDate: gallery.eventDate ?? "",
@@ -70,6 +73,7 @@ export function buildSettingsPatch(values: SettingsValues, gallery: GalleryDoc):
   body.instagram = values.social.instagram.trim();
   body.facebook = values.social.facebook.trim();
   body.allowDownload = values.allowDownload;
+  body.disableDownloadAfterSubmit = values.disableDownloadAfterSubmit;
   body.description = values.description.trim();
   body.eventDate = values.eventDate;
   body.location = values.location.trim();

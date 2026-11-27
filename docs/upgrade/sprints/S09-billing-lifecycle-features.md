@@ -8,7 +8,7 @@
 
 ## Tasks
 
-- [ ] **S9-01** · S · Resolve **D3** with the owner (recommended: grace period of 14 days, then a polite "temporarily unavailable" page; nothing deleted; restored on renewal). Record the exact grace length and the wording.
+- [x] **S9-01** · S · Resolve **D3** with the owner (recommended: grace period of 14 days, then a polite "temporarily unavailable" page; nothing deleted; restored on renewal). Record the exact grace length and the wording.
   - Done when: decision logged as **Decided**.
   - Refs: G5, SEC-6
 - [ ] **S9-02** · M · Billing page `/dashboard/billing`: current plan, expiry, status, payment history, invoice links, renew/upgrade button, and a clear "what happens when your plan lapses" block that states the D3 behaviour; links from Account.
@@ -25,7 +25,7 @@
 - [ ] **S9-05** · M · Gallery expiry date (feature): optional `expiresAt` per gallery set in create/edit forms; expired galleries show the unavailable page; owner can extend; included in the dashboard card.
   - Files: `lib/shared/schemas/gallery.ts`, `components/dashboard/NewGalleryForm.tsx`, `app/gallery/[slug]/page.tsx`
   - Done when: an expired gallery is unreachable (including media), extending restores it.
-- [ ] **S9-06** · M · Download control: option "switch off downloads once a selection is submitted" (`disableDownloadAfterSubmit`); enforced server-side in the media route and download-all; UI hides buttons accordingly.
+- [x] **S9-06** · M · Download control: option "switch off downloads once a selection is submitted" (`disableDownloadAfterSubmit`); enforced server-side in the media route and download-all; UI hides buttons accordingly.
   - Files: `app/api/galleries/[id]/selection/submit/route.ts`, media route, `components/gallery/*`
   - Done when: after submission, original downloads are refused by the server, not just hidden.
 - [ ] **S9-07** · S · Align public copy with D3 in six languages: landing "Why PhotoDrive" card ("The link stays live… doesn't expire"), pricing notes, FAQ, Terms, so nothing promises what the product no longer does (or vice versa).

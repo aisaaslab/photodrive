@@ -4,6 +4,7 @@ import { isAdminToken, verifyBearer } from "@/lib/server/auth";
 import { fetchDriveFolder } from "@/lib/drive/client";
 import { verifyGalleryToken } from "@/lib/gallery/session";
 import { isPrivate } from "@/lib/gallery/visibility";
+import { downloadsAllowed } from "@/lib/gallery/downloads";
 import { demoGalleriesCol, galleriesCol } from "@/lib/server/repos/collections";
 
 /**
@@ -37,7 +38,7 @@ export async function loadProxyGallery(id: string, now = Date.now()): Promise<Pr
       id,
       folderId: g.folderId,
       photographerId: typeof g.photographerId === "string" ? g.photographerId : null,
-      allowDownload: g.allowDownload !== false,
+      allowDownload: downloadsAllowed(g),
       private: isPrivate(g),
       pwChangedAt: typeof g.pwChangedAt === "number" ? g.pwChangedAt : 0,
       disabled: g.disabled === true,

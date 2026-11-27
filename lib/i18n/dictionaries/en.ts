@@ -286,7 +286,7 @@ export const en = {
     downloadFiles: "Download files (.zip)",
     preparing: "Preparing...",
     allowDownloadLabel: "Allow photo downloads",
-    allowDownloadHint: "Turn off if the client should only view and choose (e.g. before paying).",
+    allowDownloadHint: "Turn off if the client should only view and choose (e.g. before paying).", lockAfterSendLabel: "Switch off downloads once a selection is sent", lockAfterSendHint: "After your client sends their selection, photo downloads stop for everyone but you. Turn this off to give them back.",
     copyLink: "Copy link",
     copied: "Copied",
     openGallery: "Open gallery",

@@ -80,6 +80,20 @@ export function SettingsPrivacy({ gallery, form }: { gallery: GalleryDoc; form: 
           <span className="block text-[11px] text-fg-muted mt-0.5">{c.allowDownloadHint}</span>
         </span>
       </label>
+      {values.allowDownload && (
+        <label className="flex items-start gap-2.5 cursor-pointer bg-surface border border-line rounded-lg px-3 py-2.5">
+          <input
+            type="checkbox"
+            checked={values.disableDownloadAfterSubmit}
+            onChange={(e) => set("disableDownloadAfterSubmit", e.target.checked)}
+            className="mt-0.5 rounded border-fg-muted/30"
+          />
+          <span>
+            <span className="block text-xs font-medium text-fg-soft">{c.lockAfterSendLabel}</span>
+            <span className="block text-[11px] text-fg-muted mt-0.5">{c.lockAfterSendHint}</span>
+          </span>
+        </label>
+      )}
     </section>
   );
 }
