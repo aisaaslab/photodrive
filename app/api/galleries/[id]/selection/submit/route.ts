@@ -1,8 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
+import { availabilityOf, isUnavailable } from "@/lib/server/gallery-availability";
 import { getAdminAuth, getAdminDb } from "@/lib/firebase/admin";
 import { verifyGalleryToken } from "@/lib/gallery/session";
+import { isPrivate } from "@/lib/gallery/visibility";
 import { sendEmail, escapeHtml } from "@/lib/email";
 import { APP_URL } from "@/lib/branding";
+import { clientIp, getRateLimiter, rateLimitHeaders } from "@/lib/server/rate-limit";
+import { parseJson } from "@/lib/server/http";
+import { SelectionSubmitBody } from "@/lib/shared/schemas/public";
+import { galleriesCol, gallerySelectionsCol, usersCol } from "@/lib/server/repos/collections";
 
 export const runtime = "nodejs";
 
@@ -16,22 +22,9 @@ export const runtime = "nodejs";
  * gallery cookie, and it is rate-limited per IP + gallery.
  */
 
-const WINDOW_MS = 10 * 60 * 1000;
+// At most 5 submissions per 10 minutes per visitor and gallery, counted in the shared store (S3-06).
 const MAX_PER_WINDOW = 5;
-const hits = new Map<string, number[]>();
-
-function rateLimited(key: string): boolean {
-  const now = Date.now();
-  const arr = (hits.get(key) ?? []).filter((t) => now - t < WINDOW_MS);
-  if (arr.length >= MAX_PER_WINDOW) return true;
-  arr.push(now);
-  hits.set(key, arr);
-  return false;
-}
-
-function clientIp(req: NextRequest): string {
-  return req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || req.headers.get("x-real-ip") || "unknown";
-}
+const WINDOW_SEC = 10 * 60;
 
 const isValidEmail = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v);
 
@@ -41,16 +34,17 @@ export async function POST(
 ) {
   const { id } = await params;
 
-  if (rateLimited(`${clientIp(req)}:${id}`)) {
-    return NextResponse.json({ error: "Too many requests. Please try again in a few minutes." }, { status: 429 });
+  const limit = await getRateLimiter().limit({ name: "selection-submit", id: `${clientIp(req)}|${id}`, limit: MAX_PER_WINDOW, windowSec: WINDOW_SEC });
+  if (!limit.allowed) {
+    return NextResponse.json(
+      { error: "Too many requests. Please try again in a few minutes." },
+      { status: 429, headers: rateLimitHeaders(limit) },
+    );
   }
 
-  let body: Record<string, unknown>;
-  try {
-    body = await req.json();
-  } catch {
-    return NextResponse.json({ error: "Invalid request." }, { status: 400 });
-  }
+  const parsedBody = await parseJson(req, SelectionSubmitBody);
+  if (!parsedBody.ok) return parsedBody.response;
+  const body = parsedBody.data;
 
   // Honeypot — bots fill this hidden field, humans don't.
   if (String(body.website ?? "").trim() !== "") return NextResponse.json({ ok: true });
@@ -62,12 +56,12 @@ export async function POST(
   if (email && !isValidEmail(email)) return NextResponse.json({ error: "Please enter a valid email address." }, { status: 400 });
 
   const db = getAdminDb();
-  const galSnap = await db.collection("galleries").doc(id).get();
-  if (!galSnap.exists) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  const galSnap = await galleriesCol(db).doc(id).get();
+  if (!galSnap.exists || isUnavailable(await availabilityOf(galSnap.data()!))) return NextResponse.json({ error: "Not found" }, { status: 404 });
   const gallery = galSnap.data()!;
 
   // Password-protected galleries: the visitor must have unlocked this gallery.
-  if (gallery.passwordHash) {
+  if (isPrivate(gallery)) {
     const token = req.cookies.get(`gallery_token_${id}`)?.value;
     const valid = token ? await verifyGalleryToken(token) : null;
     if (!valid || valid.galleryId !== id || valid.v !== (gallery.pwChangedAt ?? 0)) {
@@ -75,7 +69,7 @@ export async function POST(
     }
   }
 
-  const selRef = db.collection("gallery_selections").doc(id);
+  const selRef = gallerySelectionsCol(db).doc(id);
   const selSnap = await selRef.get();
   const items: { id: string; name: string }[] = selSnap.exists ? (selSnap.data()?.items ?? []) : [];
   if (items.length === 0) return NextResponse.json({ error: "No photos selected." }, { status: 400 });
@@ -87,11 +81,15 @@ export async function POST(
     { merge: true }
   );
 
+  // "Switch off downloads once a selection is sent" (S9-06): stamp the gallery so every download route refuses from now on.
+  const downloadsLocked = gallery.disableDownloadAfterSubmit === true;
+  if (downloadsLocked) await galSnap.ref.update({ downloadsLockedAt: submittedAt });
+
   // Notify the photographer (best-effort — the submission is already saved).
   let emailed = false;
   try {
     let to = "";
-    const userSnap = await db.collection("users").doc(String(gallery.photographerId)).get();
+    const userSnap = await usersCol(db).doc(String(gallery.photographerId)).get();
     to = typeof userSnap.data()?.email === "string" ? userSnap.data()!.email : "";
     if (!to) to = (await getAdminAuth().getUser(String(gallery.photographerId))).email ?? "";
     if (to) {
@@ -117,5 +115,5 @@ export async function POST(
     console.error("selection submit: notify failed", err);
   }
 
-  return NextResponse.json({ ok: true, emailed });
+  return NextResponse.json({ ok: true, emailed, downloadsLocked });
 }

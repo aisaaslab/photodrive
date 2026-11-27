@@ -25,7 +25,7 @@ export function GalleryAvatar({ src, name, fallbackLetter, size = 36 }: Props) {
   if (!src || failed) {
     return (
       <div
-        className="rounded-full bg-stone-900 text-white flex items-center justify-center font-bold shrink-0"
+        className="rounded-pill bg-accent text-canvas flex items-center justify-center font-bold shrink-0"
         style={{ width: size, height: size, fontSize: Math.floor(size * 0.4) }}
       >
         {letter}
@@ -38,7 +38,7 @@ export function GalleryAvatar({ src, name, fallbackLetter, size = 36 }: Props) {
     <img
       src={src}
       alt={name}
-      className="rounded-full object-cover ring-1 ring-stone-200 shrink-0"
+      className="rounded-full object-cover ring-1 ring-line shrink-0"
       style={{ width: size, height: size }}
       onError={() => setFailed(true)}
     />

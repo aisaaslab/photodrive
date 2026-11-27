@@ -1,8 +1,12 @@
-﻿"use client";
+"use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/components/auth/AuthProvider";
+import { Button } from "@/components/ui/Button";
+import { ageLabel, revenueRows } from "@/lib/shared/admin-overview";
+import { formatMoney } from "@/lib/shared/money";
+import { useAttention } from "@/components/admin/useAttention";
 
 type Stats = {
   totalUsers: number;
@@ -16,6 +20,10 @@ type Stats = {
   totalGalleries: number;
   newGalleries30d: number;
   revenueUsd: number;
+  /** Major units per currency; other currencies are listed next to the USD figure, never added to it. */
+  revenueByCurrency?: Record<string, number>;
+  /** Exact minor-unit totals per currency (absent in numbers stored before S8-04). */
+  revenueMinor?: Record<string, number>;
   paymentCount: number;
   expiringSoonCount: number;
   planCount: number;
@@ -37,28 +45,24 @@ type RecentUser = {
   email: string;
   displayName: string;
   photoURL: string | null;
-  createdAt: string;
+  createdAt: number | string | null;
   subscriptionActive: boolean;
 };
 
 function formatDate(ts: number | string | null | undefined) {
   if (!ts) return "—";
   const d = new Date(typeof ts === "number" ? ts : ts);
-  return d.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
-}
-
-function formatMoney(n: number) {
-  return `$${n.toLocaleString("en-US", { minimumFractionDigits: n % 1 ? 2 : 0, maximumFractionDigits: 2 })}`;
+  return d.toLocaleDateString("en-US", { day: "2-digit", month: "short", year: "numeric" });
 }
 
 function Avatar({ src, name }: { src?: string | null; name: string }) {
   const initials = name?.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase() || "?";
   if (src) {
     // eslint-disable-next-line @next/next/no-img-element
-    return <img src={src} alt={name} className="w-6 h-6 rounded-full ring-1 ring-white/10 object-cover" />;
+    return <img src={src} alt={name} className="w-6 h-6 rounded-full ring-1 ring-line object-cover" />;
   }
   return (
-    <div className="w-6 h-6 rounded-full bg-[#17509e]/20 flex items-center justify-center text-[10px] font-bold text-[#2dabe0] ring-1 ring-[#17509e]/20">
+    <div className="w-6 h-6 rounded-full bg-accent-deep/20 flex items-center justify-center text-[10px] font-bold text-accent ring-1 ring-accent-deep/20">
       {initials}
     </div>
   );
@@ -83,18 +87,18 @@ function StatCard({
       : tone === "warn"
         ? "bg-amber-500/[0.06] border-amber-500/20"
         : tone === "info"
-          ? "bg-[#17509e]/[0.08] border-[#17509e]/25"
-          : "bg-white/[0.03] border-white/[0.06]";
+          ? "bg-accent-deep/[0.08] border-accent-deep/25"
+          : "bg-surface border-line";
   const iconClasses =
-    tone === "ok" ? "text-emerald-400 bg-emerald-500/10" : tone === "warn" ? "text-amber-400 bg-amber-500/10" : tone === "info" ? "text-[#2dabe0] bg-[#17509e]/10" : "text-stone-400 bg-white/[0.06]";
+    tone === "ok" ? "text-success-bright bg-emerald-500/10" : tone === "warn" ? "text-amber-400 bg-amber-500/10" : tone === "info" ? "text-accent bg-accent-deep/10" : "text-fg-muted bg-surface-2";
   return (
-    <div className={`border rounded-2xl p-5 ${toneClasses}`}>
+    <div className={`border rounded-card p-5 ${toneClasses}`}>
       <div className="flex items-start justify-between gap-3">
         <div>
-          <div className="text-2xl font-bold text-white" style={{ fontFamily: "var(--font-brand), sans-serif" }}>
+          <div className="text-2xl font-bold text-fg" style={{ fontFamily: "var(--font-brand), sans-serif" }}>
             {value}
           </div>
-          <div className="text-xs text-stone-400 mt-1">{label}</div>
+          <div className="text-xs text-fg-muted mt-1">{label}</div>
         </div>
         <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${iconClasses}`}>
           <svg width={18} height={18} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -102,48 +106,104 @@ function StatCard({
           </svg>
         </div>
       </div>
-      {sub && <div className="text-[11px] text-stone-500 mt-2">{sub}</div>}
+      {sub && <div className="text-[11px] text-fg-muted mt-2">{sub}</div>}
     </div>
   );
 }
+
+const EXPIRING_SHOWN = 8;
 
 export default function AdminOverviewPage() {
   const { user } = useAuth();
   const [stats, setStats] = useState<Stats | null>(null);
   const [expiringSoon, setExpiringSoon] = useState<ExpiringUser[]>([]);
   const [recentUsers, setRecentUsers] = useState<RecentUser[]>([]);
+  const [computedAt, setComputedAt] = useState<number | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const [failed, setFailed] = useState(false);
+  const [now, setNow] = useState(() => Date.now());
+  const attention = useAttention();
 
-  useEffect(() => {
+  const load = useCallback(async (refresh: boolean) => {
     if (!user) return;
-    let cancelled = false;
-    user.getIdToken().then((token) =>
-      fetch("/api/admin/stats", { headers: { Authorization: `Bearer ${token}` } })
-    ).then(async (res) => {
-      if (!res.ok || cancelled) return;
+    setFailed(false);
+    try {
+      const token = await user.getIdToken();
+      const res = await fetch(`/api/admin/stats${refresh ? "?refresh=1" : ""}`, { headers: { Authorization: `Bearer ${token}` } });
+      if (!res.ok) throw new Error(String(res.status));
       const data = await res.json();
       setStats(data.stats);
       setExpiringSoon(data.expiringSoon ?? []);
       setRecentUsers(data.recentUsers ?? []);
-    }).catch(() => {});
-    return () => { cancelled = true; };
+      setComputedAt(typeof data.computedAt === "number" ? data.computedAt : null);
+      setNow(Date.now());
+    } catch { setFailed(true); }
   }, [user]);
 
-  if (!stats) {
+  useEffect(() => { void load(false); }, [load]);
+  useEffect(() => { const t = setInterval(() => setNow(Date.now()), 30000); return () => clearInterval(t); }, []);
+
+  async function refresh() {
+    setRefreshing(true);
+    await load(true);
+    setRefreshing(false);
+  }
+
+  if (!stats && failed) {
     return (
-      <div className="flex items-center justify-center py-32">
-        <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+      <div className="py-24 text-center">
+        <p className="text-fg-muted mb-4">The overview could not be loaded.</p>
+        <Button variant="outline" size="sm" onClick={() => load(false)}>Try again</Button>
       </div>
     );
   }
 
+  if (!stats) {
+    return (
+      <div className="flex items-center justify-center py-32">
+        <div className="w-5 h-5 border-2 border-fg-muted/30 border-t-white rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  const revenue = revenueRows(stats.revenueMinor, stats.revenueByCurrency);
+
   return (
     <div>
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-white" style={{ fontFamily: "var(--font-brand), sans-serif" }}>
-          Overview
-        </h1>
-        <p className="text-sm text-stone-400 mt-1">Your store at a glance.</p>
+      <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold text-fg" style={{ fontFamily: "var(--font-brand), sans-serif" }}>
+            Overview
+          </h1>
+          <p className="text-sm text-fg-muted mt-1">
+            Your store at a glance{computedAt ? <> · numbers updated <span data-testid="overview-age">{ageLabel(computedAt, now)}</span></> : null}.
+          </p>
+        </div>
+        <Button variant="outline" size="sm" loading={refreshing} onClick={refresh}>Refresh numbers</Button>
       </div>
+
+      {/* Needs attention: live, not part of the stored numbers */}
+      {attention && (
+        <section aria-labelledby="needs-attention" className="mb-8">
+          <h2 id="needs-attention" className="sr-only">Needs attention</h2>
+          {attention.payments + attention.supportUnread === 0 ? (
+            <p className="rounded-card border border-line bg-surface px-5 py-3 text-sm text-fg-muted">Nothing needs your attention right now.</p>
+          ) : (
+            <div className="grid gap-3 sm:grid-cols-2">
+              {attention.payments > 0 && (
+                <Link href="/dashboard/admin/payments" className="rounded-card border border-amber-500/30 bg-amber-500/[0.06] px-5 py-3 text-sm text-fg hover:border-amber-500/60 transition-colors">
+                  <strong className="tabular-nums">{attention.payments}</strong> payment{attention.payments === 1 ? "" : "s"} to review <span aria-hidden>→</span>
+                </Link>
+              )}
+              {attention.supportUnread > 0 && (
+                <Link href="/dashboard/admin/support" className="rounded-card border border-amber-500/30 bg-amber-500/[0.06] px-5 py-3 text-sm text-fg hover:border-amber-500/60 transition-colors">
+                  <strong className="tabular-nums">{attention.supportUnread}</strong> unread support message{attention.supportUnread === 1 ? "" : "s"} <span aria-hidden>→</span>
+                </Link>
+              )}
+            </div>
+          )}
+        </section>
+      )}
 
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-8">
@@ -168,9 +228,9 @@ export default function AdminOverviewPage() {
         />
         <StatCard
           label="Revenue (all time)"
-          value={formatMoney(stats.revenueUsd)}
+          value={revenue.length ? formatMoney(revenue[0].minor, revenue[0].currency) : formatMoney(0, "usd")}
           tone="ok"
-          sub={`${stats.paymentCount} payment${stats.paymentCount === 1 ? "" : "s"} recorded · ${stats.freeCodeSignups} free-code signup${stats.freeCodeSignups === 1 ? "" : "s"}`}
+          sub={`${stats.paymentCount} payment${stats.paymentCount === 1 ? "" : "s"} recorded · ${stats.freeCodeSignups} free-code signup${stats.freeCodeSignups === 1 ? "" : "s"}${revenue.slice(1).map((r) => ` · ${formatMoney(r.minor, r.currency)}`).join("")}`}
           icon="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
         />
         <StatCard
@@ -191,68 +251,74 @@ export default function AdminOverviewPage() {
 
       <div className="grid lg:grid-cols-2 gap-6">
         {/* Expiring soon */}
-        <div className="border border-white/[0.06] rounded-2xl p-5">
+        <div className="border border-line rounded-card p-5">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-sm font-semibold text-white" style={{ fontFamily: "var(--font-brand), sans-serif" }}>
+            <h2 className="text-sm font-semibold text-fg" style={{ fontFamily: "var(--font-brand), sans-serif" }}>
               Expiring soon
             </h2>
-            <span className="text-xs text-stone-500">≤ 30 days</span>
+            <span className="text-xs text-fg-muted">≤ 30 days</span>
           </div>
           {expiringSoon.length === 0 ? (
-            <p className="text-sm text-stone-500 py-6 text-center">No subscriptions expiring soon.</p>
+            <p className="text-sm text-fg-muted py-6 text-center">No subscriptions expiring soon.</p>
           ) : (
             <div className="space-y-2">
-              {expiringSoon.map((u) => (
-                <div key={u.uid} className="flex items-center justify-between gap-3 text-sm">
+              {expiringSoon.slice(0, EXPIRING_SHOWN).map((u) => (
+                <div key={u.uid} className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 text-sm">
                   <div className="min-w-0 flex items-center gap-2">
                     <Avatar src={u.photoURL} name={u.displayName || u.email} />
-                    <span className="text-white truncate">{u.displayName || u.email}</span>
-                    <span className="text-stone-500 truncate hidden sm:inline">· {u.email}</span>
+                    <span className="text-fg truncate">{u.displayName || u.email}</span>
+                    <span className="text-fg-muted truncate hidden sm:inline">· {u.email}</span>
                   </div>
-                  <div className="flex items-center gap-3 shrink-0">
-                    {u.planName && <span className="text-xs text-stone-500 hidden sm:inline">{u.planName}</span>}
-                    <span className={`font-semibold tabular-nums ${u.daysLeft <= 7 ? "text-red-400" : "text-amber-400"}`}>
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+                    {u.planName && <span className="text-xs text-fg-muted hidden sm:inline">{u.planName}</span>}
+                    <span className={`font-semibold tabular-nums ${u.daysLeft <= 7 ? "text-danger" : "text-amber-400"}`}>
                       {u.daysLeft === 0 ? "expires today" : `in ${u.daysLeft}d`}
                     </span>
-                    <a href={`mailto:${u.email}`} className="text-xs px-2.5 py-1 rounded-lg border border-white/10 text-stone-300 hover:text-white hover:border-white/20 transition-colors">
-                      Email
+                    <Link href={`/dashboard/admin/users?q=${encodeURIComponent(u.email)}`} className="text-xs px-2.5 py-1 rounded-lg border border-line text-fg-soft hover:text-fg hover:border-fg-muted/30 transition-colors">
+                      Open account<span className="sr-only"> of {u.displayName || u.email}</span>
+                    </Link>
+                    <a href={`mailto:${u.email}`} className="text-xs px-2.5 py-1 rounded-lg border border-line text-fg-soft hover:text-fg hover:border-fg-muted/30 transition-colors">
+                      Email<span className="sr-only"> {u.displayName || u.email}</span>
                     </a>
                   </div>
                 </div>
               ))}
+              {stats.expiringSoonCount > Math.min(expiringSoon.length, EXPIRING_SHOWN) && (
+                <p className="pt-1 text-xs text-fg-muted">+{stats.expiringSoonCount - Math.min(expiringSoon.length, EXPIRING_SHOWN)} more in the next 30 days. <Link href="/dashboard/admin/users" className="text-accent underline underline-offset-2">See users</Link></p>
+              )}
             </div>
           )}
         </div>
 
         {/* Recent sign-ups */}
-        <div className="border border-white/[0.06] rounded-2xl p-5">
-          <h2 className="text-sm font-semibold text-white mb-4" style={{ fontFamily: "var(--font-brand), sans-serif" }}>
+        <div className="border border-line rounded-card p-5">
+          <h2 className="text-sm font-semibold text-fg mb-4" style={{ fontFamily: "var(--font-brand), sans-serif" }}>
             Recent sign-ups
           </h2>
           {recentUsers.length === 0 ? (
-            <p className="text-sm text-stone-500 py-6 text-center">No users yet.</p>
+            <p className="text-sm text-fg-muted py-6 text-center">No users yet.</p>
           ) : (
             <div className="space-y-2">
               {recentUsers.map((u) => (
-                <div key={u.uid} className="flex items-center justify-between gap-3 text-sm">
+                <div key={u.uid} className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 text-sm">
                   <div className="min-w-0 flex items-center gap-2">
                     <Avatar src={u.photoURL} name={u.displayName || u.email} />
-                    <span className="text-white truncate">{u.displayName || "—"}</span>
-                    <span className="text-stone-500 truncate hidden sm:inline">· {u.email}</span>
+                    <span className="text-fg truncate">{u.displayName || "—"}</span>
+                    <span className="text-fg-muted truncate hidden sm:inline">· {u.email}</span>
                   </div>
                   <div className="flex items-center gap-2.5 shrink-0">
                     {u.subscriptionActive ? (
-                      <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Active</span>
+                      <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-500/10 text-success-bright border border-emerald-500/20">Active</span>
                     ) : (
-                      <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-white/[0.04] text-stone-500 border border-white/[0.06]">Free</span>
+                      <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-surface text-fg-muted border border-line">Free</span>
                     )}
-                    <span className="text-xs text-stone-500 tabular-nums">{formatDate(u.createdAt)}</span>
+                    <span className="text-xs text-fg-muted tabular-nums">{formatDate(u.createdAt)}</span>
                   </div>
                 </div>
               ))}
             </div>
           )}
-          <Link href="/dashboard/admin/users" className="inline-block text-xs text-[#2dabe0] hover:underline mt-4">
+          <Link href="/dashboard/admin/users" className="inline-block text-xs text-accent hover:underline mt-4">
             Manage users →
           </Link>
         </div>

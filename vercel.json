@@ -1,0 +1,24 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/reconcile-payments",
+      "schedule": "17 * * * *"
+    },
+    {
+      "path": "/api/cron/review-digest",
+      "schedule": "43 7 * * *"
+    },
+    {
+      "path": "/api/cron/cleanup",
+      "schedule": "11 3 * * *"
+    },
+    {
+      "path": "/api/cron/stats-recompute",
+      "schedule": "29 4 * * *"
+    },
+    {
+      "path": "/api/cron/reminders",
+      "schedule": "37 9 * * *"
+    }
+  ]
+}

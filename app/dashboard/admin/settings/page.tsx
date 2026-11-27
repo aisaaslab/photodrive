@@ -1,361 +1,193 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { useAuth } from "@/components/auth/AuthProvider";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { useToast } from "@/components/ui/Toast";
+import { SUPPORT_EMAIL } from "@/lib/branding";
+import { TRACKING_FIELDS, TRACKING_PATTERNS, checkSupportEmail, checkTrackingId, type TrackingField } from "@/lib/shared/site-rules";
 
-type InboxMessage = {
-  id: string;
-  name: string;
-  email: string;
-  subject: string;
-  message: string;
-  createdAt: number;
-  read?: boolean;
-  emailed?: boolean;
+type Values = { supportEmail: string; gtmId: string; googleAdsId: string; metaPixelId: string };
+type Loaded = Values & { updatedAt?: number; updatedByEmail?: string | null };
+
+const EMPTY: Values = { supportEmail: "", gtmId: "", googleAdsId: "", metaPixelId: "" };
+
+const HINTS: Record<TrackingField, string> = {
+  metaPixelId: "Loads the Meta Pixel on every page and fires Purchase on the Thank You page. Numbers only.",
+  gtmId: "Loads your GTM container. Don't also fire the Meta Pixel from inside GTM, or purchases are counted twice.",
+  googleAdsId: "Loads the Google Ads global site tag.",
 };
+const ORDER: TrackingField[] = ["metaPixelId", "gtmId", "googleAdsId"];
 
-type TrackingForm = { gtmId: string; googleAdsId: string; metaPixelId: string };
-
-const TRACKING_FIELDS: { key: keyof TrackingForm; label: string; placeholder: string; hint: string }[] = [
-  {
-    key: "metaPixelId",
-    label: "Meta Pixel ID",
-    placeholder: "1234567890123456",
-    hint: "Loads the Meta Pixel on every page and fires Purchase on the Thank You page. Numbers only.",
-  },
-  {
-    key: "gtmId",
-    label: "Google Tag Manager ID",
-    placeholder: "GTM-XXXXXXX",
-    hint: "Loads your GTM container. Don't also fire the Meta Pixel from inside GTM, or purchases are counted twice.",
-  },
-  {
-    key: "googleAdsId",
-    label: "Google Ads tag ID",
-    placeholder: "AW-123456789",
-    hint: "Loads the Google Ads global site tag.",
-  },
-];
-
-const EMPTY_TRACKING: TrackingForm = { gtmId: "", googleAdsId: "", metaPixelId: "" };
-
-function formatDate(ts: number) {
-  return new Date(ts).toLocaleString("en-GB", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+function formatWhen(ts: number) {
+  return new Date(ts).toLocaleString("en-US", { dateStyle: "long", timeStyle: "short" });
 }
 
+/** Admin Settings (S8-04): the support address and the tracking IDs. Checked as you type with the same rules the server enforces. */
 export default function AdminSettingsPage() {
   const { user } = useAuth();
-  const [supportEmail, setSupportEmail] = useState("");
-  const [savedEmail, setSavedEmail] = useState("");
+  const toast = useToast();
+  const [saved, setSaved] = useState<Values>(EMPTY);
+  const [draft, setDraft] = useState<Values>(EMPTY);
+  const [meta, setMeta] = useState<{ updatedAt?: number; updatedByEmail?: string | null }>({});
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [notice, setNotice] = useState<{ tone: "ok" | "err"; text: string } | null>(null);
-  const [tracking, setTracking] = useState<TrackingForm>(EMPTY_TRACKING);
-  const [savedTracking, setSavedTracking] = useState<TrackingForm>(EMPTY_TRACKING);
-  const [savingTracking, setSavingTracking] = useState(false);
-  const [trackingNotice, setTrackingNotice] = useState<{ tone: "ok" | "err"; text: string } | null>(null);
-  const [messages, setMessages] = useState<InboxMessage[]>([]);
-  const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [busyId, setBusyId] = useState<string | null>(null);
+  const [failed, setFailed] = useState(false);
+  const [saving, setSaving] = useState<"email" | "tracking" | null>(null);
+  const [touched, setTouched] = useState<Partial<Record<keyof Values, boolean>>>({});
+  const [serverError, setServerError] = useState<Partial<Record<keyof Values, string>>>({});
 
-  const authHeaders = useCallback(async () => {
-    const token = await user!.getIdToken();
-    return { Authorization: `Bearer ${token}` };
-  }, [user]);
+  const apply = useCallback((data: Loaded) => {
+    const v: Values = { supportEmail: data.supportEmail ?? "", gtmId: data.gtmId ?? "", googleAdsId: data.googleAdsId ?? "", metaPixelId: data.metaPixelId ?? "" };
+    setSaved(v);
+    setDraft(v);
+    setMeta({ updatedAt: data.updatedAt, updatedByEmail: data.updatedByEmail });
+  }, []);
 
   const load = useCallback(async () => {
     if (!user) return;
     setLoading(true);
+    setFailed(false);
     try {
-      const headers = await authHeaders();
-      const [settingsRes, messagesRes] = await Promise.all([
-        fetch("/api/admin/settings", { headers }),
-        fetch("/api/admin/messages?limit=50", { headers }),
-      ]);
-      if (settingsRes.ok) {
-        const data = await settingsRes.json();
-        setSupportEmail(data.supportEmail ?? "");
-        setSavedEmail(data.supportEmail ?? "");
-        const t = {
-          gtmId: data.gtmId ?? "",
-          googleAdsId: data.googleAdsId ?? "",
-          metaPixelId: data.metaPixelId ?? "",
-        };
-        setTracking(t);
-        setSavedTracking(t);
-      }
-      if (messagesRes.ok) {
-        setMessages((await messagesRes.json()).messages ?? []);
+      const token = await user.getIdToken();
+      const res = await fetch("/api/admin/settings", { headers: { Authorization: `Bearer ${token}` } });
+      if (!res.ok) throw new Error(String(res.status));
+      apply(await res.json());
+    } catch { setFailed(true); }
+    setLoading(false);
+  }, [user, apply]);
+
+  useEffect(() => { void load(); }, [load]);
+
+  const errors = useMemo(() => {
+    const e: Partial<Record<keyof Values, string>> = {};
+    const mail = checkSupportEmail(draft.supportEmail);
+    if (!mail.ok) e.supportEmail = mail.error;
+    for (const f of TRACKING_FIELDS) {
+      const r = checkTrackingId(f, draft[f]);
+      if (!r.ok) e[f] = r.error;
+    }
+    return e;
+  }, [draft]);
+
+  const shownError = (k: keyof Values) => (touched[k] ? errors[k] : undefined) || serverError[k] || undefined;
+  const set = (k: keyof Values, v: string) => { setDraft((d) => ({ ...d, [k]: v })); setServerError((s) => ({ ...s, [k]: undefined })); };
+  const touch = (k: keyof Values) => setTouched((t) => ({ ...t, [k]: true }));
+
+  const emailDirty = draft.supportEmail.trim().toLowerCase() !== saved.supportEmail.trim().toLowerCase();
+  const trackingDirty = TRACKING_FIELDS.some((f) => draft[f].trim() !== saved[f]);
+
+  async function save(part: "email" | "tracking") {
+    if (!user || saving) return;
+    const keys: (keyof Values)[] = part === "email" ? ["supportEmail"] : [...TRACKING_FIELDS];
+    setTouched((t) => ({ ...t, ...Object.fromEntries(keys.map((k) => [k, true])) }));
+    if (keys.some((k) => errors[k])) return;
+    setSaving(part);
+    try {
+      const token = await user.getIdToken();
+      const res = await fetch("/api/admin/settings", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify(Object.fromEntries(keys.map((k) => [k, draft[k]]))),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setServerError(data.fields ?? {});
+        toast(data.error || "Could not save.", "error");
+      } else {
+        // Keep what the other form is still holding unsaved.
+        const keep = part === "email" ? { gtmId: draft.gtmId, googleAdsId: draft.googleAdsId, metaPixelId: draft.metaPixelId } : { supportEmail: draft.supportEmail };
+        apply(data);
+        setDraft((d) => ({ ...d, ...keep }));
+        setTouched({});
+        toast(data.changed === false ? "Nothing had changed." : part === "email" ? "Support email saved." : "Tracking IDs saved.", "success");
       }
     } catch {
-      // ignore — retry via UI
+      toast("Could not save. Check your connection and try again.", "error");
     }
-    setLoading(false);
-  }, [user, authHeaders]);
-
-  useEffect(() => {
-    load();
-  }, [load]);
-
-  async function saveEmail(e: React.FormEvent) {
-    e.preventDefault();
-    if (!user || saving) return;
-    setSaving(true);
-    setNotice(null);
-    try {
-      const headers = await authHeaders();
-      const res = await fetch("/api/admin/settings", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json", ...headers },
-        body: JSON.stringify({ supportEmail }),
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error || "Could not save.");
-      setSavedEmail(data.supportEmail);
-      setSupportEmail(data.supportEmail);
-      setNotice({ tone: "ok", text: `Support email updated to ${data.supportEmail}. The contact page uses it immediately — no redeploy needed.` });
-    } catch (err) {
-      setNotice({ tone: "err", text: (err as Error).message });
-    }
-    setSaving(false);
-  }
-
-  async function saveTracking(e: React.FormEvent) {
-    e.preventDefault();
-    if (!user || savingTracking) return;
-    setSavingTracking(true);
-    setTrackingNotice(null);
-    try {
-      const headers = await authHeaders();
-      const res = await fetch("/api/admin/settings", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json", ...headers },
-        body: JSON.stringify(tracking),
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error || "Could not save.");
-      const t = {
-        gtmId: data.gtmId ?? "",
-        googleAdsId: data.googleAdsId ?? "",
-        metaPixelId: data.metaPixelId ?? "",
-      };
-      setTracking(t);
-      setSavedTracking(t);
-      setTrackingNotice({ tone: "ok", text: "Tracking IDs saved. New page loads pick them up right away — no redeploy needed." });
-    } catch (err) {
-      setTrackingNotice({ tone: "err", text: (err as Error).message });
-    }
-    setSavingTracking(false);
-  }
-
-  async function markRead(id: string, read: boolean) {
-    if (!user) return;
-    setBusyId(id);
-    const headers = await authHeaders();
-    const res = await fetch(`/api/admin/messages/${id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json", ...headers },
-      body: JSON.stringify({ read }),
-    });
-    if (res.ok) {
-      setMessages((prev) => prev.map((m) => (m.id === id ? { ...m, read } : m)));
-    }
-    setBusyId(null);
-  }
-
-  async function deleteMessage(id: string) {
-    if (!user || !confirm("Delete this message?")) return;
-    setBusyId(id);
-    const headers = await authHeaders();
-    const res = await fetch(`/api/admin/messages/${id}`, { method: "DELETE", headers });
-    if (res.ok) {
-      setMessages((prev) => prev.filter((m) => m.id !== id));
-    }
-    setBusyId(null);
+    setSaving(null);
   }
 
   if (loading) {
     return (
       <div className="flex items-center justify-center py-32">
-        <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+        <div className="w-5 h-5 border-2 border-fg-muted/30 border-t-white rounded-full animate-spin" />
+      </div>
+    );
+  }
+  if (failed) {
+    return (
+      <div className="py-24 text-center">
+        <p className="text-fg-muted mb-4">The settings could not be loaded.</p>
+        <Button variant="outline" size="sm" onClick={load}>Try again</Button>
       </div>
     );
   }
 
-  const unread = messages.filter((m) => !m.read).length;
-  const trackingDirty = TRACKING_FIELDS.some((f) => tracking[f.key].trim() !== savedTracking[f.key]);
-  const dirty = supportEmail.trim().toLowerCase() !== savedEmail.trim().toLowerCase();
-
   return (
     <div className="max-w-2xl">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-white" style={{ fontFamily: "var(--font-brand), sans-serif" }}>
-          Settings
-        </h1>
-        <p className="text-sm text-stone-400 mt-1">Contact email, tracking tags and inbox.</p>
+        <h1 className="text-2xl font-bold text-fg" style={{ fontFamily: "var(--font-brand), sans-serif" }}>Settings</h1>
+        <p className="text-sm text-fg-muted mt-1">
+          Contact email and tracking tags. Messages from the contact form are in <Link href="/dashboard/admin/support" className="text-accent underline underline-offset-2">Support</Link>.
+        </p>
+        {meta.updatedAt ? (
+          <p className="text-xs text-fg-muted mt-1 break-words" data-testid="settings-last-change">
+            Last changed {formatWhen(meta.updatedAt)}{meta.updatedByEmail ? <> by {meta.updatedByEmail}</> : null}.
+          </p>
+        ) : null}
       </div>
 
-      {/* Support email */}
-      <form onSubmit={saveEmail} className="border border-white/[0.06] rounded-2xl p-5 mb-6">
-        <h2 className="text-sm font-semibold text-white mb-1">Support email</h2>
-        <p className="text-xs text-stone-500 mb-4 leading-relaxed">
-          Shown on the contact page and used as the recipient for the contact form.
-          Updates take effect immediately — no redeploy or env change needed.
+      <form onSubmit={(e) => { e.preventDefault(); void save("email"); }} noValidate className="border border-line rounded-card p-5 mb-6">
+        <h2 className="text-sm font-semibold text-fg mb-1">Support email</h2>
+        <p className="text-xs text-fg-muted mb-4 leading-relaxed">
+          Shown on the contact page and used as the recipient for the contact form. Updates take effect immediately, no redeploy needed.
         </p>
-        <div className="flex flex-col sm:flex-row gap-2">
-          <input
-            type="email"
-            required
-            maxLength={254}
-            value={supportEmail}
-            onChange={(e) => setSupportEmail(e.target.value)}
-            placeholder="support@photodrive.co"
-            className="flex-1 bg-white/[0.04] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-stone-600 outline-none focus:border-white/30 transition-colors"
-          />
-          <button
-            type="submit"
-            disabled={saving || !dirty}
-            className="px-5 py-2.5 rounded-xl text-sm font-semibold bg-white text-stone-900 hover:bg-stone-200 transition-colors disabled:opacity-40"
-          >
-            {saving ? "Saving…" : "Save"}
-          </button>
+        <Input
+          label="Support email address"
+          type="email"
+          autoComplete="off"
+          maxLength={254}
+          value={draft.supportEmail}
+          onChange={(e) => set("supportEmail", e.target.value)}
+          onBlur={() => touch("supportEmail")}
+          placeholder={SUPPORT_EMAIL}
+          error={shownError("supportEmail")}
+        />
+        <div className="mt-4">
+          <Button type="submit" size="sm" loading={saving === "email"} disabled={!emailDirty || saving !== null}>Save</Button>
         </div>
-        {notice && (
-          <p className={`text-xs mt-3 leading-relaxed ${notice.tone === "ok" ? "text-emerald-400" : "text-red-400"}`}>
-            {notice.text}
-          </p>
-        )}
       </form>
 
-      {/* Tracking & analytics */}
-      <form onSubmit={saveTracking} className="border border-white/[0.06] rounded-2xl p-5 mb-6">
-        <h2 className="text-sm font-semibold text-white mb-1">Tracking &amp; analytics</h2>
-        <p className="text-xs text-stone-500 mb-4 leading-relaxed">
-          Enter only the ID — not a script. Leave a field empty to switch that tag off.
-          Changes apply to new page loads within seconds, no redeploy needed.
+      <form onSubmit={(e) => { e.preventDefault(); void save("tracking"); }} noValidate className="border border-line rounded-card p-5">
+        <h2 className="text-sm font-semibold text-fg mb-1">Tracking &amp; analytics</h2>
+        <p className="text-xs text-fg-muted mb-4 leading-relaxed">
+          Enter only the ID, not a script. Leave a field empty to switch that tag off. Changes apply to new page loads within seconds.
         </p>
         <div className="space-y-4">
-          {TRACKING_FIELDS.map((f) => (
-            <label key={f.key} className="block">
-              <span className="text-xs font-medium text-stone-300">{f.label}</span>
-              <input
-                type="text"
-                inputMode={f.key === "metaPixelId" ? "numeric" : "text"}
-                autoComplete="off"
-                spellCheck={false}
-                maxLength={32}
-                value={tracking[f.key]}
-                onChange={(e) => setTracking((prev) => ({ ...prev, [f.key]: e.target.value }))}
-                placeholder={f.placeholder}
-                className="mt-1.5 w-full bg-white/[0.04] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-stone-600 outline-none focus:border-white/30 transition-colors font-mono"
-              />
-              <span className="block text-[11px] text-stone-500 mt-1 leading-relaxed">{f.hint}</span>
-            </label>
+          {ORDER.map((f) => (
+            <Input
+              key={f}
+              label={TRACKING_PATTERNS[f].label}
+              inputMode={f === "metaPixelId" ? "numeric" : "text"}
+              autoComplete="off"
+              spellCheck={false}
+              maxLength={32}
+              className="font-mono"
+              value={draft[f]}
+              onChange={(e) => set(f, e.target.value)}
+              onBlur={() => touch(f)}
+              placeholder={TRACKING_PATTERNS[f].example}
+              hint={HINTS[f]}
+              error={shownError(f)}
+            />
           ))}
         </div>
-        <div className="flex items-center gap-3 mt-4">
-          <button
-            type="submit"
-            disabled={savingTracking || !trackingDirty}
-            className="px-5 py-2.5 rounded-xl text-sm font-semibold bg-white text-stone-900 hover:bg-stone-200 transition-colors disabled:opacity-40"
-          >
-            {savingTracking ? "Saving…" : "Save"}
-          </button>
+        <div className="mt-4">
+          <Button type="submit" size="sm" loading={saving === "tracking"} disabled={!trackingDirty || saving !== null}>Save</Button>
         </div>
-        {trackingNotice && (
-          <p className={`text-xs mt-3 leading-relaxed ${trackingNotice.tone === "ok" ? "text-emerald-400" : "text-red-400"}`}>
-            {trackingNotice.text}
-          </p>
-        )}
       </form>
-
-      {/* Inbox */}
-      <div className="border border-white/[0.06] rounded-2xl p-5">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-sm font-semibold text-white">Inbox</h2>
-          <span className="text-xs text-stone-500">
-            {messages.length === 0
-              ? "No messages yet"
-              : `${unread} unread · ${messages.length} total`}
-          </span>
-        </div>
-        {messages.length === 0 ? (
-          <p className="text-sm text-stone-500 py-6 text-center">
-            Contact-form messages will appear here, and will also be forwarded to your support email when delivery is configured.
-          </p>
-        ) : (
-          <div className="space-y-2">
-            {messages.map((m) => {
-              const expanded = expandedId === m.id;
-              return (
-                <div
-                  key={m.id}
-                  className={`border rounded-xl overflow-hidden ${m.read ? "border-white/[0.06]" : "border-[#2dabe0]/30 bg-[#17509e]/[0.04]"}`}
-                >
-                  <button
-                    onClick={() => {
-                      setExpandedId(expanded ? null : m.id);
-                      if (!expanded && !m.read) markRead(m.id, true);
-                    }}
-                    className="w-full text-left px-4 py-3 flex items-center gap-3"
-                  >
-                    {!m.read && <span className="w-1.5 h-1.5 rounded-full bg-[#2dabe0] shrink-0" />}
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-baseline gap-2">
-                        <span className="text-sm font-medium text-white truncate">{m.subject}</span>
-                        {m.emailed === false && (
-                          <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20 shrink-0">
-                            inbox only
-                          </span>
-                        )}
-                      </div>
-                      <div className="text-xs text-stone-500 truncate mt-0.5">
-                        {m.name} · {m.email} · {formatDate(m.createdAt)}
-                      </div>
-                    </div>
-                    <span className="text-stone-500 text-sm shrink-0">{expanded ? "−" : "+"}</span>
-                  </button>
-                  {expanded && (
-                    <div className="px-4 pb-4">
-                      <p className="text-sm text-stone-300 leading-relaxed whitespace-pre-wrap border-t border-white/[0.06] pt-3">
-                        {m.message}
-                      </p>
-                      <div className="flex items-center gap-2 mt-3">
-                        <a
-                          href={`mailto:${m.email}?subject=${encodeURIComponent(`Re: ${m.subject}`)}`}
-                          className="text-xs px-3 py-1.5 rounded-lg bg-white text-stone-900 font-semibold hover:bg-stone-200 transition-colors"
-                        >
-                          Reply
-                        </a>
-                        <button
-                          onClick={() => markRead(m.id, !m.read)}
-                          disabled={busyId === m.id}
-                          className="text-xs px-3 py-1.5 rounded-lg border border-white/10 text-stone-300 hover:text-white hover:border-white/20 transition-colors"
-                        >
-                          {m.read ? "Mark unread" : "Mark read"}
-                        </button>
-                        <button
-                          onClick={() => deleteMessage(m.id)}
-                          disabled={busyId === m.id}
-                          className="text-xs px-3 py-1.5 rounded-lg border border-white/10 text-stone-500 hover:text-red-400 hover:border-red-500/30 transition-colors"
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
     </div>
   );
 }

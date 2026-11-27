@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useAuth } from "@/components/auth/AuthProvider";
 import type { PlanDoc } from "@/lib/firestore/types";
+import { formatMoney } from "@/lib/shared/money";
 
 export type CreatedUser = {
   user: { uid: string; email: string; displayName: string };
@@ -20,7 +21,7 @@ export function CreateUserModal({
   onClose,
   onCreated,
 }: {
-  plans: Pick<PlanDoc, "id" | "name" | "interval" | "priceCents" | "active">[];
+  plans: Pick<PlanDoc, "id" | "name" | "interval" | "priceCents" | "currency" | "active">[];
   onClose: () => void;
   onCreated: (created: CreatedUser) => void;
 }) {
@@ -125,7 +126,7 @@ export function CreateUserModal({
               <option value="">No plan — free account</option>
               {plans.map((p) => (
                 <option key={p.id} value={p.id} disabled={!p.active}>
-                  {p.name} · {p.interval} · ${(p.priceCents / 100).toFixed(2)}{p.active ? "" : " (inactive)"}
+                  {p.name} · {p.interval} · {formatMoney(p.priceCents, p.currency, "en-US")}{p.active ? "" : " (inactive)"}
                 </option>
               ))}
             </select>

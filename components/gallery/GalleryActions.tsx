@@ -49,8 +49,8 @@ export function GalleryActions({ bookUrl }: Props) {
         onClick={handleShare}
         className={`inline-flex items-center gap-1.5 text-xs font-medium rounded-full px-3 py-1.5 transition-all border ${
           copied
-            ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-600"
-            : "border-stone-200 bg-white text-stone-600 hover:text-[#17509e] hover:border-[#17509e]/50 hover:bg-[#eaf2fb] hover:shadow-sm"
+            ? "border-emerald-500/40 bg-emerald-500/10 text-success-bright"
+            : "border-line bg-surface text-fg-soft hover:text-accent-deep hover:border-accent-deep/50 hover:bg-[#eaf2fb] hover:shadow-sm"
         }`}
         aria-label={g.share}
       >
@@ -71,7 +71,7 @@ export function GalleryActions({ bookUrl }: Props) {
           href={bookUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1.5 text-xs font-semibold rounded-full px-3 py-1.5 bg-stone-900 text-white hover:bg-emerald-600 hover:shadow-sm transition-all"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold rounded-pill px-3 py-1.5 bg-accent text-canvas hover:bg-emerald-600 hover:shadow-sm transition-all"
         >
           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.7}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6.75c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v10.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 012.25 17.25V6.75zm10.5 0c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v10.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0112.75 17.25V6.75z" />

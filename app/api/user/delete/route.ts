@@ -1,28 +1,23 @@
+import { route } from "@/lib/server/http";
 import { NextRequest, NextResponse } from "next/server";
 import { getAdminAuth, getAdminDb } from "@/lib/firebase/admin";
+import { requireUser } from "@/lib/server/auth";
+import { deleteUserGalleries } from "@/lib/server/repos/galleries";
+import { usersCol } from "@/lib/server/repos/collections";
 
-export async function DELETE(req: NextRequest) {
-  const token = req.headers.get("authorization")?.replace("Bearer ", "");
-  if (!token) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-  let uid: string;
-  try {
-    uid = (await getAdminAuth().verifyIdToken(token)).uid;
-  } catch {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+export const DELETE = route("user.delete.delete", async (req: NextRequest) => {
+  const auth = await requireUser(req);
+  if (!auth.ok) return auth.response;
+  const uid = auth.user.uid;
 
   const db = getAdminDb();
-  const galleries = await db.collection("galleries").where("photographerId", "==", uid).get();
-
-  const batch = db.batch();
-  galleries.docs.forEach((doc) => batch.delete(doc.ref));
-  batch.delete(db.collection("users").doc(uid));
-  await batch.commit();
+  // Every gallery with its client favourites and submissions (S4-02), then the profile.
+  await deleteUserGalleries(db, uid);
+  await usersCol(db).doc(uid).delete();
 
   // Stripe customer records are not deleted here — Stripe keeps its own
   // billing/transaction history for legal and accounting requirements.
   await getAdminAuth().deleteUser(uid);
 
   return NextResponse.json({ ok: true });
-}
+});

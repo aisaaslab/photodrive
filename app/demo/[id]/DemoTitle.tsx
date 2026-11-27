@@ -9,7 +9,7 @@ import { useLanguage } from "@/lib/i18n";
 export function DemoTitle() {
   const { t } = useLanguage();
   return (
-    <h1 className="text-2xl font-bold text-stone-900" style={{ fontFamily: "var(--font-brand), sans-serif" }}>
+    <h1 className="text-2xl font-bold text-fg" style={{ fontFamily: "var(--font-brand), sans-serif" }}>
       {t.demo.galleryTitle}
     </h1>
   );

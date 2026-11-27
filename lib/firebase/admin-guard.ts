@@ -1,19 +1,11 @@
+import "server-only";
 import { NextRequest } from "next/server";
-import { getAdminAuth } from "./admin";
+import { isAdmin as isAdminUid, verifyBearer } from "@/lib/server/auth";
 
+// Kept for the many callers of these two helpers; the logic lives in lib/server/auth.ts (S5-04). New code uses `requireUser` /
+// `requireAdmin` from there.
 export async function getUidFromRequest(req: NextRequest): Promise<string | null> {
-  const token = req.headers.get("authorization")?.replace("Bearer ", "");
-  if (!token) return null;
-  try {
-    const decoded = await getAdminAuth().verifyIdToken(token);
-    return decoded.uid;
-  } catch {
-    return null;
-  }
+  return (await verifyBearer(req))?.uid ?? null;
 }
 
-export function isAdmin(uid: string | null): boolean {
-  const adminUid = process.env.ADMIN_UID;
-  if (!adminUid || !uid) return false;
-  return uid === adminUid;
-}
+export const isAdmin = isAdminUid;

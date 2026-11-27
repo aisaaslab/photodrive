@@ -1,6 +1,8 @@
+import { route } from "@/lib/server/http";
 import { NextRequest, NextResponse } from "next/server";
-import { getAdminAuth, getAdminDb } from "@/lib/firebase/admin";
+import { requireUser } from "@/lib/server/auth";
 import { fetchDriveFolder } from "@/lib/drive/client";
+import { galleriesCol } from "@/lib/server/repos/collections";
 
 // Owner-auth-gated endpoint that returns the gallery's image list, used by the
 // dashboard cover picker. Public galleries never call this — the public page
@@ -8,19 +10,8 @@ import { fetchDriveFolder } from "@/lib/drive/client";
 // response to only what the picker needs (id, name, thumbnailLink) so no folder
 // metadata leaks beyond the owner.
 
-async function getUid(req: NextRequest): Promise<string | null> {
-  const token = req.headers.get("authorization")?.replace("Bearer ", "");
-  if (!token) return null;
-  try {
-    const decoded = await getAdminAuth().verifyIdToken(token);
-    return decoded.uid;
-  } catch {
-    return null;
-  }
-}
-
 async function getGalleryForOwner(id: string, uid: string) {
-  const ref = getAdminDb().collection("galleries").doc(id);
+  const ref = galleriesCol().doc(id);
   const snap = await ref.get();
   if (!snap.exists) return null;
   const data = snap.data()!;
@@ -28,13 +19,14 @@ async function getGalleryForOwner(id: string, uid: string) {
   return { ref, data: { id: snap.id, folderId: data.folderId as string } };
 }
 
-export async function GET(
+export const GET = route("galleries.photos.get", async (
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
-) {
+) => {
   const { id } = await params;
-  const uid = await getUid(req);
-  if (!uid) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const auth = await requireUser(req);
+  if (!auth.ok) return auth.response;
+  const uid = auth.user.uid;
 
   const gallery = await getGalleryForOwner(id, uid);
   if (!gallery) return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -56,4 +48,4 @@ export async function GET(
   } catch {
     return NextResponse.json({ error: "Failed to load photos" }, { status: 502 });
   }
-}
+});

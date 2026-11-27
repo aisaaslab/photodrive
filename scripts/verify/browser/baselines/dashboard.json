@@ -1,0 +1,561 @@
+{
+ "01 dashboard": {
+  "header": {
+   "h1": "Welcome, Test",
+   "lines": [
+    "4 galleries"
+   ]
+  },
+  "cards": [
+   {
+    "title": "Public test",
+    "badge": "Public",
+    "text": "2 new Choose cover Public test Public DATE Views: 0 Downloads: 0 Favorites: 0 No visits yet Copy link Open Favorites 2 n"
+   },
+   {
+    "title": "Private test",
+    "badge": null,
+    "text": "Choose cover Private test Password DATE Views: 0 Downloads: 0 Favorites: 0 No visits yet Copy link Open Favorites"
+   },
+   {
+    "title": "No downloads",
+    "badge": "Public",
+    "text": "Choose cover No downloads Public DATE Views: 0 Downloads: 0 Favorites: 0 No visits yet Copy link Open Favorites"
+   },
+   {
+    "title": "Big gallery",
+    "badge": "Public",
+    "text": "Choose cover Big gallery Public DATE Views: 0 Downloads: 0 Favorites: 0 No visits yet Copy link Open Favorites"
+   }
+  ]
+ },
+ "02 search priv": [
+  "Private test"
+ ],
+ "03 search nothing": {
+  "titles": [],
+  "page": "EN T Welcome, Test 4 galleries New Gallery Newest first Oldest first Name A→Z Name Z→A All 4 Public 3 Private 1 New favourites 1 No gallery found with the name \"zzz-nothing\" No galleries yet No need to upload anything again. You use the Google Drive you already have. 1 Upload your photos & videos to Google Drive Use the Google Drive you already have — nothing new to learn. 2 Make the folder public"
+ },
+ "04 sort Oldest first": [
+  "Big gallery",
+  "No downloads",
+  "Private test",
+  "Public test"
+ ],
+ "04 sort Name A→Z": [
+  "Big gallery",
+  "No downloads",
+  "Private test",
+  "Public test"
+ ],
+ "04 sort Name Z→A": [
+  "Public test",
+  "Private test",
+  "No downloads",
+  "Big gallery"
+ ],
+ "04 sort Newest first": [
+  "Public test",
+  "Private test",
+  "No downloads",
+  "Big gallery"
+ ],
+ "05 copy link": {
+  "button": "ds: 0 Favorites: 0 No visits yet Copied Open Favorites 2 new",
+  "clipboard": "BASE/gallery/pubtest",
+  "toast": "Link copied"
+ },
+ "06 open link": {
+  "href": "https://example.com/gallery/pubtest",
+  "target": "_blank"
+ },
+ "07 favourites panel": {
+  "newBadgeBefore": true,
+  "text": "Client's favorites Public test SELECTION SENT Sent by Maria Client DATE, TIME · maria@example.com Note: Please retouch these 2 photos selected a.jpg b.jpg Without file extensions Download CSV Paste the list into Lightroom's text filter, or open the CSV in a spreadsheet, to find these photos fast. Copy list Download files (.zip)",
+  "buttons": [
+   "Cancel",
+   "Download CSV",
+   "Copy list",
+   "Download files (.zip)"
+  ]
+ },
+ "08 copy selection list": "a.jpg\nb.jpg",
+ "08b selection csv": {
+  "filename": "Public test.csv",
+  "content": "filename\r\na.jpg\r\nb.jpg\r\n"
+ },
+ "08c selection csv, no extensions": {
+  "filename": "Public test.csv",
+  "content": "filename\r\na\r\nb\r\n"
+ },
+ "09 selection zip": {
+  "filename": "Public test.zip",
+  "entries": [
+   "a.jpg",
+   "b.jpg"
+  ]
+ },
+ "10 after closing, the New badge is gone": false,
+ "11 edit private: initial": {
+  "text": "Gallery settings Private test Details Appearance Privacy & downloads Contact & links DETAILS Name Description Event date Location Gallery expires on (optional) After this day visitors see an \"unavailable\" page. Nothing is deleted; change or clear the date at any time to bring it back. Google Drive folder APPEARANCE Preview Private test Current cover Title font Aa Classic Aa Elegant Aa Script Aa Modern Aa Mono Title color Title size Aa Small Aa Medium Aa Large Aa Extra Show my name in the gallery header Replaces the PhotoDrive logo at the top of the gallery with your avatar and name. PRIVACY & DOWNLOADS Who can open this gallery? Public Private New password (leave blank to keep current) Allow photo downloads Turn off if the client should only view and choose (e.g. before paying). Switch off downloads once a selection is sent After your client sends their selection, photo downloads stop for everyone but you. Turn this off to give them back. CONTACT & LINKS Book this photographer button Links Cancel Save",
+  "fields": {
+   "inputs": [
+    "text|Name=Private test",
+    "textarea|Description=",
+    "date|Event date=",
+    "text|Location=",
+    "date|Gallery expires on (optional)=",
+    "text|Google Drive folder=https://drive.google.com/drive/folders/1DriveFolderIdDDDDDDDDDDDDDDDDDDDDDD",
+    "text|New password (leave blank to k=",
+    "checkbox|Allow photo downloadsTurn off =true",
+    "checkbox|Switch off downloads once a se=false",
+    "url|website=",
+    "url|instagram=",
+    "url|facebook="
+   ],
+   "switches": [
+    "switch::false",
+    "radio:Public:false",
+    "radio:Private:true",
+    "switch::false"
+   ]
+  }
+ },
+ "12 edit private: new password saved": {
+  "requests": [
+   {
+    "method": "PATCH",
+    "path": "/api/galleries/g-priv",
+    "body": {
+     "name": "Private test",
+     "visibility": "private",
+     "password": "new-secret-9",
+     "website": "",
+     "instagram": "",
+     "facebook": "",
+     "allowDownload": true,
+     "disableDownloadAfterSubmit": false,
+     "description": "",
+     "eventDate": "",
+     "location": "",
+     "expiresAt": "",
+     "bookLink": "",
+     "bookEnabled": false,
+     "titleFont": "classic",
+     "titleColor": "#ffffff",
+     "titleSize": "md",
+     "headerBranding": null
+    }
+   }
+  ],
+  "toast": "Changes saved",
+  "dialogOpen": false
+ },
+ "12b card: password revealed": "Private test new-secret-9 DATE Views: 0 Downloads: 0 Favorites: 0 No visits yet Copy link Open Favorites",
+ "12c card: password hidden again": "Private test Password DATE Views: 0 Downloads: 0 Favorites: 0 No visits yet Copy link Open Favorites",
+ "13 edit private: choose Public shows the warning": "Gallery settings Private test Details Appearance Privacy & downloads Contact & links DETAILS Name Description Event date Location Gallery expires on (optional) After this day visitors see an \"unavailable\" page. Nothing is deleted; change or clear the date at any time to bring it back. Google Drive folder APPEARANCE Preview Private test Current cover Title font Aa Classic Aa Elegant Aa Script Aa Modern Aa Mono Title color Title size Aa Small Aa Medium Aa Large Aa Extra Show my name in the gallery header Replaces the PhotoDrive logo at the top of the gallery with your avatar and name. PRIVACY & DOWNLOADS Who can open this gallery? Public Private Switching to Public removes the password. Anyone with the link will be able to open this gallery. Yes, remove the password and make it public Allow photo downloads Turn off if the client should only view and choose (e.g. before paying). Switch off downloads once a selection is sent After your client sends their selection, photo downloads stop for everyone but you. Turn this off to give them back. CONTACT & LINKS Book this photographer button Links Cancel Save",
+ "14 edit private: Save without confirming is refused": {
+  "requests": [],
+  "toast": "Please confirm that you want to remove the password.",
+  "dialogOpen": true,
+  "text": "Gallery settings Private test Details Appearance Privacy & downloads Contact & links DETAILS Name Description Event date Location Gallery expires on (optional) After this day visitors see an \"unavailable\" page. Nothing is deleted; change or clear the date at any time to bring it back. Google Drive folder APPEARANCE Preview Private test Current cover Title font Aa Classic Aa Elegant Aa Script Aa Modern Aa Mono Title color Title size Aa Small Aa Medium Aa Large Aa Extra Show my name in the gallery header Replaces the PhotoDrive logo at the top of the gallery with your avatar and name. PRIVACY & DOWNLOADS Who can open this gallery? Public Private Switching to Public removes the password. Anyone with the link will be able to open this gallery. Yes, remove the password and make it public Allow photo downloads Turn off if the client should only view and choose (e.g. before paying). Switch off downloads once a selection is sent After your client sends their selection, photo downloads stop for everyone but you. Turn this off to give them back. CONTACT & LINKS Book this photographer button Links Please confirm that you want to remove the password. Cancel Save"
+ },
+ "15 edit private: Cancel leaves it private": {
+  "dialogOpen": false,
+  "card": "Private test Password DATE Views: 0 Downloads: 0 Favorites: "
+ },
+ "16 edit public: Private without a password is refused": {
+  "requests": [],
+  "toast": "A private gallery needs a password.",
+  "dialogOpen": true,
+  "text": "Gallery settings Public test Details Appearance Privacy & downloads Contact & links DETAILS Name Description Event date Location Gallery expires on (optional) After this day visitors see an \"unavailable\" page. Nothing is deleted; change or clear the date at any time to bring it back. Google Drive folder APPEARANCE Preview Public test Current cover Title font Aa Classic Aa Elegant Aa Script Aa Modern Aa Mono Title color Title size Aa Small Aa Medium Aa Large Aa Extra Show my name in the gallery header Replaces the PhotoDrive logo at the top of the gallery with your avatar and name. PRIVACY & DOWNLOADS Who can open this gallery? Public Private Password (required for a private gallery) Allow photo downloads Turn off if the client should only view and choose (e.g. before paying). Switch off downloads once a selection is sent After your client sends their selection, photo downloads stop for everyone but you. Turn this off to give them back. CONTACT & LINKS Book this photographer button Links A private gallery needs a password. Cancel Save"
+ },
+ "17 edit public: fields before saving": {
+  "inputs": [
+   "text|Name=Public test (edited)",
+   "textarea|Description=A description",
+   "date|Event date=2026-06-15",
+   "text|Location=Santorini, Greece",
+   "date|Gallery expires on (optional)=",
+   "text|Google Drive folder=https://drive.google.com/drive/folders/1DriveFolderIdDDDDDDDDDDDDDDDDDDDDDD",
+   "checkbox|Allow photo downloadsTurn off =false",
+   "url|website=",
+   "url|instagram=instagram.com/photographer",
+   "url|facebook="
+  ],
+  "switches": [
+   "switch::true",
+   "radio:Public:true",
+   "radio:Private:false",
+   "switch::false"
+  ]
+ },
+ "18 edit public: saved (the request, the toast, the card)": {
+  "requests": [
+   {
+    "method": "PATCH",
+    "path": "/api/galleries/g-pub",
+    "body": {
+     "name": "Public test (edited)",
+     "visibility": "public",
+     "website": "",
+     "instagram": "instagram.com/photographer",
+     "facebook": "",
+     "allowDownload": false,
+     "disableDownloadAfterSubmit": false,
+     "description": "A description",
+     "eventDate": "2026-06-15",
+     "location": "Santorini, Greece",
+     "expiresAt": "",
+     "bookLink": "",
+     "bookEnabled": false,
+     "titleFont": "serif",
+     "titleColor": "#f2c4c4",
+     "titleSize": "lg",
+     "headerBranding": "photographer"
+    }
+   }
+  ],
+  "toast": "Changes saved",
+  "dialogOpen": false,
+  "titles": [
+   "Big gallery",
+   "No downloads",
+   "Private test",
+   "Public test (edited)"
+  ]
+ },
+ "19 edit public: reopened shows what was saved": {
+  "inputs": [
+   "text|Name=Public test (edited)",
+   "textarea|Description=A description",
+   "date|Event date=2026-06-15",
+   "text|Location=Santorini, Greece",
+   "date|Gallery expires on (optional)=",
+   "text|Google Drive folder=https://drive.google.com/drive/folders/1DriveFolderIdDDDDDDDDDDDDDDDDDDDDDD",
+   "checkbox|Allow photo downloadsTurn off =false",
+   "url|website=",
+   "url|instagram=instagram.com/photographer",
+   "url|facebook="
+  ],
+  "switches": [
+   "switch::true",
+   "radio:Public:true",
+   "radio:Private:false",
+   "switch::false"
+  ]
+ },
+ "20 edit public: made private with a password": {
+  "requests": [
+   {
+    "method": "PATCH",
+    "path": "/api/galleries/g-big",
+    "body": {
+     "name": "Big gallery",
+     "visibility": "private",
+     "password": "big-secret-1",
+     "website": "",
+     "instagram": "",
+     "facebook": "",
+     "allowDownload": true,
+     "disableDownloadAfterSubmit": false,
+     "description": "",
+     "eventDate": "",
+     "location": "",
+     "expiresAt": "2031-03-01",
+     "bookLink": "",
+     "bookEnabled": false,
+     "titleFont": "classic",
+     "titleColor": "#ffffff",
+     "titleSize": "md",
+     "headerBranding": null
+    }
+   }
+  ],
+  "toast": "Changes saved",
+  "dialogOpen": false,
+  "card": "Big gallery Password DATE Expires DATE Views: 0 Downloads: 0"
+ },
+ "20b the card shows the expiry date": "Expires DATE",
+ "21 edit private: confirmation controls": "Gallery settings Private test Details Appearance Privacy & downloads Contact & links DETAILS Name Description Event date Location Gallery expires on (optional) After this day visitors see an \"unavailable\" page. Nothing is deleted; change or clear the date at any time to bring it back. Google Drive folder APPEARANCE Preview Private test Current cover Title font Aa Classic Aa Elegant Aa Script Aa Modern Aa Mono Title color Title size Aa Small Aa Medium Aa Large Aa Extra Show my name in the gallery header Replaces the PhotoDrive logo at the top of the gallery with your avatar and name. PRIVACY & DOWNLOADS Who can open this gallery? Public Private Switching to Public removes the password. Anyone with the link will be able to open this gallery. Yes, remove the password and make it public Allow photo downloads Turn off if the client should only view and choose (e.g. before paying). Switch off downloads once a selection is sent After your client sends their selection, photo downloads stop for everyone but you. Turn this off to give them back. CONTACT & LINKS Book this photographer button Links Cancel Save",
+ "22 edit private: switched to public": {
+  "requests": [
+   {
+    "method": "PATCH",
+    "path": "/api/galleries/g-priv",
+    "body": {
+     "name": "Private test",
+     "visibility": "public",
+     "website": "",
+     "instagram": "",
+     "facebook": "",
+     "allowDownload": true,
+     "disableDownloadAfterSubmit": false,
+     "description": "",
+     "eventDate": "",
+     "location": "",
+     "expiresAt": "",
+     "bookLink": "",
+     "bookEnabled": false,
+     "titleFont": "classic",
+     "titleColor": "#ffffff",
+     "titleSize": "md",
+     "headerBranding": null
+    }
+   }
+  ],
+  "toast": "Changes saved",
+  "dialogOpen": false,
+  "card": "Private test Public DATE Views: 0 Downloads: 0 Favorites: 0 "
+ },
+ "23 cover picker": {
+  "text": "Select a cover photo No downloads Best banner size: 2400 × 800 px Wide landscape photo, about 3:1 (e.g. 2400 × 800 px), at least 1600 px wide. Keep the subject near the middle — phones show a narrower crop. Adjust banner position Drag the photo to choose which part stays visible in the banner. Center Desktop Mobile This photo is under 1600 px wide and may look blurry on large screens. Remove cover (gradient) Current cover a.jpg Cancel Save",
+  "tiles": 2
+ },
+ "24 cover picker: picked the second photo": "Select a cover photo No downloads Best banner size: 2400 × 800 px Wide landscape photo, about 3:1 (e.g. 2400 × 800 px), at least 1600 px wide. Keep the subject near the middle — phones show a narrower crop. Adjust banner position Drag the photo to choose which part stays visible in the banner. Center Desktop Mobile Portrait photos are heavily cropped in the banner. A landscape photo works best. Remove cover (gradient) Current cover b.jpg Cancel Save",
+ "25 cover picker: moved the focal point": [
+  "Center"
+ ],
+ "26 cover saved": {
+  "requests": [
+   {
+    "method": "PATCH",
+    "path": "/api/galleries/g-nodl",
+    "body": {
+     "coverFileId": "1DriveImageFileIdBBBBBBBBBBBBBBBBBBB",
+     "coverPosX": 50,
+     "coverPosY": 52
+    }
+   }
+  ],
+  "toast": "Cover updated",
+  "dialogOpen": false
+ },
+ "27 cover picker: remove cover": "Select a cover photo No downloads Best banner size: 2400 × 800 px Wide landscape photo, about 3:1 (e.g. 2400 × 800 px), at least 1600 px wide. Keep the subject near the middle — phones show a narrower crop. Remove cover (gradient) Current cover Remove cover Cancel Save",
+ "28 cover removed": {
+  "requests": [
+   {
+    "method": "PATCH",
+    "path": "/api/galleries/g-nodl",
+    "body": {
+     "coverFileId": null,
+     "coverPosX": null,
+     "coverPosY": null
+    }
+   }
+  ],
+  "toast": "Cover updated",
+  "dialogOpen": false
+ },
+ "29 delete confirmation": "Delete gallery? The gallery “No downloads” will be permanently deleted. Photos in Drive remain untouched. Cancel Delete",
+ "30 delete cancelled": {
+  "titles": [
+   "Big gallery",
+   "No downloads",
+   "Private test",
+   "Public test (edited)"
+  ],
+  "requests": []
+ },
+ "31 deleted": {
+  "titles": [
+   "Big gallery",
+   "Private test",
+   "Public test (edited)"
+  ],
+  "header": {
+   "h1": "Welcome, Test",
+   "lines": [
+    "3 galleries"
+   ]
+  },
+  "requests": [],
+  "toast": "Gallery deletedUndo"
+ },
+ "32 new gallery: form": {
+  "fields": [
+   "text:e.g. Anna & George Wedding 2026",
+   "textarea:A few words about this gallery...",
+   "date:",
+   "text:City, Country",
+   "date:",
+   "url:https://drive.google.com/drive/folders/..."
+  ],
+  "radios": [
+   "PublicAnyo:true",
+   "PrivateVis:false"
+  ]
+ },
+ "33 new gallery: empty submit is blocked": {
+  "invalid": [
+   "e.g. Anna & George Wedding 2026: invalid",
+   "https://drive.google.com/drive/folders/...: invalid"
+  ],
+  "requests": [
+   {
+    "method": "DELETE",
+    "path": "/api/galleries/g-nodl",
+    "body": null
+   }
+  ]
+ },
+ "34 new gallery: a bad link is blocked": {
+  "invalid": [
+   "https://drive.google.com/drive/folders/...: invalid"
+  ],
+  "requests": []
+ },
+ "34b new gallery: the folder is checked": [
+  "Folder found: 3 photos and videos."
+ ],
+ "35 new gallery: private without a password is blocked": {
+  "invalid": [
+   "Gallery password: invalid"
+  ],
+  "form": {
+   "fields": [
+    "text:e.g. Anna & George Wedding 2026",
+    "textarea:A few words about this gallery...",
+    "date:",
+    "text:City, Country",
+    "date:",
+    "url:https://drive.google.com/drive/folders/...",
+    "password:Gallery password"
+   ],
+   "radios": [
+    "PublicAnyo:false",
+    "PrivateVis:true"
+   ]
+  },
+  "requests": []
+ },
+ "36 new gallery: public created": {
+  "requests": [
+   {
+    "method": "POST",
+    "path": "/api/galleries",
+    "body": {
+     "name": "My New Gallery",
+     "driveUrl": "https://drive.google.com/drive/folders/1AbCdEfGhIjKlMnOpQrStUvWxYz012345",
+     "visibility": "public",
+     "description": "About this",
+     "location": "Athens"
+    }
+   }
+  ],
+  "titles": [
+   "Big gallery",
+   "My New Gallery",
+   "Private test",
+   "Public test (edited)"
+  ],
+  "header": {
+   "h1": "Welcome, Test",
+   "lines": [
+    "4 galleries"
+   ]
+  },
+  "toast": ""
+ },
+ "36b new gallery: success dialog (link and share options)": "Gallery created My New Gallery Share this link with your client. Copy link Open gallery Send by e-mail Send on WhatsAppDone",
+ "37 new gallery: private created": {
+  "requests": [
+   {
+    "method": "POST",
+    "path": "/api/galleries",
+    "body": {
+     "name": "My Private Gallery",
+     "driveUrl": "https://drive.google.com/drive/folders/1AbCdEfGhIjKlMnOpQrStUvWxYz012345",
+     "visibility": "private",
+     "password": "my-secret-12"
+    }
+   }
+  ],
+  "titles": [
+   "Big gallery",
+   "My New Gallery",
+   "My Private Gallery",
+   "Private test",
+   "Public test (edited)"
+  ],
+  "header": {
+   "h1": "Welcome, Test",
+   "lines": [
+    "5 galleries"
+   ]
+  }
+ },
+ "37b new gallery: success dialog shows the password of a private gallery": "Gallery created My Private Gallery Share this link with your client. Copy link Password: my-secret-12 Open gallery Send by e-mail Send on WhatsAppDone",
+ "38 signed out": {
+  "url": "/login"
+ },
+ "39 unpaid photographer: dashboard": {
+  "header": {
+   "h1": "Welcome, Unpaid",
+   "lines": [
+    "Create your first gallery below."
+   ]
+  },
+  "titles": [],
+  "text": "EN U Welcome, Unpaid Create your first gallery below. New Gallery No galleries yet No need to upload anything again. You use the Google Drive you already have. 1 Upload your photos & videos to Google Drive Use the Google Drive you already have — nothing new to"
+ },
+ "40 unpaid: the payment step replaces the form": {
+  "requests": [],
+  "text": "Subscription required Get access to create unlimited galleries Yearly Everything, for a year €99/ year Unlimited galleries Originals at full resolution Buy with card → Back to form",
+  "buttons": [
+   "Back to form",
+   "Buy with card →",
+   "EN",
+   "New Gallery",
+   "New Gallery",
+   "U",
+   "YearlyEverything, for a year€99/ year"
+  ]
+ },
+ "41 unpaid: the plan list": [
+  {
+   "text": "YearlyEverything, for a year€99/ year",
+   "pressed": "true"
+  }
+ ],
+ "42 unpaid: back to the form keeps what was typed": [
+  "text:e.g. Anna & George Wedding 2026=Wedding Day",
+  "textarea:A few words about this gallery...=A lovely day",
+  "date:=",
+  "text:City, Country=Rhodes",
+  "date:=",
+  "url:https://drive.google.com/drive/folders/...=https://drive.google.com/drive/folders/1AbCdEfGhIjKlMnOpQrStUvWxYz012345",
+  "password:Gallery password=***14",
+  "url:https://instagram.com/username=https://instagram.com/wedding"
+ ],
+ "43 unpaid: checkout is attempted (payments are not configured here) and the form is kept for after payment": {
+  "text": "Subscription required Get access to create unlimited galleries Yearly Everything, for a year €99/ year Unlimited galleries Originals at full resolution Buy with card → Something went wrong Back to form",
+  "pending": {
+   "name": "Wedding Day",
+   "driveUrl": "https://drive.google.com/drive/folders/1AbCdEfGhIjKlMnOpQrStUvWxYz012345",
+   "password": "paywall-pass-1",
+   "visibility": "private",
+   "website": "",
+   "instagram": "https://instagram.com/wedding",
+   "facebook": "",
+   "description": "A lovely day",
+   "eventDate": "",
+   "location": "Rhodes",
+   "expiresAt": ""
+  }
+ },
+ "44 unpaid: the restored form after payment": [
+  "text:e.g. Anna & George Wedding 2026=Wedding Day",
+  "textarea:A few words about this gallery...=A lovely day",
+  "date:=",
+  "text:City, Country=Rhodes",
+  "date:=",
+  "url:https://drive.google.com/drive/folders/...=https://drive.google.com/drive/folders/1AbCdEfGhIjKlMnOpQrStUvWxYz012345",
+  "password:Gallery password=***14",
+  "url:https://instagram.com/username=https://instagram.com/wedding"
+ ],
+ "45 unpaid: still not active, so the payment step is shown again": {
+  "requests": [],
+  "pending": true
+ }
+}

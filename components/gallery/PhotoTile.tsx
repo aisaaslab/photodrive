@@ -3,10 +3,12 @@
 import { useState, useRef, useEffect } from "react";
 import { DriveFile } from "@/lib/drive/types";
 import { FavoriteButton } from "./FavoriteButton";
-import { driveImageUrl, driveDownloadUrl } from "@/lib/drive/public-url";
+import { photoDownloadHref, photoImageSrc, isProtectedPhoto } from "@/lib/drive/photo-src";
 import { useLanguage } from "@/lib/i18n";
+import { proxyUrl } from "@/lib/drive/proxy-url";
 
 interface Props {
+  galleryId: string;
   photo: DriveFile;
   index: number;
   isFavorited: boolean;
@@ -22,7 +24,7 @@ interface Props {
 const FALLBACK_RATIO = 1.5;
 
 export function PhotoTile({
-  photo, index, isFavorited, isSelected, selectionMode, allowDownload = true,
+  galleryId, photo, index, isFavorited, isSelected, selectionMode, allowDownload = true,
   onOpen, onToggleFavorite, onToggleSelect,
 }: Props) {
   const { t } = useLanguage();
@@ -53,8 +55,8 @@ export function PhotoTile({
 
   return (
     <div
-      className={`relative group overflow-hidden rounded-xl bg-stone-200 transition-all ${
-        isSelected ? "ring-2 ring-[#17509e] ring-offset-2 ring-offset-stone-950" : ""
+      className={`relative group overflow-hidden rounded-xl bg-surface-2 transition-all ${
+        isSelected ? "ring-2 ring-accent-deep ring-offset-2 ring-offset-canvas" : ""
       } ${isVideo ? "aspect-video" : "photo-item"}`}
       style={
         isVideo
@@ -68,16 +70,16 @@ export function PhotoTile({
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         ref={imgRef}
-        src={isVideo && photo.thumbnailLink ? photo.thumbnailLink.replace(/=s\d+$/, "=s800") : driveImageUrl(photo, 800)}
+        src={isVideo && photo.thumbnailLink ? photo.thumbnailLink.replace(/=s\d+$/, "=s800") : photoImageSrc(photo, 800)}
         alt=""
         loading="lazy"
         onLoad={() => setLoaded(true)}
         onError={(e) => {
           // If Google's CDN throttles/fails, fall back to our proxy once.
           const img = e.currentTarget;
-          if (!img.dataset.fallback && !isVideo) {
+          if (!img.dataset.fallback && !isVideo && !isProtectedPhoto(photo)) {
             img.dataset.fallback = "1";
-            img.src = `/api/photos/proxy?fileId=${photo.id}&size=thumb`;
+            img.src = proxyUrl(galleryId, photo.id, "thumb");
           } else {
             setLoaded(true);
           }
@@ -90,8 +92,8 @@ export function PhotoTile({
       {/* Video play indicator */}
       {isVideo && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div className="w-14 h-14 bg-black/50 backdrop-blur-sm rounded-full flex items-center justify-center ring-2 ring-white/20">
-            <svg className="w-6 h-6 text-white translate-x-0.5" fill="currentColor" viewBox="0 0 24 24">
+          <div className="w-14 h-14 bg-black/50 backdrop-blur-sm rounded-full flex items-center justify-center ring-2 ring-line">
+            <svg className="w-6 h-6 text-fg translate-x-0.5" fill="currentColor" viewBox="0 0 24 24">
               <path d="M8 5.14v14l11-7-11-7z" />
             </svg>
           </div>
@@ -109,18 +111,18 @@ export function PhotoTile({
         onClick={handleClick}
         aria-label={`${photo.name}`}
         aria-pressed={selectionMode ? !!isSelected : undefined}
-        className="absolute inset-0 rounded-xl cursor-pointer focus-visible:outline-3 focus-visible:-outline-offset-3 focus-visible:outline-[#2dabe0]"
+        className="absolute inset-0 rounded-xl cursor-pointer focus-visible:outline-3 focus-visible:-outline-offset-3 focus-visible:outline-accent"
       />
 
       {/* Selection checkbox */}
       {selectionMode && (
         <div className={`absolute top-2.5 left-2.5 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all pointer-events-none ${
           isSelected
-            ? "bg-[#17509e] border-[#17509e]"
+            ? "bg-accent-deep border-accent-deep"
             : "bg-black/40 border-white/60 backdrop-blur-sm"
         }`}>
           {isSelected && (
-            <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+            <svg className="w-3.5 h-3.5 text-fg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
             </svg>
           )}
@@ -140,20 +142,20 @@ export function PhotoTile({
           noise for clients, so they aren't shown permanently (and never on
           touch screens, which have no hover). */}
       <div className="absolute bottom-2 left-2 max-w-[60%] pointer-events-none opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-200">
-        <span className="block truncate bg-black/50 backdrop-blur-sm text-white/90 text-xs rounded-lg px-2 py-1">
+        <span className="block truncate bg-black/50 backdrop-blur-sm text-fg text-xs rounded-lg px-2 py-1">
           {photo.name}
         </span>
       </div>
 
       {/* Download button */}
-      {!selectionMode && allowDownload && (
+      {!selectionMode && allowDownload && photoDownloadHref(photo) && (
         <div className="absolute bottom-2 right-2">
           <a
-            href={driveDownloadUrl(photo.id)}
+            href={photoDownloadHref(photo)!}
             download={photo.name}
             onClick={(e) => e.stopPropagation()}
             aria-label={`${t.gallery.download} ${photo.name}`}
-            className="bg-black/50 backdrop-blur-sm text-white/90 hover:text-white text-xs rounded-lg px-2 py-1 flex items-center gap-1 transition-colors focus-visible:outline-2 focus-visible:outline-white"
+            className="bg-black/50 backdrop-blur-sm text-fg hover:text-fg text-xs rounded-lg px-2 py-1 flex items-center gap-1 transition-colors focus-visible:outline-2 focus-visible:outline-fg"
           >
             <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />

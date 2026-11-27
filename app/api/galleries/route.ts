@@ -1,30 +1,27 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAdminAuth, getAdminDb } from "@/lib/firebase/admin";
+import { galleryAvailability, parseExpiryInput } from "@/lib/gallery/availability";
+import { lapseEnforced, ownerPlanOf } from "@/lib/server/gallery-availability";
+import { getStatsSummaries } from "@/lib/server/repos/galleryStats";
+import { parseJson, route } from "@/lib/server/http";
+import { GalleryBody } from "@/lib/shared/schemas/galleries";
+import { getAdminDb } from "@/lib/firebase/admin";
+import { isAdminToken, requireUser } from "@/lib/server/auth";
 import { extractFolderId } from "@/lib/drive/url-parser";
 import { generateSlug } from "@/lib/gallery/slug";
 import { hashPassword } from "@/lib/gallery/password";
-import { sealPassword, forOwner, migrateLegacyPassword } from "@/lib/gallery/password-vault";
-import { isAdmin } from "@/lib/firebase/admin-guard";
-import type { GalleryDoc } from "@/lib/firestore/types";
+import { planCreate } from "@/lib/gallery/visibility";
+import { sealPassword, forOwner } from "@/lib/gallery/password-vault";
+import { newestFirst, ownerGalleryOf } from "@/lib/server/repos/galleries";
+import { galleriesCol, gallerySelectionsCol, usersCol } from "@/lib/server/repos/collections";
 
-async function getUid(req: NextRequest): Promise<string | null> {
-  const token = req.headers.get("authorization")?.replace("Bearer ", "");
-  if (!token) return null;
-  try {
-    const decoded = await getAdminAuth().verifyIdToken(token);
-    return decoded.uid;
-  } catch {
-    return null;
-  }
-}
-
-export async function POST(req: NextRequest) {
-  const uid = await getUid(req);
-  if (!uid) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+export const POST = route("galleries.post", async (req: NextRequest) => {
+  const auth = await requireUser(req);
+  if (!auth.ok) return auth.response;
+  const uid = auth.user.uid;
 
   // Paywall enforced server-side — the client-side subscription check alone is bypassable.
-  if (!isAdmin(uid)) {
-    const userSnap = await getAdminDb().collection("users").doc(uid).get();
+  if (!isAdminToken(auth.user)) {
+    const userSnap = await usersCol().doc(uid).get();
     const u = userSnap.data();
     const active = u?.subscriptionStatus === "active" && (u?.subscriptionExpiresAt ?? 0) > Date.now();
     if (!active) {
@@ -32,8 +29,10 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  const body = await req.json();
-  const { name, driveUrl, password } = body;
+  const parsedBody = await parseJson(req, GalleryBody);
+  if (!parsedBody.ok) return parsedBody.response;
+  const body = parsedBody.data;
+  const { name, driveUrl } = body as { name?: string; driveUrl?: string };
 
   if (!name || !driveUrl) {
     return NextResponse.json({ error: "name and driveUrl are required" }, { status: 400 });
@@ -44,8 +43,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid Google Drive folder URL" }, { status: 400 });
   }
 
+  // Public or private (D18): a private gallery needs a password, a public one cannot have one.
+  const plan = planCreate({ visibility: body.visibility, password: body.password });
+  if (!plan.ok) return NextResponse.json({ error: plan.error }, { status: 400 });
+
   const slug = generateSlug();
-  const passwordHash = password ? await hashPassword(password) : undefined;
+  const passwordHash = plan.newPassword ? await hashPassword(plan.newPassword) : undefined;
 
   const normUrl = (u: unknown): string | undefined => {
     if (typeof u !== "string") return undefined;
@@ -74,6 +77,10 @@ export async function POST(req: NextRequest) {
     typeof body.bookLink === "string" ? body.bookLink.trim() || undefined : undefined;
   const bookEnabled = body.bookEnabled === true;
 
+  // S9-05: optional expiry date of the gallery ("YYYY-MM-DD").
+  const expiry = parseExpiryInput(body.expiresAt);
+  if (!expiry.ok) return NextResponse.json({ error: "Invalid expiry date" }, { status: 400 });
+
   const now = Date.now();
   const data = {
     photographerId: uid,
@@ -85,7 +92,8 @@ export async function POST(req: NextRequest) {
     // so they can remind a client who lost it; that value is stored only in
     // sealed (AES-GCM) form as `passwordEnc` — never as plaintext. See
     // lib/gallery/password-vault.ts.
-    ...(passwordHash ? { passwordHash, passwordEnc: sealPassword(password) } : {}),
+    visibility: plan.visibility,
+    ...(passwordHash && plan.newPassword ? { passwordHash, passwordEnc: sealPassword(plan.newPassword) } : {}),
     ...(website ? { website } : {}),
     ...(instagram ? { instagram } : {}),
     ...(facebook ? { facebook } : {}),
@@ -93,38 +101,30 @@ export async function POST(req: NextRequest) {
     ...(eventDate ? { eventDate } : {}),
     ...(location ? { location } : {}),
     ...(bookLink ? { bookLink } : {}),
+    ...(expiry.value ? { expiresAt: expiry.value } : {}),
     bookEnabled,
     allowDownload,
     createdAt: now,
     updatedAt: now,
   };
 
-  const ref = await getAdminDb().collection("galleries").add(data);
+  const ref = await galleriesCol().add(data);
 
   return NextResponse.json(forOwner({ id: ref.id, ...data }), { status: 201 });
-}
+});
 
-export async function GET(req: NextRequest) {
-  const uid = await getUid(req);
-  if (!uid) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+export const GET = route("galleries.get", async (req: NextRequest) => {
+  const auth = await requireUser(req);
+  if (!auth.ok) return auth.response;
+  const uid = auth.user.uid;
 
-  const snap = await getAdminDb()
-    .collection("galleries")
+  const snap = await galleriesCol()
     .where("photographerId", "==", uid)
     .get();
 
-  // Cast on the map result, not on the whole chain: .sort() runs on the
-  // intermediate array, which TypeScript infers as { id: string } alone.
-  // Legacy galleries stored the password in plaintext; seal it the first time
-  // it is read, then expose the decrypted value to the owner only.
-  const raw = await Promise.all(
-    snap.docs.map(async (d) =>
-      forOwner(
-        await migrateLegacyPassword(d.ref, { id: d.id, ...(d.data() as Record<string, unknown>) })
-      )
-    )
-  );
-  const galleries = (raw as unknown as GalleryDoc[]).sort((a, b) => Number(b.createdAt ?? 0) - Number(a.createdAt ?? 0));
+  // Reading never writes. A legacy plaintext password (if the one-off migration has not run yet) is still shown to its owner by
+  // forOwner; scripts/migrations/seal-legacy-passwords.ts seals and clears them.
+  const galleries = snap.docs.map(ownerGalleryOf).sort(newestFirst);
 
   // Attach each gallery's client-selection summary (favorites count + last
   // change) so the dashboard can badge cards without opening every selection.
@@ -133,7 +133,7 @@ export async function GET(req: NextRequest) {
   const CHUNK = 300;
   for (let i = 0; i < galleries.length; i += CHUNK) {
     const part = galleries.slice(i, i + CHUNK);
-    const snaps = await db.getAll(...part.map((g) => db.collection("gallery_selections").doc(g.id)));
+    const snaps = await db.getAll(...part.map((g) => gallerySelectionsCol(db).doc(g.id)));
     snaps.forEach((s, idx) => {
       if (!s.exists) return;
       const d = s.data() ?? {};
@@ -142,5 +142,16 @@ export async function GET(req: NextRequest) {
       if (typeof d.submission?.submittedAt === "number") part[idx].selectionSubmittedAt = d.submission.submittedAt;
     });
   }
+
+  // Usage counts (S10-02), one more batched read; a gallery nobody has opened has none.
+  // Is each gallery shown to visitors, in the owner's grace period, or offline (S9-04, S9-05)? Computed for the one owner who asked.
+  const now = Date.now();
+  const owner = lapseEnforced() ? await ownerPlanOf(uid, now) : null;
+  for (const g of galleries) g.availability = galleryAvailability({ gallery: g, owner, enforceLapse: lapseEnforced(), now });
+  const stats = await getStatsSummaries(galleries.map((g) => g.id), Date.now(), db);
+  for (const g of galleries) {
+    const s = stats.get(g.id);
+    if (s) g.stats = s;
+  }
   return NextResponse.json({ galleries });
-}
+});

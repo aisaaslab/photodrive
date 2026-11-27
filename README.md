@@ -1,4 +1,4 @@
-# Galleroo — Complete Guide
+# PhotoDrive — Complete Guide
 
 **This one file is everything.** It takes you from an unopened folder to a live
 website at your own domain, taking payments, with you as the admin. No prior
@@ -41,7 +41,7 @@ the files stay under the owner's control.
 | `public/` | Images, icons, the tutorial video |
 | `.env.example` | Template for your credentials — you copy this to `.env.local` |
 | `firestore.rules` | Database security rules — you publish these in Step 13. Do not skip it. |
-| `email-template.html`, `Galleroo Email Code -EN- embedded.txt` | Marketing email templates, optional |
+| `email-template.html`, `PhotoDrive Email Code -EN- embedded.txt` | Marketing email templates, optional |
 | `AGENTS.md`, `CLAUDE.md` | Notes for AI coding assistants, so they write correct code for this project |
 
 ---
@@ -124,7 +124,7 @@ that file and copy it in one go instead of selecting it out of this page.
 
 ```text
 You are helping me install and deploy a Next.js 16 SaaS application called
-Galleroo that I have just purchased. I am not a developer. The complete
+PhotoDrive that I have just purchased. I am not a developer. The complete
 documentation is in README.md in this folder — read it before you start,
 especially Steps 1 through 18.
 
@@ -241,19 +241,19 @@ STAGE 2 — GOOGLE DRIVE API KEY
      gcloud services enable drive.googleapis.com apikeys.googleapis.com --project MY-PROJECT-ID
 5. Create the key already restricted to Drive, choosing the key id yourself so
    you can read it back later:
-     gcloud services api-keys create --project MY-PROJECT-ID --key-id=galleroo-drive-key --display-name="Galleroo Drive" --api-target=service=drive.googleapis.com
+     gcloud services api-keys create --project MY-PROJECT-ID --key-id=photodrive-drive-key --display-name="PhotoDrive Drive" --api-target=service=drive.googleapis.com
    Always pass `--api-target`. Without it this command silently creates an
    unrestricted key that works against every Google API.
    Do NOT try to capture the key value from this command's output — it prints
    to the error stream, not the normal one, and scripting around that fails
    silently.
 6. Read the value back with a separate command and write it into `.env.local`:
-     gcloud services api-keys get-key-string galleroo-drive-key --project MY-PROJECT-ID --format="value(keyString)"
+     gcloud services api-keys get-key-string photodrive-drive-key --project MY-PROJECT-ID --format="value(keyString)"
    That value goes into GOOGLE_DRIVE_API_KEY. This is a DIFFERENT key from
    NEXT_PUBLIC_FIREBASE_API_KEY even though both start with AIza. Never mix
    them up, and never restrict the Firebase key to the Drive API.
 7. Verify:
-     gcloud services api-keys describe galleroo-drive-key --project MY-PROJECT-ID
+     gcloud services api-keys describe photodrive-drive-key --project MY-PROJECT-ID
      gcloud services list --enabled --project MY-PROJECT-ID | grep drive.googleapis.com
    Use grep here rather than a --filter expression.
 
@@ -294,7 +294,7 @@ STAGE 4 — DEPLOY TO VERCEL
    `export VERCEL_TOKEN=...` rather than into the chat, then confirm to you.
    Verify with `vercel whoami`.
 3. Link the folder without GitHub:
-     vercel link --yes --project galleroo
+     vercel link --yes --project photodrive
    `--project` is required when the name differs from the folder name.
 4. Push the environment variables. There is no bulk import — you must loop, one
    command per variable, 25 of them. Two things will destroy this if you get
@@ -332,9 +332,9 @@ STAGE 4 — DEPLOY TO VERCEL
 
 STAGE 5 — DOMAIN
 1. STOP. I buy the domain myself at a registrar. Do not purchase anything.
-2. Once I have it: `vercel domains add MYDOMAIN.com galleroo`
+2. Once I have it: `vercel domains add MYDOMAIN.com photodrive`
 3. Read back the exact DNS records I need to type:
-     vercel domains verify MYDOMAIN.com --project galleroo --format=json
+     vercel domains verify MYDOMAIN.com --project photodrive --format=json
    Do NOT tell me a hardcoded IP or `cname.vercel-dns.com` from memory — the
    values are per-project now and an old value sends me to a dead site.
 4. I type those records at my registrar. You cannot do this — Vercel's CLI can
@@ -402,7 +402,7 @@ Run this after the site is live and working. Read Step 14 first so you know
 what it is doing.
 
 ```text
-Rebrand this project from "Galleroo" to "MY NEW NAME". The name appears about
+Rebrand this project from "PhotoDrive" to "MY NEW NAME". The name appears about
 165 times across 14 files under app/, components/ and lib/, so this is a
 project-wide find and replace, not a single setting.
 
@@ -413,8 +413,8 @@ and the verification command below cannot catch that because grep does not
 search filenames.
 
 Do this in order:
-1. Case-SENSITIVE replace of "Galleroo" across app/, components/ and lib/.
-2. Verify with `grep -rn "Galleroo" app components lib` — nothing should come
+1. Case-SENSITIVE replace of "PhotoDrive" across app/, components/ and lib/.
+2. Verify with `grep -rn "PhotoDrive" app components lib` — nothing should come
    back. Then run `ls public` and confirm no filename changed.
 3. Run `npm run build`, then `npm run dev`, and load the homepage. Confirm the
    before/after comparison slider shows BOTH images, not one image and one
@@ -603,9 +603,22 @@ This is a **subscription-based website for photographers**. Here's how it works 
 5. They share the gallery link with their client
 6. The client views the photos in full screen, can mark favorites, and download in full resolution
 
+**What your photographers get once they are in** (all included, nothing to set up):
+
+- **Public or password-protected galleries**, with a cover photo, a title in a font and colour of their choice, event date and location, and their own name, avatar and links.
+- **Client favourites and "Send selection"**: the client taps the heart, sends the list, and the photographer sees it in the dashboard. They can **copy the list of file names** (with or without extensions, ready to paste into Lightroom's text filter) or **download it as a CSV**, and can **switch photo downloads off automatically once a selection arrives**.
+- **A quick check of the Drive folder** while creating a gallery: is it shared correctly, and how many photos and videos does it hold?
+- **Simple gallery statistics** on every card: views, downloads and favourites, and the last visit. Counts only: the app never records who visited.
+- **An optional expiry date** for any gallery, extendable from the dashboard.
+- **A billing page** with the plan, the renewal date, the payment history (with each payment's invoice), and a clear message if the plan has lapsed.
+- **Renewal reminder e-mails** before a plan ends, and a 14-day grace period after it ends (both ship switched off; you turn them on when you are ready): galleries then show a polite "unavailable" page, nothing is deleted, and renewing restores everything at once.
+- **Six languages** (English, Greek, Dutch, German, Spanish, Italian) and a layout that works from a phone to a desktop.
+
+**What you get as the owner** (the admin back office): an overview with the key numbers and a live "needs attention" count; a **Payments** screen (totals per currency, refunds and disputes, a review queue you can resolve in place); a **Support** inbox for the contact form (open, unread, resolved, with a note and a link to the sender's account); **Plans** in any of 13 currencies with a live preview of the pricing section, and promo codes; **Users** and **Galleries** lists with search, filters and every change recorded in an audit trail; **Settings** for the support e-mail and tracking IDs; and optional error monitoring with Sentry.
+
 **Your role as the owner:** you run the website, you keep all the subscription money. You also have an admin panel where you can see all users and their galleries.
 
-The app is **white-label**: your own brand name, logo, colours and legal details go on it. "Galleroo" is only a placeholder, but it is written into the marketing copy in roughly 165 places across 14 files, so replacing it is one global find/replace rather than a single setting. Step 14 walks through it and gives you a command to verify none were missed.
+The app is **white-label**: your own brand name, logo, colours and legal details go on it. "PhotoDrive" is only a placeholder, but it is written into the marketing copy in roughly 165 places across 14 files, so replacing it is one global find/replace rather than a single setting. Step 14 walks through it and gives you a command to verify none were missed.
 
 ---
 
@@ -785,7 +798,7 @@ node --version
 
 ### Steps
 
-1. Find the ZIP file the seller sent you (probably named something like `galleroo.zip`).
+1. Find the ZIP file the seller sent you (probably named something like `photodrive.zip`).
 2. **Move it to a place you can find easily** — I recommend the `Documents` folder.
 3. **Right-click → Extract** (Windows) or **double-click** (Mac). A folder appears next to the ZIP.
 4. **Rename the folder** to something simple like `mygallery` (avoid spaces and special characters in the name).
@@ -1579,7 +1592,7 @@ Now the app works under your domain. Time to personalize it.
 
 ## Step 14 — Customize the app name everywhere
 
-**🎯 Goal:** change "Galleroo" placeholder name to your brand name throughout the entire app.
+**🎯 Goal:** change "PhotoDrive" placeholder name to your brand name throughout the entire app.
 **⏱ Time:** 10 minutes.
 
 ### Method 1 (Easy — partial): via environment variable
@@ -1590,7 +1603,7 @@ gallery header, the social preview image.
 
 ### Method 2 (Required for full branding): one global find/replace
 
-That is not everything. "Galleroo" is also written directly into the marketing
+That is not everything. "PhotoDrive" is also written directly into the marketing
 copy — and the copy exists six times over, once per language. Across the project
 it appears **about 165 times in 14 files**, mostly in `lib/i18n/index.tsx` but
 also in `app/page.tsx`, `components/TrustSection.tsx`, `app/subscribe/page.tsx`,
@@ -1608,7 +1621,7 @@ the project-wide search rather than opening individual files.
 4. Press **Ctrl+Shift+F** (Mac: **Cmd+Shift+F**) to open the global Find & Replace.
 5. **Click the `Aa` icon in the search box first** to turn on Match Case. Without it,
    the replace also rewrites lowercase filenames and you end up with a broken image.
-6. In the search box type: `Galleroo`
+6. In the search box type: `PhotoDrive`
 7. In the replace box type: your brand name, e.g. `MyGallery`
 8. Click the **"Replace All"** button (icon looks like two arrows).
 9. Confirm by clicking "Replace" in the popup.
@@ -1623,13 +1636,13 @@ recommended instead.
 In your terminal, inside the project folder, run:
 
 ```
-grep -rn "Galleroo" app components lib
+grep -rn "PhotoDrive" app components lib
 ```
 
 **✅ What you should see:** nothing at all. Any line that still prints is a spot
 the replace missed — open that file and fix it.
 
-(On Windows without `grep`, use VS Code's search box: search `Galleroo` again and
+(On Windows without `grep`, use VS Code's search box: search `PhotoDrive` again and
 confirm it reports "No results".)
 
 ### Push the changes
@@ -1732,7 +1745,7 @@ Then:
 
 The logo is currently your brand name written as plain text in
 `components/LogoLink.tsx` — Step 14's find/replace already changed it from
-"Galleroo" to your name. To use an image instead:
+"PhotoDrive" to your name. To use an image instead:
 
 1. Save your logo in `public/logo.png` (recommended: 200×60 pixels, transparent background)
 2. Open `components/LogoLink.tsx`
@@ -1849,7 +1862,7 @@ Run through this entire list before promoting your site:
 - [ ] Email template renders correctly (test by triggering whatever email-sending action exists)
 
 ### Branding
-- [ ] No "Galleroo" or other placeholder strings anywhere
+- [ ] No "PhotoDrive" or other placeholder strings anywhere
 - [ ] Your brand name appears in header, footer, page titles
 - [ ] Logo and favicon are your own
 - [ ] Support email is your real email
@@ -2146,7 +2159,7 @@ in this folder that contains nothing but that prompt.
    - **Mac/Linux:** open Terminal and run `curl -fsSL https://claude.ai/install.sh | bash`
    - **Windows:** download the installer from the site
 3. Open Terminal and go to your project folder — the one containing this
-   `README.md` file. For example: `cd ~/Downloads/galleroo`
+   `README.md` file. For example: `cd ~/Downloads/photodrive`
 4. Type **`claude`** and press Enter
 5. The first time, it asks you to sign in to your Anthropic account. Follow the
    prompts. Claude Code needs a paid Claude plan or API credit.
@@ -2185,5 +2198,6 @@ Then run npm run build, update nothing in .env, and redeploy.
 **That's everything.** If you've made it this far and your final checklist is green — congratulations, you're running a SaaS business. 🚀
 
 Good luck!
-#   p h o t o d r i v e  
+#   p h o t o d r i v e 
+ 
  

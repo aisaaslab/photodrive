@@ -5,36 +5,51 @@ import { GalleryCard } from "./GalleryCard";
 import { useLanguage } from "@/lib/i18n";
 
 interface Props {
+  /** "cards" (default): a grid of cards with a cover banner. "list": one compact row per gallery. */
+  density?: "cards" | "list";
   galleries: GalleryDoc[];
+  /** Opens the new-gallery form; shown as the main button of the empty state. */
+  onCreate?: () => void;
   onDelete: (id: string) => void | boolean | Promise<void | boolean>;
   onUpdate: (updated: GalleryDoc) => void;
 }
 
-export function GalleryList({ galleries, onDelete, onUpdate }: Props) {
+export function GalleryList({ density = "cards", galleries, onCreate, onDelete, onUpdate }: Props) {
   const { t } = useLanguage();
 
   if (galleries.length === 0) {
+    // First visit: say what to do next, in three steps, with the button right there (reuses the landing page's wording).
+    const steps = [
+      { title: t.how.step1Title, text: t.landing.how.step1 },
+      { title: t.how.step2Title, text: t.landing.how.step2 },
+      { title: t.how.step3Title, text: t.landing.how.step3 },
+    ];
     return (
-      <div className="text-center py-24 animate-fade-up">
-        <div className="w-14 h-14 bg-white/[0.05] rounded-2xl flex items-center justify-center mx-auto mb-5 border border-white/10">
-          <svg className="w-7 h-7 text-stone-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
-          </svg>
-        </div>
-        <h3 className="font-semibold text-white mb-1.5" style={{ fontFamily: "var(--font-brand), sans-serif" }}>
-          {t.galleryList.emptyTitle}
-        </h3>
-        <p className="text-sm text-stone-400">
-          {t.galleryList.emptySubtitle}
-        </p>
-      </div>
+      <section className="animate-fade-up rounded-card border border-line bg-surface px-5 py-10 text-center sm:px-10 sm:py-14" aria-labelledby="empty-title">
+        <h3 id="empty-title" className="text-xl font-extrabold text-fg">{t.galleryList.emptyTitle}</h3>
+        <p className="mx-auto mt-2 max-w-md text-sm text-fg-muted">{t.how.subtitle}</p>
+        <ol className="mx-auto mt-8 grid max-w-3xl gap-4 text-left sm:grid-cols-3">
+          {steps.map((s, i) => (
+            <li key={s.title} className="rounded-tile border border-line bg-surface-2 p-4">
+              <span aria-hidden className="grid size-8 place-items-center rounded-full bg-accent-soft text-xs font-extrabold text-accent">{i + 1}</span>
+              <p className="mt-3 text-sm font-bold text-fg">{s.title}</p>
+              <p className="mt-1 text-xs leading-relaxed text-fg-muted">{s.text}</p>
+            </li>
+          ))}
+        </ol>
+        {onCreate && (
+          <button type="button" onClick={onCreate} className="mt-8 inline-flex h-12 items-center gap-2 rounded-pill bg-accent px-7 text-sm font-bold text-canvas shadow-[0_10px_20px_rgba(46,171,224,0.3)] transition hover:brightness-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">
+            {t.dashboard.newGallery}
+          </button>
+        )}
+      </section>
     );
   }
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 stagger-children">
+    <div data-ui="gallery-list" data-density={density} className={density === "list" ? "flex flex-col gap-3 stagger-children" : "grid gap-4 sm:grid-cols-2 lg:grid-cols-3 stagger-children"}>
       {galleries.map((g) => (
-        <GalleryCard key={g.id} gallery={g} onDelete={onDelete} onUpdate={onUpdate} />
+        <GalleryCard key={g.id} compact={density === "list"} gallery={g} onDelete={onDelete} onUpdate={onUpdate} />
       ))}
     </div>
   );

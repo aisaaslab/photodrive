@@ -4,11 +4,10 @@
  * Photographers pick a font and a color for the gallery title from a curated
  * set — no free-form input, nothing a non-techy user can get wrong.
  *
- * Performance: the extra fonts are loaded via next/font in app/layout.tsx,
- * which self-hosts them at build time. next/font emits a @font-face rule per
- * family, but the browser only downloads a woff2 file when text actually uses
- * that family — so pages that don't use a font never pay for it, and pages
- * that do get zero-layout-shift, CDN-free loading.
+ * Performance: the extra fonts are self-hosted (app/fonts.css, files in app/fonts/) and declared
+ * with `font-display: swap`. The browser only downloads a woff2 file when text actually uses
+ * that family, so pages that don't use a font never pay for it, and nothing is fetched from a
+ * third-party CDN (or from Google at build time).
  *
  * Note: the curated fonts ship latin glyphs only. Titles written in other
  * scripts (e.g. Greek) gracefully fall back to the inherited site font.

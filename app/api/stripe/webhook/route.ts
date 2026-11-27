@@ -1,22 +1,30 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
-import { stripe, isSessionSettled } from "@/lib/stripe/server";
+import { getStripe, getWebhookSecret, isSessionSettled, StripeConfigError } from "@/lib/server/billing/stripe";
 import { activateSubscription, resolveUidForSession } from "@/lib/stripe/activate";
+import { requestLogger } from "@/lib/server/log";
+import { billingFulfilV2 } from "@/lib/server/billing/flags";
+import { handleStripeEvent } from "@/lib/server/billing/events/dispatch";
 
 export async function POST(req: NextRequest) {
+  const log = requestLogger(req, "stripe.webhook");
   const body = await req.text();
   const sig = req.headers.get("stripe-signature");
 
   if (!sig) {
-    console.error("[stripe webhook] rejected: request has no stripe-signature header");
+    log.warn("rejected: request has no stripe-signature header");
     return NextResponse.json({ error: "No signature" }, { status: 400 });
   }
 
-  const secret = process.env.STRIPE_WEBHOOK_SECRET;
-  if (!secret) {
-    // Misconfiguration, not a bad request — 500 so it is not mistaken for a
-    // forged call, and so the cause is obvious in the logs.
-    console.error("[stripe webhook] STRIPE_WEBHOOK_SECRET is not set in this environment");
+  let stripe, secret;
+  try {
+    stripe = getStripe();
+    secret = getWebhookSecret();
+  } catch (err) {
+    if (!(err instanceof StripeConfigError)) throw err;
+    // Misconfiguration, not a bad request: 500 so it is not mistaken for a forged call,
+    // and so the cause is obvious in the logs.
+    log.error(err.message);
     return NextResponse.json({ error: "Webhook not configured" }, { status: 500 });
   }
 
@@ -27,14 +35,19 @@ export async function POST(req: NextRequest) {
     // Most common cause: the secret belongs to a different endpoint or mode
     // (test vs live, or a `stripe listen` secret). Log the Stripe message only —
     // never the secret or signature.
-    console.error(
-      "[stripe webhook] signature verification failed — check STRIPE_WEBHOOK_SECRET matches this endpoint's signing secret and mode:",
-      err instanceof Error ? err.message : err
-    );
+    log.warn("signature verification failed: check STRIPE_WEBHOOK_SECRET matches this endpoint's signing secret and mode", {
+      err: err instanceof Error ? err.message : String(err),
+    });
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
   }
 
-  console.log("[stripe webhook] received", event.type, event.id, event.livemode ? "live" : "test");
+  log.info("received", { type: event.type, eventId: event.id, mode: event.livemode ? "live" : "test" });
+
+  // New path (BILLING_FULFIL_V2): event log + dispatcher (lib/server/billing/events).
+  if (billingFulfilV2()) {
+    const result = await handleStripeEvent(event, log);
+    return NextResponse.json(result.body, { status: result.status });
+  }
 
   const isCompleted =
     event.type === "checkout.session.completed" ||
@@ -46,6 +59,7 @@ export async function POST(req: NextRequest) {
     // Both event types carry a Checkout Session payload, but the union of all
     // event types can't be narrowed automatically — cast to the Session type.
     const session = event.data.object as Stripe.Checkout.Session;
+
     // Fall back to the session email when metadata.uid is missing so a paid
     // customer is never silently dropped (previously this logged + returned
     // 200, so Stripe would never retry and the user stayed unsubscribed).
@@ -65,13 +79,13 @@ export async function POST(req: NextRequest) {
         });
       } catch (err) {
         // Return 500 so Stripe RETRIES — otherwise the customer paid but is never activated.
-        console.error("[stripe webhook] activation write failed for uid", uid, err);
+        log.error("activation write failed", { uid, sessionId: session.id, err });
         return NextResponse.json({ error: "Activation failed" }, { status: 500 });
       }
     } else {
-      console.error("[stripe webhook] completed session without uid or not paid", {
+      log.warn("completed session without uid or not paid", {
         uid,
-        payment_status: session.payment_status,
+        paymentStatus: session.payment_status,
         sessionId: session.id,
       });
     }

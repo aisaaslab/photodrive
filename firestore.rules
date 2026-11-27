@@ -1,6 +1,6 @@
 rules_version = '2';
 
-// Galleroo Firestore security rules.
+// PhotoDrive Firestore security rules.
 //
 // All gallery / subscription writes happen on the SERVER via the Firebase
 // Admin SDK, which BYPASSES these rules. So the public gallery page, the
@@ -15,9 +15,28 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    // `emailLower` feeds the admin back office's search (S7-05). A user may keep it, but only as the lower-cased form of their own e-mail,
+    // so nobody can plant a value that makes them appear under someone else's address.
+    function validEmailLower() {
+      return !('emailLower' in request.resource.data)
+        || (request.resource.data.emailLower is string && 'email' in request.resource.data && request.resource.data.email is string
+            && request.resource.data.emailLower == request.resource.data.email.trim().lower());
+    }
+
     // Fields only the server (Admin SDK) is allowed to set.
     function locked() {
-      return ['subscriptionStatus', 'subscriptionExpiresAt', 'compGranted', 'stripeCustomerId'];
+      // Everything about access and billing, written only by the server. A user can edit their own profile (name, photo) but must never
+      // be able to grant, extend or relabel their own access.
+      //   subscriptionStatus, subscriptionExpiresAt, compGranted  — the access itself
+      //   stripeCustomerId                                        — links the account to Stripe
+      //   planId, planName, planInterval                          — the plan label shown in the app and admin
+      //   subscriptionSource, promoCode                           — how access was obtained (paid, free code, comp)
+      //   remindersSent                                           — which renewal reminders were e-mailed
+      //   language, languageUpdatedAt                             — written only by PUT /api/user/language, which validates it
+      //                                                             against the six app languages
+      return ['subscriptionStatus', 'subscriptionExpiresAt', 'compGranted', 'stripeCustomerId',
+              'planId', 'planName', 'planInterval', 'subscriptionSource', 'promoCode', 'remindersSent',
+              'language', 'languageUpdatedAt'];
     }
 
     match /users/{uid} {
@@ -27,13 +46,18 @@ service cloud.firestore {
       // subscription/billing field.
       allow create: if request.auth != null
         && request.auth.uid == uid
-        && !request.resource.data.keys().hasAny(locked());
+        && !request.resource.data.keys().hasAny(locked())
+        && validEmailLower();
 
       // On later logins it may update profile fields, but cannot add/change/remove
       // any subscription/billing field.
+      //
+      // `createdAt` (the sign-up date) is written once, at creation, and never changed by the client.
       allow update: if request.auth != null
         && request.auth.uid == uid
-        && !request.resource.data.diff(resource.data).affectedKeys().hasAny(locked());
+        && !request.resource.data.diff(resource.data).affectedKeys().hasAny(locked())
+        && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['createdAt'])
+        && validEmailLower();
 
       allow delete: if false;
     }

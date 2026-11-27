@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useLanguage } from "@/lib/i18n";
 
@@ -39,33 +39,33 @@ const CONTENT: Record<string, { label: string; title: string; cards: Card[] }> =
       { title: "Je gegevens blijven veilig", text: "We slaan je foto's niet op. Ze blijven in je eigen Google Drive." },
       { title: "Geen account voor je klant", text: "Geen registratie, geen app. Ze openen gewoon je link, op elk apparaat." },
       { title: "De link blijft actief", text: "Je klant kan de galerij bezoeken wanneer hij wil. Hij verloopt niet vanzelf." },
-      { title: "Eenmalig, geen verplichtingen", text: "EÃ©n betaling per jaar. Geen verborgen of automatische kosten." },
+      { title: "Eenmalig, geen verplichtingen", text: "Eén betaling per jaar. Geen verborgen of automatische kosten." },
     ],
   },
   de: {
-    label: "Warum PhotoDrive", title: "Gemacht fÃ¼r professionelle Fotografen",
+    label: "Warum PhotoDrive", title: "Gemacht für professionelle Fotografen",
     cards: [
       { title: "Deine Daten bleiben sicher", text: "Wir speichern deine Fotos nicht. Sie bleiben in deinem eigenen Google Drive." },
-      { title: "Kein Konto fÃ¼r deinen Kunden", text: "Keine Registrierung, keine App. Er Ã¶ffnet einfach deinen Link, auf jedem GerÃ¤t." },
-      { title: "Der Link bleibt aktiv", text: "Dein Kunde kann die Galerie jederzeit erneut besuchen. Er lÃ¤uft nicht von selbst ab." },
+      { title: "Kein Konto für deinen Kunden", text: "Keine Registrierung, keine App. Er öffnet einfach deinen Link, auf jedem Gerät." },
+      { title: "Der Link bleibt aktiv", text: "Dein Kunde kann die Galerie jederzeit erneut besuchen. Er läuft nicht von selbst ab." },
       { title: "Einmalig, ohne Bindung", text: "Eine Zahlung pro Jahr. Keine versteckten oder automatischen Kosten." },
     ],
   },
   es: {
-    label: "Por quÃ© PhotoDrive", title: "Hecho para fotÃ³grafos profesionales",
+    label: "Por qué PhotoDrive", title: "Hecho para fotógrafos profesionales",
     cards: [
-      { title: "Tus datos estÃ¡n seguros", text: "No almacenamos tus fotos. Permanecen en tu propio Google Drive." },
+      { title: "Tus datos están seguros", text: "No almacenamos tus fotos. Permanecen en tu propio Google Drive." },
       { title: "Sin cuenta para tu cliente", text: "Sin registro, sin app. Solo abren tu enlace, desde cualquier dispositivo." },
-      { title: "El enlace sigue activo", text: "Tu cliente puede volver a la galerÃ­a cuando quiera. No caduca por sÃ­ solo." },
-      { title: "Pago Ãºnico, sin ataduras", text: "Un pago al aÃ±o. Sin cargos ocultos ni automÃ¡ticos." },
+      { title: "El enlace sigue activo", text: "Tu cliente puede volver a la galería cuando quiera. No caduca por sí solo." },
+      { title: "Pago único, sin ataduras", text: "Un pago al año. Sin cargos ocultos ni automáticos." },
     ],
   },
   it: {
-    label: "PerchÃ© PhotoDrive", title: "Creato per fotografi professionisti",
+    label: "Perché PhotoDrive", title: "Creato per fotografi professionisti",
     cards: [
       { title: "I tuoi dati al sicuro", text: "Non salviamo le tue foto. Restano nel tuo Google Drive." },
       { title: "Nessun account per il cliente", text: "Niente registrazione, niente app. Apre semplicemente il tuo link, da qualsiasi dispositivo." },
-      { title: "Il link resta attivo", text: "Il cliente puÃ² rivedere la galleria quando vuole. Non scade da solo." },
+      { title: "Il link resta attivo", text: "Il cliente può rivedere la galleria quando vuole. Non scade da solo." },
       { title: "Pagamento unico, nessun vincolo", text: "Un pagamento all'anno. Nessun costo nascosto o automatico." },
     ],
   },

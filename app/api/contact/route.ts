@@ -1,30 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createHash } from "crypto";
-import { getAdminDb } from "@/lib/firebase/admin";
 import { getSupportEmail, type ContactMessageDoc } from "@/lib/site-settings";
+import { clientIp, getRateLimiter, rateLimitHeaders } from "@/lib/server/rate-limit";
+import { parseJson } from "@/lib/server/http";
+import { ContactBody } from "@/lib/shared/schemas/public";
+import { contactMessagesCol } from "@/lib/server/repos/collections";
+import { APP_NAME, mailFrom } from "@/lib/branding";
 
 export const runtime = "nodejs";
 
-const WINDOW_MS = 10 * 60 * 1000;
+// At most 5 messages per 10 minutes per visitor, counted in the shared store (S3-06): the per-instance Map this
+// replaced reset on every cold start and was not shared between serverless instances.
 const MAX_PER_WINDOW = 5;
-const hits = new Map<string, number[]>();
-
-function clientIp(req: NextRequest): string {
-  return (
-    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
-    req.headers.get("x-real-ip") ||
-    "unknown"
-  );
-}
-
-function rateLimited(ip: string): boolean {
-  const now = Date.now();
-  const arr = (hits.get(ip) ?? []).filter((t) => now - t < WINDOW_MS);
-  if (arr.length >= MAX_PER_WINDOW) return true;
-  arr.push(now);
-  hits.set(ip, arr);
-  return false;
-}
+const WINDOW_SEC = 10 * 60;
 
 function isValidEmail(v: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v);
@@ -46,7 +34,7 @@ async function forwardViaResend(opts: {
   message: string;
 }): Promise<boolean> {
   const apiKey = process.env.RESEND_API_KEY;
-  const from = process.env.CONTACT_FROM_EMAIL || "PhotoDrive Contact <no-reply@photodrive.co>";
+  const from = process.env.CONTACT_FROM_EMAIL || mailFrom(`${APP_NAME} Contact`);
   if (!apiKey) return false;
   try {
     const res = await fetch("https://api.resend.com/emails", {
@@ -109,19 +97,17 @@ async function forwardViaSmtp(opts: {
  */
 export async function POST(req: NextRequest) {
   const ip = clientIp(req);
-  if (rateLimited(ip)) {
+  const limit = await getRateLimiter().limit({ name: "contact", id: ip, limit: MAX_PER_WINDOW, windowSec: WINDOW_SEC });
+  if (!limit.allowed) {
     return NextResponse.json(
       { error: "Too many messages. Please try again in a few minutes." },
-      { status: 429 }
+      { status: 429, headers: rateLimitHeaders(limit) }
     );
   }
 
-  let body: Record<string, unknown>;
-  try {
-    body = await req.json();
-  } catch {
-    return NextResponse.json({ error: "Invalid request." }, { status: 400 });
-  }
+  const parsedBody = await parseJson(req, ContactBody);
+  if (!parsedBody.ok) return parsedBody.response;
+  const body = parsedBody.data;
 
   const name = String(body.name ?? "").trim().slice(0, 100);
   const email = String(body.email ?? "").trim().toLowerCase().slice(0, 254);
@@ -153,7 +139,7 @@ export async function POST(req: NextRequest) {
     read: false,
     emailed,
   };
-  await getAdminDb().collection("contactMessages").add(doc);
+  await contactMessagesCol().add(doc);
 
   return NextResponse.json({ ok: true });
 }

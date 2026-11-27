@@ -1,33 +1,31 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAdminDb } from "@/lib/firebase/admin";
-import { getUidFromRequest, isAdmin } from "@/lib/firebase/admin-guard";
-import { PROMO_COLLECTION, normalizeCode, validAccessDays, MAX_ACCESS_DAYS } from "@/lib/promo-codes";
-
-const CODE_RE = /^[A-Z0-9_-]{2,40}$/;
+import { requireAdmin } from "@/lib/server/auth";
+import { writeAudit } from "@/lib/server/audit";
+import { parseJson, route } from "@/lib/server/http";
+import { paymentsCol, promoCodesCol } from "@/lib/server/repos/collections";
+import { normalizeCode } from "@/lib/shared/promo";
+import { PromoCreateBody } from "@/lib/shared/schemas/promo";
 
 /**
- * GET: every free-code rule with its redemption count, plus "unmanaged" codes —
- * codes people have already redeemed that have no rule yet (so the admin can
- * add one in a click).
+ * GET: every free-code rule with its redemption count, plus "unmanaged" codes (codes people have already redeemed that have no rule yet,
+ * so the admin can add one in a click). Redemptions are the free ($0) checkouts: only those payments are read (S8-03; it used to read
+ * every payment ever made).
  */
-export async function GET(req: NextRequest) {
-  const uid = await getUidFromRequest(req);
-  if (!isAdmin(uid)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+export const GET = route("admin.promo.list", async (req: NextRequest) => {
+  const admin = await requireAdmin(req);
+  if (!admin.ok) return admin.response;
 
   const db = getAdminDb();
-  const [rulesSnap, paymentsSnap] = await Promise.all([
-    db.collection(PROMO_COLLECTION).get(),
-    db.collection("payments").get(),
+  const [rulesSnap, freeSnap] = await Promise.all([
+    promoCodesCol(db).get(),
+    paymentsCol(db).where("amountTotal", "==", 0).select("promoCode").get(),
   ]);
 
-  // Redemptions = free ($0) checkouts per code.
   const redemptions = new Map<string, number>();
-  for (const doc of paymentsSnap.docs) {
-    const d = doc.data();
-    if (d.amountTotal !== 0) continue;
-    const code = normalizeCode(d.promoCode);
-    if (!code) continue;
-    redemptions.set(code, (redemptions.get(code) ?? 0) + 1);
+  for (const doc of freeSnap.docs) {
+    const code = normalizeCode(doc.get("promoCode"));
+    if (code) redemptions.set(code, (redemptions.get(code) ?? 0) + 1);
   }
 
   const rules = rulesSnap.docs
@@ -51,35 +49,21 @@ export async function GET(req: NextRequest) {
     .sort((a, b) => b.redemptions - a.redemptions);
 
   return NextResponse.json({ rules, unmanaged });
-}
+});
 
 /** POST: create a rule — { code, accessDays, note? }. */
-export async function POST(req: NextRequest) {
-  const uid = await getUidFromRequest(req);
-  if (!isAdmin(uid)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+export const POST = route("admin.promo.create", async (req: NextRequest) => {
+  const admin = await requireAdmin(req);
+  if (!admin.ok) return admin.response;
 
-  let body: Record<string, unknown>;
-  try {
-    body = await req.json();
-  } catch {
-    return NextResponse.json({ error: "Invalid body" }, { status: 400 });
-  }
+  const body = await parseJson(req, PromoCreateBody, { message: "Please check the code's details." });
+  if (!body.ok) return body.response;
+  const { code, accessDays, note } = body.data;
 
-  const code = normalizeCode(body.code);
-  if (!CODE_RE.test(code)) {
-    return NextResponse.json({ error: "Code must be 2–40 letters, numbers, - or _." }, { status: 400 });
-  }
-  const accessDays = validAccessDays(body.accessDays);
-  if (!accessDays) {
-    return NextResponse.json({ error: `Access length must be 1–${MAX_ACCESS_DAYS} days.` }, { status: 400 });
-  }
-  const note = typeof body.note === "string" ? body.note.trim().slice(0, 200) : "";
-
-  const ref = getAdminDb().collection(PROMO_COLLECTION).doc(code);
-  if ((await ref.get()).exists) {
-    return NextResponse.json({ error: "A rule for this code already exists." }, { status: 409 });
-  }
+  const ref = promoCodesCol().doc(code);
+  if ((await ref.get()).exists) return NextResponse.json({ error: "A rule for this code already exists." }, { status: 409 });
   const now = Date.now();
   await ref.set({ code, accessDays, note, active: true, createdAt: now, updatedAt: now });
+  await writeAudit({ actorUid: admin.user.uid, action: "promo.create", targetType: "promoCode", targetId: code, after: { code, accessDays, note, active: true } });
   return NextResponse.json({ ok: true, code });
-}
+});

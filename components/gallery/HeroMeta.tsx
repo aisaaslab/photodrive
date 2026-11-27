@@ -43,7 +43,7 @@ export function HeroMeta({ description, eventDate, location, photoCount, videoCo
   if (pieces.length === 0) return null;
 
   return (
-    <p className="mt-2 text-sm sm:text-base text-white/90 drop-shadow max-w-2xl break-words">
+    <p className="mt-2 text-sm sm:text-base text-fg drop-shadow max-w-2xl break-words">
       {pieces.join(" · ")}
     </p>
   );

@@ -1,9 +1,13 @@
 import { NextRequest } from "next/server";
+import { availabilityOf, isUnavailable } from "@/lib/server/gallery-availability";
+import { recordGalleryEvent } from "@/lib/server/repos/galleryStats";
+import { downloadsAllowed } from "@/lib/gallery/downloads";
 import { cookies } from "next/headers";
-import { getAdminDb } from "@/lib/firebase/admin";
 import { fetchDriveFolder } from "@/lib/drive/client";
 import { verifyGalleryToken } from "@/lib/gallery/session";
+import { isPrivate } from "@/lib/gallery/visibility";
 import { makeZip } from "client-zip";
+import { galleriesCol } from "@/lib/server/repos/collections";
 
 // Node runtime + long timeout: we stream a (possibly large) zip built from
 // many Drive files. The zip is produced lazily with backpressure, so only one
@@ -22,17 +26,17 @@ export async function GET(
 ) {
   const { id } = await params;
 
-  const snap = await getAdminDb().collection("galleries").doc(id).get();
-  if (!snap.exists) return new Response("Not found", { status: 404 });
+  const snap = await galleriesCol().doc(id).get();
+  if (!snap.exists || isUnavailable(await availabilityOf(snap.data()!))) return new Response("Not found", { status: 404 });
   const gallery = snap.data()!;
 
   // Respect the per-gallery download switch.
-  if (gallery.allowDownload === false) {
+  if (!downloadsAllowed(gallery)) {
     return new Response("Downloads are disabled for this gallery", { status: 403 });
   }
 
   // Password-protected gallery: require the same access cookie as the page.
-  if (gallery.passwordHash) {
+  if (isPrivate(gallery)) {
     const token = (await cookies()).get(`gallery_token_${id}`)?.value;
     const valid = token ? await verifyGalleryToken(token) : null;
     if (!valid || valid.galleryId !== id || valid.v !== (gallery.pwChangedAt ?? 0)) {
@@ -69,6 +73,8 @@ export async function GET(
       }
     }
   }
+
+  await recordGalleryEvent(id, "download", { n: selected.length }); // S10-02: the originals of this zip (or part)
 
   const baseName = (gallery.name || "gallery").replace(/[^\p{L}\p{N} _-]/gu, "").trim() || "gallery";
   const fileName = part && totalParts > 1 ? `${baseName} - Part ${part}.zip` : `${baseName}.zip`;

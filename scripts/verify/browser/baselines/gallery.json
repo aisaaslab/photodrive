@@ -1,0 +1,372 @@
+{
+ "1 initial": {
+  "tiles": {
+   "photos": 117,
+   "videos": 3,
+   "first": [
+    "IMG_001.jpg",
+    "IMG_002.jpg",
+    "IMG_003.jpg"
+   ],
+   "last": [
+    "CLIP_080.mp4",
+    "CLIP_120.mp4"
+   ]
+  },
+  "bar": {
+   "tabs": [
+    "All [on]",
+    "Photos132",
+    "Videos3",
+    "Favorites"
+   ],
+   "count": "132 photos · 3 videos",
+   "loadMore": "Show more (15)",
+   "sendSelection": [],
+   "hasSearch": true,
+   "sortOptions": [
+    "Default",
+    "Name A→Z",
+    "Name Z→A",
+    "Default",
+    "Name A→Z",
+    "Name Z→A"
+   ]
+  }
+ },
+ "2 after load more": {
+  "tiles": {
+   "photos": 132,
+   "videos": 3,
+   "first": [
+    "IMG_001.jpg",
+    "IMG_002.jpg",
+    "IMG_003.jpg"
+   ],
+   "last": [
+    "CLIP_080.mp4",
+    "CLIP_120.mp4"
+   ]
+  },
+  "bar": {
+   "tabs": [
+    "All [on]",
+    "Photos132",
+    "Videos3",
+    "Favorites"
+   ],
+   "count": "132 photos · 3 videos",
+   "loadMore": null,
+   "sendSelection": [],
+   "hasSearch": true,
+   "sortOptions": [
+    "Default",
+    "Name A→Z",
+    "Name Z→A",
+    "Default",
+    "Name A→Z",
+    "Name Z→A"
+   ]
+  }
+ },
+ "3 search IMG_01": {
+  "tiles": {
+   "photos": 10,
+   "videos": 0,
+   "first": [
+    "IMG_010.jpg",
+    "IMG_011.jpg",
+    "IMG_012.jpg"
+   ],
+   "last": [
+    "IMG_018.jpg",
+    "IMG_019.jpg"
+   ]
+  },
+  "count": "10 photos"
+ },
+ "4 search with no result": {
+  "tiles": {
+   "photos": 0,
+   "videos": 0,
+   "first": [],
+   "last": []
+  },
+  "empty": "No photos match your search"
+ },
+ "5 sort Z-A": {
+  "photos": 120,
+  "videos": 0,
+  "first": [
+   "SUB_5.jpg",
+   "SUB_4.jpg",
+   "SUB_3.jpg"
+  ],
+  "last": [
+   "IMG_014.jpg",
+   "IMG_013.jpg"
+  ]
+ },
+ "6 sort A-Z": {
+  "photos": 117,
+  "videos": 3,
+  "first": [
+   "IMG_001.jpg",
+   "IMG_002.jpg",
+   "IMG_003.jpg"
+  ],
+  "last": [
+   "CLIP_080.mp4",
+   "CLIP_120.mp4"
+  ]
+ },
+ "7 folder options": [
+  "All",
+  "Sub"
+ ],
+ "8 folder Sub": {
+  "tiles": {
+   "photos": 5,
+   "videos": 0,
+   "first": [
+    "SUB_1.jpg",
+    "SUB_2.jpg",
+    "SUB_3.jpg"
+   ],
+   "last": [
+    "SUB_4.jpg",
+    "SUB_5.jpg"
+   ]
+  },
+  "bar": {
+   "tabs": [
+    "All [on]",
+    "Photos5",
+    "Favorites"
+   ],
+   "count": "5 photos",
+   "loadMore": null,
+   "sendSelection": [],
+   "hasSearch": true,
+   "sortOptions": [
+    "Default",
+    "Name A→Z",
+    "Name Z→A",
+    "Default",
+    "Name A→Z",
+    "Name Z→A"
+   ]
+  }
+ },
+ "9 folder reset": "132/3",
+ "10 videos tab": {
+  "photos": 0,
+  "videos": 3,
+  "first": [
+   "CLIP_040.mp4",
+   "CLIP_080.mp4",
+   "CLIP_120.mp4"
+  ],
+  "last": [
+   "CLIP_080.mp4",
+   "CLIP_120.mp4"
+  ]
+ },
+ "11 photos tab": {
+  "photos": 120,
+  "videos": 0,
+  "first": [
+   "IMG_001.jpg",
+   "IMG_002.jpg",
+   "IMG_003.jpg"
+  ],
+  "last": [
+   "IMG_122.jpg",
+   "IMG_123.jpg"
+  ]
+ },
+ "12 select mode on": [
+  "All",
+  "Photos132",
+  "Videos3",
+  "Favorites",
+  "Folder",
+  "Select all",
+  "Cancel"
+ ],
+ "13 select all": {
+  "text": "135 selectedDownload 135 (.zip)",
+  "toggle": [
+   "Deselect all",
+   "Cancel"
+  ]
+ },
+ "14 deselect all": true,
+ "15 select mode off": true,
+ "16 favourite one": {
+  "label": "Add to favorites",
+  "posts": [
+   {
+    "action": "add",
+    "item": {
+     "id": "BIGFILE001xxxxxxxxxxxxxxxxxxxx",
+     "name": "IMG_001.jpg"
+    }
+   }
+  ],
+  "storage": {
+   "favorites_ID": 1
+  },
+  "bar": {
+   "tabs": [
+    "All [on]",
+    "Photos132",
+    "Videos3",
+    "Favorites1"
+   ],
+   "count": "132 photos · 3 videos",
+   "loadMore": null,
+   "sendSelection": [
+    "1Send selection"
+   ],
+   "hasSearch": true,
+   "sortOptions": [
+    "Default",
+    "Name A→Z",
+    "Name Z→A",
+    "Default",
+    "Name A→Z",
+    "Name Z→A"
+   ]
+  }
+ },
+ "17 favourites tab": {
+  "tiles": {
+   "photos": 1,
+   "videos": 0,
+   "first": [
+    "IMG_001.jpg"
+   ],
+   "last": [
+    "IMG_001.jpg"
+   ]
+  },
+  "note": "Your favorites are saved and visible to the photographer."
+ },
+ "18 after reload (server remembers)": {
+  "tabs": [
+   "All [on]",
+   "Photos132",
+   "Videos3",
+   "Favorites1"
+  ],
+  "count": "132 photos · 3 videos",
+  "loadMore": "Show more (15)",
+  "sendSelection": [
+   "1Send selection"
+  ],
+  "hasSearch": true,
+  "sortOptions": [
+   "Default",
+   "Name A→Z",
+   "Name Z→A",
+   "Default",
+   "Name A→Z",
+   "Name Z→A"
+  ]
+ },
+ "19 favourites after reload": {
+  "photos": 1,
+  "videos": 0,
+  "first": [
+   "IMG_001.jpg"
+  ],
+  "last": [
+   "IMG_001.jpg"
+  ]
+ },
+ "20 lightbox from favourites": {
+  "counter": "1 / 1",
+  "imgAlt": "IMG_001.jpg",
+  "imgSrc": "/api/photos/proxy?g=g-big&fileId=BIGFILE001xxxxxxxxxxxxxxxxxxxx&size=preview",
+  "video": false,
+  "favoritePressed": [
+   "false",
+   "true",
+   "false"
+  ],
+  "download": [
+   "https://drive.usercontent.google.com/download?id=BIGFILE001xxxxxxxxxxxxxxxxxxxx&export=download"
+  ],
+  "strip": 1,
+  "activeStrip": 0,
+  "transform": "|transform: translate(0px, 0px) scale(1); transition: transform 0.2s, opacity 0.3s; cursor: zoom-in;"
+ },
+ "21 ArrowRight stays within the favourites snapshot": "1 / 1",
+ "22 Escape closes": null,
+ "23 lightbox on tile 3": {
+  "counter": "3 / 135",
+  "imgAlt": "IMG_003.jpg",
+  "imgSrc": "/api/photos/proxy?g=g-big&fileId=BIGFILE003xxxxxxxxxxxxxxxxxxxx&size=preview",
+  "video": false,
+  "favoritePressed": [
+   "false",
+   "false",
+   "false"
+  ],
+  "download": [
+   "https://drive.usercontent.google.com/download?id=BIGFILE003xxxxxxxxxxxxxxxxxxxx&export=download"
+  ],
+  "strip": 135,
+  "activeStrip": 2,
+  "transform": "|transform: translate(0px, 0px) scale(1); transition: transform 0.2s, opacity 0.3s; cursor: zoom-in;"
+ },
+ "24 after two ArrowRight": {
+  "counter": "5 / 135",
+  "imgAlt": "IMG_005.jpg",
+  "imgSrc": "https://lh3.googleusercontent.com/BIG005=sN",
+  "video": false,
+  "favoritePressed": [
+   "false",
+   "false",
+   "false"
+  ],
+  "download": [
+   "https://drive.usercontent.google.com/download?id=BIGFILE005xxxxxxxxxxxxxxxxxxxx&export=download"
+  ],
+  "strip": 135,
+  "activeStrip": 4,
+  "transform": "|transform: translate(0px, 0px) scale(1); transition: transform 0.2s, opacity 0.3s; cursor: zoom-in;"
+ },
+ "25 after ArrowLeft": "4 / 135",
+ "26 thumbnail strip jump": "4 / 135",
+ "27 zoom in (+)": "|transform: translate(0px, 0px) scale(1.5); transition: transform 0.2s, opacity 0.3s; cursor: grab;",
+ "28 zoom reset (0)": "|transform: translate(0px, 0px) scale(1); transition: transform 0.2s, opacity 0.3s; cursor: zoom-in;",
+ "29 zoom button": "|transform: translate(0px, 0px) scale(2.5); transition: transform 0.2s, opacity 0.3s; cursor: grab;",
+ "30 favourite in lightbox": {
+  "lightbox": [
+   "false",
+   "true",
+   "false"
+  ],
+  "posts": 2
+ },
+ "31 slideshow advanced": true,
+ "32 video lightbox": {
+  "counter": "1 / 3",
+  "imgAlt": null,
+  "imgSrc": "",
+  "video": true,
+  "favoritePressed": [
+   "false",
+   "false"
+  ],
+  "download": [
+   "https://drive.usercontent.google.com/download?id=BIGFILE040xxxxxxxxxxxxxxxxxxxx&export=download"
+  ],
+  "strip": 3,
+  "activeStrip": 0,
+  "transform": null
+ },
+ "33 closed": null
+}

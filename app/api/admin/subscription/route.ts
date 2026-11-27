@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAdminDb } from "@/lib/firebase/admin";
-import { getUidFromRequest, isAdmin } from "@/lib/firebase/admin-guard";
+import { requireAdmin } from "@/lib/server/auth";
+import { writeAudit } from "@/lib/server/audit";
 import { assignPlanToUser, getPlanById } from "@/lib/plans";
-
-const YEAR_MS = 365 * 24 * 60 * 60 * 1000;
-// Far-future sentinel for "lifetime / comp" access (Jan 1, 3000)
-const LIFETIME = 32503680000000;
+import { LIFETIME_SENTINEL, YEAR_MS } from "@/lib/shared/billing-access";
+import { extendUserAccess } from "@/lib/server/billing/extend";
+import { parseJson } from "@/lib/server/http";
+import { AdminSubscriptionBody } from "@/lib/shared/schemas/admin";
+import { usersCol } from "@/lib/server/repos/collections";
 
 /**
  * Admin-only: manage a user's subscription manually.
@@ -13,18 +15,25 @@ const LIFETIME = 32503680000000;
  * Body: { uid: string, action: "assign_plan" | "grant_lifetime" | "grant_year" | "revoke", planId?: string }
  */
 export async function POST(req: NextRequest) {
-  const adminUid = await getUidFromRequest(req);
-  if (!isAdmin(adminUid)) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  }
+  const admin = await requireAdmin(req);
+  if (!admin.ok) return admin.response;
+  const adminUid = admin.user.uid;
 
-  const { uid, action, planId } = await req.json();
-  if (!uid || !action) {
-    return NextResponse.json({ error: "Missing uid or action" }, { status: 400 });
-  }
+  const body = await parseJson(req, AdminSubscriptionBody, { message: "Missing or invalid uid or action" });
+  if (!body.ok) return body.response;
+  const { uid, action, planId } = body.data;
 
-  const ref = getAdminDb().collection("users").doc(uid);
-  const now = Date.now();
+  const ref = usersCol().doc(uid);
+  // What an administrator can change about access: recorded before and after in the audit log.
+  const accessOf = (d: Record<string, unknown> | undefined) => ({
+    subscriptionStatus: d?.subscriptionStatus ?? null, subscriptionExpiresAt: d?.subscriptionExpiresAt ?? null,
+    compGranted: d?.compGranted ?? false, planId: d?.planId ?? null, planName: d?.planName ?? null, planInterval: d?.planInterval ?? null,
+  });
+  const beforeAccess = accessOf((await ref.get()).data());
+  const audit = async () => writeAudit({
+    actorUid: adminUid, action: `subscription.${action}`, targetType: "user", targetId: uid,
+    before: beforeAccess, after: accessOf((await ref.get()).data()), ...(planId && { note: `plan ${planId}` }),
+  });
 
   if (action === "assign_plan") {
     if (!planId) return NextResponse.json({ error: "Missing planId" }, { status: 400 });
@@ -34,21 +43,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "This plan is inactive — activate it first in the Plans tab" }, { status: 400 });
     }
     const expiresAt = await assignPlanToUser(uid, plan);
+    await audit();
     return NextResponse.json({ ok: true, expiresAt, plan: { id: plan.id, name: plan.name, interval: plan.interval } });
   } else if (action === "grant_lifetime") {
     await ref.set(
-      { subscriptionStatus: "active", subscriptionExpiresAt: LIFETIME, compGranted: true },
+      { subscriptionStatus: "active", subscriptionExpiresAt: LIFETIME_SENTINEL, compGranted: true },
       { merge: true }
     );
   } else if (action === "grant_year") {
-    // Extend by a year from whichever is later: now or current expiry.
-    const snap = await ref.get();
-    const current = (snap.exists ? (snap.data()?.subscriptionExpiresAt as number) : 0) ?? 0;
-    const base = Math.max(now, current);
-    await ref.set(
-      { subscriptionStatus: "active", subscriptionExpiresAt: base + YEAR_MS, compGranted: true },
-      { merge: true }
-    );
+    // Same rule as a purchase: stack a year on top of the later of now / current expiry.
+    await extendUserAccess(getAdminDb(), uid, { grantedMs: YEAR_MS });
   } else if (action === "revoke") {
     await ref.set(
       {
@@ -61,9 +65,8 @@ export async function POST(req: NextRequest) {
       },
       { merge: true }
     );
-  } else {
-    return NextResponse.json({ error: "Unknown action" }, { status: 400 });
   }
 
+  await audit();
   return NextResponse.json({ ok: true });
 }

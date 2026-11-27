@@ -51,3 +51,11 @@ firebase-service-account*.json
 .idea/
 .vscode/
 
+
+# firebase emulators
+firebase-debug.log*
+firestore-debug.log*
+ui-debug.log*
+
+# back-fill reports contain customer e-mail addresses: never commit them
+scripts/backfill/out/

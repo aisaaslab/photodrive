@@ -1,24 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAdminAuth, getAdminDb } from "@/lib/firebase/admin";
+import { parseExpiryInput } from "@/lib/gallery/availability";
+import { parseJson, route } from "@/lib/server/http";
+import { deleteGalleryCascade } from "@/lib/server/repos/galleries";
+import { GalleryBody } from "@/lib/shared/schemas/galleries";
+import { getAdminDb } from "@/lib/firebase/admin";
+import { requireUser } from "@/lib/server/auth";
 import { hashPassword } from "@/lib/gallery/password";
+import { planUpdate } from "@/lib/gallery/visibility";
 import { sealPassword, forOwner } from "@/lib/gallery/password-vault";
 import { extractFolderId } from "@/lib/drive/url-parser";
 import { validTitleFont, validTitleColor, validTitleSize } from "@/lib/gallery/title-style";
 import { validCoverPos } from "@/lib/gallery/cover-position";
-
-async function getUid(req: NextRequest): Promise<string | null> {
-  const token = req.headers.get("authorization")?.replace("Bearer ", "");
-  if (!token) return null;
-  try {
-    const decoded = await getAdminAuth().verifyIdToken(token);
-    return decoded.uid;
-  } catch {
-    return null;
-  }
-}
+import { galleriesCol } from "@/lib/server/repos/collections";
 
 async function getGalleryForOwner(id: string, uid: string) {
-  const ref = getAdminDb().collection("galleries").doc(id);
+  const ref = galleriesCol().doc(id);
   const snap = await ref.get();
   if (!snap.exists) return null;
   const data = snap.data()!;
@@ -26,39 +22,63 @@ async function getGalleryForOwner(id: string, uid: string) {
   return { ref, data: { id: snap.id, ...data } };
 }
 
-export async function PATCH(
+export const PATCH = route("galleries.item.patch", async (
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
-) {
+) => {
   const { id } = await params;
-  const uid = await getUid(req);
-  if (!uid) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const auth = await requireUser(req);
+  if (!auth.ok) return auth.response;
+  const uid = auth.user.uid;
 
   const gallery = await getGalleryForOwner(id, uid);
   if (!gallery) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  const body = await req.json();
+  const parsedBody = await parseJson(req, GalleryBody);
+  if (!parsedBody.ok) return parsedBody.response;
+  const body = parsedBody.data;
   const updates: Record<string, unknown> = { updatedAt: Date.now() };
 
   if (body.name) updates.name = body.name;
   if (body.driveUrl) {
-    const folderId = extractFolderId(body.driveUrl);
+    const folderId = extractFolderId(String(body.driveUrl));
     if (!folderId) return NextResponse.json({ error: "Invalid Drive URL" }, { status: 400 });
     updates.folderId = folderId;
   }
-  if (body.password) {
-    updates.passwordHash = await hashPassword(body.password);
-    updates.passwordEnc = sealPassword(String(body.password));
-    updates.password = null; // clear any legacy plaintext copy
-    updates.pwChangedAt = Date.now();
-  }
-  if (body.removePassword) {
-    updates.passwordHash = null;
-    updates.passwordEnc = null;
-    updates.password = null;
-    updates.pwChangedAt = Date.now();
+  // Public or private (D18). A private gallery always keeps a password; switching to public removes it.
+  // Only touch visibility/password when the request actually says something about them.
+  if (body.visibility !== undefined || body.password !== undefined || body.removePassword !== undefined) {
+    const plan = planUpdate(gallery.data as Record<string, unknown>, {
+      visibility: body.visibility, password: body.password, removePassword: body.removePassword,
+    });
+    if (!plan.ok) return NextResponse.json({ error: plan.error }, { status: 400 });
+    updates.visibility = plan.visibility;
+    if (plan.newPassword) {
+      updates.passwordHash = await hashPassword(plan.newPassword);
+      updates.passwordEnc = sealPassword(plan.newPassword);
+      updates.password = null; // clear any legacy plaintext copy
+      updates.pwChangedAt = Date.now();
+    } else if (plan.clearPassword) {
+      updates.passwordHash = null;
+      updates.passwordEnc = null;
+      updates.password = null;
+      updates.pwChangedAt = Date.now();
+    }
   }
   if (typeof body.allowDownload === "boolean") updates.allowDownload = body.allowDownload;
+  // S9-05: the gallery's own expiry date ("YYYY-MM-DD", or empty/null to clear). Extending it brings the gallery back at once.
+  if (body.expiresAt !== undefined) {
+    const exp = parseExpiryInput(body.expiresAt);
+    if (!exp.ok) return NextResponse.json({ error: "Invalid expiry date" }, { status: 400 });
+    updates.expiresAt = exp.value;
+  }
+  // S9-06. Changing the option starts afresh: the stamp of an earlier submission is cleared, so turning it on later does not lock
+  // retroactively and turning it off gives downloads back. Saving with the option unchanged (the dialog sends every field) must NOT
+  // clear it, or any save would re-open downloads after a client sent their selection.
+  if (typeof body.disableDownloadAfterSubmit === "boolean" && body.disableDownloadAfterSubmit !== ((gallery.data as { disableDownloadAfterSubmit?: boolean }).disableDownloadAfterSubmit === true)) {
+    updates.disableDownloadAfterSubmit = body.disableDownloadAfterSubmit;
+    updates.downloadsLockedAt = null;
+  }
 
   // Optional gallery metadata. Each is stored as null when cleared (empty
   // string / invalid date), so the field disappears from the public render.
@@ -103,19 +123,21 @@ export async function PATCH(
 
   await gallery.ref.update(updates);
   return NextResponse.json(forOwner({ ...gallery.data, ...updates }));
-}
+});
 
-export async function DELETE(
+export const DELETE = route("galleries.item.delete", async (
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
-) {
+) => {
   const { id } = await params;
-  const uid = await getUid(req);
-  if (!uid) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const auth = await requireUser(req);
+  if (!auth.ok) return auth.response;
+  const uid = auth.user.uid;
 
   const gallery = await getGalleryForOwner(id, uid);
   if (!gallery) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  await gallery.ref.delete();
+  // The gallery and its client favourites / submission go together.
+  await deleteGalleryCascade(getAdminDb(), id);
   return NextResponse.json({ ok: true });
-}
+});

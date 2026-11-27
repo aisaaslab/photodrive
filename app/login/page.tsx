@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -9,6 +9,8 @@ import { useAuth } from "@/components/auth/AuthProvider";
 import { useLanguage } from "@/lib/i18n";
 import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { Logo } from "@/components/ui/Logo";
+import { Input } from "@/components/ui/Input";
 
 export default function LoginPage() {
   const { user, loading } = useAuth();
@@ -59,11 +61,9 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="min-h-screen flex flex-col bg-stone-950">
+    <main className="min-h-screen flex flex-col bg-canvas">
       <nav className="flex items-center justify-between px-4 sm:px-8 py-4 sm:py-6">
-        <Link href="/" className="text-white font-semibold tracking-tight" style={{ fontFamily: "var(--font-brand), sans-serif" }}>
-          PhotoDrive
-        </Link>
+        <Link href="/" className="rounded-tile"><Logo /></Link>
         <LanguageSwitcher />
       </nav>
 
@@ -71,60 +71,42 @@ export default function LoginPage() {
         <div className="w-full max-w-sm animate-scale-in">
           <div className="text-center mb-10">
             <h1
-              className="text-3xl font-bold text-white mb-3"
+              className="text-3xl font-bold text-fg mb-3"
               style={{ fontFamily: "var(--font-brand), sans-serif" }}
             >
               {t.login.title}
             </h1>
-            <p className="text-stone-500 text-sm leading-relaxed">
+            <p className="text-fg-muted text-sm leading-relaxed">
               {t.login.subtitle.split("\n").map((line, i) => (
                 <span key={i}>{line}{i === 0 && <br />}</span>
               ))}
             </p>
           </div>
 
-          <div className="bg-stone-900 border border-white/8 rounded-2xl p-6" style={{ borderColor: "rgba(255,255,255,0.08)" }}>
-            <div className={`flex justify-center transition-opacity duration-200 ${!agreed ? "opacity-40 pointer-events-none" : ""}`}>
-              <GoogleSignInButton />
+          <div className="bg-surface border border-line rounded-card p-6">
+            <div className="flex justify-center">
+              <GoogleSignInButton disabled={!agreed} />
             </div>
 
             {/* Divider */}
             <div className="flex items-center gap-3 my-5">
-              <div className="flex-1 h-px bg-white/5" />
-              <span className="text-[10px] text-stone-600 uppercase tracking-widest">or</span>
-              <div className="flex-1 h-px bg-white/5" />
+              <div className="flex-1 h-px bg-surface-2" />
+              <span className="text-[10px] text-fg-muted uppercase tracking-widest">or</span>
+              <div className="flex-1 h-px bg-surface-2" />
             </div>
 
             {/* Email / password sign-in */}
             <form onSubmit={handleEmailSignIn} className="space-y-3">
-              <div>
-                <label className="block text-xs text-stone-500 mb-1.5">{t.login.emailLabel}</label>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  autoComplete="email"
-                  className="w-full bg-stone-950 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-stone-600 outline-none focus:border-white/25 transition-colors"
-                />
-              </div>
-              <div>
-                <label className="block text-xs text-stone-500 mb-1.5">{t.login.passwordLabel}</label>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  autoComplete="current-password"
-                  className="w-full bg-stone-950 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-stone-600 outline-none focus:border-white/25 transition-colors"
-                />
-              </div>
+              <Input label={t.login.emailLabel} type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" />
+              <Input label={t.login.passwordLabel} type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" />
               <button
                 type="submit"
                 disabled={emailBusy || !agreed}
-                className="w-full bg-white text-stone-900 font-bold py-2.5 rounded-xl text-sm hover:bg-stone-100 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="w-full bg-accent text-canvas font-bold py-2.5 rounded-pill text-sm hover:brightness-110 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {emailBusy ? (
                   <>
-                    <div className="w-4 h-4 border-2 border-stone-400 border-t-stone-900 rounded-full animate-spin" />
+                    <div className="w-4 h-4 border-2 border-canvas/30 border-t-canvas rounded-full animate-spin" />
                     {t.login.signingIn}
                   </>
                 ) : (
@@ -133,10 +115,10 @@ export default function LoginPage() {
               </button>
             </form>
 
-            {emailError && <p className="text-xs text-red-400 text-center mt-3">{emailError}</p>}
+            {emailError && <p className="text-xs text-danger text-center mt-3">{emailError}</p>}
 
-            <div className="mt-5 pt-5 border-t border-white/5">
-              <p className="text-xs text-stone-600 text-center leading-relaxed">
+            <div className="mt-5 pt-5 border-t border-line">
+              <p className="text-xs text-fg-muted text-center leading-relaxed">
                 {t.login.driveNote.split("\n").map((line, i) => (
                   <span key={i}>{line}{i === 0 && <br />}</span>
                 ))}
@@ -148,29 +130,29 @@ export default function LoginPage() {
             <div className="relative mt-0.5 shrink-0">
               <input
                 type="checkbox"
-                className="sr-only"
+                className="sr-only peer"
                 checked={agreed}
                 onChange={(e) => setAgreed(e.target.checked)}
               />
-              <div className={`w-4 h-4 rounded border transition-all duration-150 flex items-center justify-center ${
+              <div className={`w-4 h-4 rounded border transition-all duration-150 flex items-center justify-center peer-focus-visible:ring-2 peer-focus-visible:ring-accent peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-canvas ${
                 agreed
-                  ? "bg-[#17509e] border-[#17509e]"
-                  : "bg-transparent border-stone-600 group-hover:border-stone-400"
+                  ? "bg-accent-deep border-accent-deep"
+                  : "bg-transparent border-fg-muted/50 group-hover:border-fg-muted"
               }`}>
                 {agreed && (
-                  <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                  <svg className="w-2.5 h-2.5 text-fg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                   </svg>
                 )}
               </div>
             </div>
-            <span className="text-xs text-stone-500 leading-relaxed">
+            <span className="text-xs text-fg-muted leading-relaxed">
               {t.login.agree}{" "}
-              <Link href="/terms" className="text-stone-300 underline underline-offset-2 hover:text-white transition-colors">
+              <Link href="/terms" className="text-fg-soft underline underline-offset-2 hover:text-fg transition-colors">
                 {t.login.terms}
               </Link>{" "}
               {t.login.and}{" "}
-              <Link href="/privacy" className="text-stone-300 underline underline-offset-2 hover:text-white transition-colors">
+              <Link href="/privacy" className="text-fg-soft underline underline-offset-2 hover:text-fg transition-colors">
                 {t.login.privacy}
               </Link>
               .

@@ -1,445 +1,49 @@
-﻿"use client";
+"use client";
 
-import { useEffect, useRef, useState } from "react";
-import { useAuth } from "@/components/auth/AuthProvider";
-import { useLanguage } from "@/lib/i18n";
-
-type PublicPlan = {
-  id: string;
-  name: string;
-  description: string;
-  interval: "monthly" | "yearly";
-  priceCents: number;
-  currency: string;
-  features: string[];
-  highlight: boolean;
-};
-
-const PER_INTERVAL: Record<string, Record<"monthly" | "yearly", string>> = {
-  el: { monthly: "/ μήνα", yearly: "/ χρόνο" },
-  en: { monthly: "/ month", yearly: "/ year" },
-  nl: { monthly: "/ maand", yearly: "/ jaar" },
-  de: { monthly: "/ Monat", yearly: "/ Jahr" },
-  es: { monthly: "/ mes", yearly: "/ año" },
-  it: { monthly: "/ mese", yearly: "/ anno" },
-};
-
-function formatPlanPrice(cents: number, currency: string) {
-  try {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: currency.toUpperCase(),
-      minimumFractionDigits: cents % 100 === 0 ? 0 : 2,
-    }).format(cents / 100);
-  } catch {
-    return `$${(cents / 100).toFixed(cents % 100 === 0 ? 0 : 2)}`;
-  }
-}
+import type { Visibility } from "@/lib/gallery/visibility";
+import type { GalleryDoc } from "@/lib/firestore/types";
+import { GalleryFields } from "./new-gallery/GalleryFields";
+import { VisibilityField } from "./new-gallery/VisibilityField";
+import { SocialLinksField } from "./new-gallery/SocialLinksField";
+import { PaymentStep } from "./new-gallery/PaymentStep";
+import { useNewGalleryForm } from "./new-gallery/useNewGalleryForm";
 
 interface Props {
-  onCreated: () => void;
+  onCreated: (gallery: GalleryDoc) => void;
   onCancel?: () => void;
-  initialData?: { name: string; driveUrl: string; password: string; website?: string; instagram?: string; facebook?: string; description?: string; eventDate?: string; location?: string };
+  initialData?: { name: string; driveUrl: string; password: string; visibility?: Visibility; website?: string; instagram?: string; facebook?: string; description?: string; eventDate?: string; location?: string };
   /** After payment, auto-submit the restored form once the subscription is active. */
   autoSubmit?: boolean;
 }
 
-function isValidDriveUrl(url: string): boolean {
-  return /drive\.google\.com\/(drive\/folders\/|open\?id=|folderview\?id=)/.test(url);
-}
-
-const SOCIALS = [
-  {
-    key: "website",
-    label: "Website",
-    placeholder: "https://yoursite.com",
-    icon: (
-      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.7}>
-        <circle cx="12" cy="12" r="9" />
-        <path strokeLinecap="round" d="M3.5 12h17M12 3c2.6 2.6 2.6 15.4 0 18M12 3c-2.6 2.6-2.6 15.4 0 18" />
-      </svg>
-    ),
-  },
-  {
-    key: "instagram",
-    label: "Instagram",
-    placeholder: "https://instagram.com/username",
-    icon: (
-      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.7}>
-        <rect x="3" y="3" width="18" height="18" rx="5" />
-        <circle cx="12" cy="12" r="3.8" />
-        <circle cx="17.3" cy="6.7" r="1.1" fill="currentColor" stroke="none" />
-      </svg>
-    ),
-  },
-  {
-    key: "facebook",
-    label: "Facebook",
-    placeholder: "https://facebook.com/yourpage",
-    icon: (
-      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-        <path d="M22 12a10 10 0 10-11.56 9.88v-6.99H7.9V12h2.54V9.8c0-2.5 1.49-3.89 3.78-3.89 1.09 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.77-1.63 1.56V12h2.78l-.44 2.89h-2.34v6.99A10 10 0 0022 12z" />
-      </svg>
-    ),
-  },
-] as const;
-
+/**
+ * The dashboard's "new gallery" form. The pieces live in new-gallery/ (S5-09): the form's state and flow (useNewGalleryForm, with the
+ * subscription gate and the post-payment auto-submit), the payment step, and the sections of the form. What is sent is decided by the
+ * pure functions in lib/gallery/new-gallery.ts.
+ */
 export function NewGalleryForm({ onCreated, onCancel, initialData, autoSubmit }: Props) {
-  const { user } = useAuth();
-  const { t, lang } = useLanguage();
-  const f = t.newGalleryForm;
-  const [name, setName] = useState(initialData?.name ?? "");
-  const [driveUrl, setDriveUrl] = useState(initialData?.driveUrl ?? "");
-  const [password, setPassword] = useState(initialData?.password ?? "");
-  const [showPassword, setShowPassword] = useState(false);
-  const [social, setSocial] = useState({
-    website: initialData?.website ?? "",
-    instagram: initialData?.instagram ?? "",
-    facebook: initialData?.facebook ?? "",
-  });
-  const [socialOn, setSocialOn] = useState({
-    website: !!initialData?.website,
-    instagram: !!initialData?.instagram,
-    facebook: !!initialData?.facebook,
-  });
-  // Optional gallery metadata: subtitle, event date, location.
-  const [description, setDescription] = useState(initialData?.description ?? "");
-  const [eventDate, setEventDate] = useState(initialData?.eventDate ?? "");
-  const [location, setLocation] = useState(initialData?.location ?? "");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [showPayment, setShowPayment] = useState(false);
-  const [checkoutLoading, setCheckoutLoading] = useState(false);
-  // Public plans shown in the payment step (same source as /subscribe). Empty
-  // list = legacy single $99/year card.
-  const [plans, setPlans] = useState<PublicPlan[]>([]);
-  const [plansLoaded, setPlansLoaded] = useState(false);
-  const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
-
-  const driveValid = driveUrl.length > 0 && isValidDriveUrl(driveUrl);
-  const driveInvalid = driveUrl.length > 0 && !isValidDriveUrl(driveUrl);
-  const submittingRef = useRef(false);
-
-  async function isSubscriptionActive(): Promise<boolean> {
-    if (!user) return false;
-    try {
-      const token = await user.getIdToken();
-      const subRes = await fetch("/api/user/subscription", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const subData = await subRes.json();
-      return !!subData.isActive;
-    } catch {
-      return false;
-    }
-  }
-
-  // When a 402 comes back from gallery creation, the subscription may have
-  // JUST been activated (webhook/verify landing moments after our check).
-  // Poll briefly before showing the payment card so a paid user is never
-  // asked to pay twice.
-  async function waitForActivation(tries = 6, delayMs = 1500): Promise<boolean> {
-    for (let i = 0; i < tries; i++) {
-      if (i > 0) await new Promise((r) => setTimeout(r, delayMs));
-      if (await isSubscriptionActive()) return true;
-    }
-    return false;
-  }
-
-  async function createGallery(): Promise<boolean> {
-    if (!user) return false;
-    const token = await user.getIdToken();
-    const res = await fetch("/api/galleries", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        name,
-        driveUrl,
-        password: password || undefined,
-        website: socialOn.website ? social.website.trim() || undefined : undefined,
-        instagram: socialOn.instagram ? social.instagram.trim() || undefined : undefined,
-        facebook: socialOn.facebook ? social.facebook.trim() || undefined : undefined,
-        description: description.trim() || undefined,
-        eventDate: eventDate || undefined,
-        location: location.trim() || undefined,
-      }),
-    });
-
-    const data = await res.json();
-    if (res.ok) {
-      setName("");
-      setDriveUrl("");
-      setPassword("");
-      setSocial({ website: "", instagram: "", facebook: "" });
-      setSocialOn({ website: false, instagram: false, facebook: false });
-      setDescription("");
-      setEventDate("");
-      setLocation("");
-      onCreated();
-      return true;
-    }
-
-    if (res.status === 402) {
-      if (await waitForActivation()) {
-        // Subscription became active in the meantime — retry once.
-        return createGallery();
-      }
-      setShowPayment(true);
-      return false;
-    }
-
-    setError(data.error ?? f.error);
-    return false;
-  }
-
-  async function submitForm(opts?: { justPaid?: boolean; skipSubscriptionCheck?: boolean }): Promise<void> {
-    if (!user || submittingRef.current) return;
-    submittingRef.current = true;
-    setError("");
-    setLoading(true);
-
-    try {
-      if (!opts?.skipSubscriptionCheck && !(await isSubscriptionActive())) {
-        // justPaid: the user completed checkout moments ago — activation may
-        // still be landing, so poll briefly before showing the payment card.
-        // Otherwise (a fresh, unpaid visitor) show the card immediately.
-        if (!opts?.justPaid || !(await waitForActivation())) {
-          setShowPayment(true);
-          return;
-        }
-      }
-
-      await createGallery();
-    } finally {
-      setLoading(false);
-      submittingRef.current = false;
-    }
-  }
-
-  // Post-payment flow: the dashboard restores this form with autoSubmit so the
-  // gallery the user paid for is created without another click.
-  useEffect(() => {
-    if (!autoSubmit || !user) return;
-    let cancelled = false;
-    (async () => {
-      // justPaid lets submitForm tolerate an activation that is still landing
-      // (slow webhook) instead of immediately showing the payment card.
-      try {
-        if (!cancelled) await submitForm({ justPaid: true });
-      } catch {
-        // Network/API failure — leave the form filled so the user can retry.
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [autoSubmit, user]);
-
-  useEffect(() => {
-    if (!showPayment || plansLoaded) return;
-    let cancelled = false;
-    (async () => {
-      try {
-        const res = await fetch("/api/plans");
-        const data = res.ok ? await res.json() : { plans: [] };
-        const list: PublicPlan[] = data.plans ?? [];
-        if (cancelled) return;
-        setPlans(list);
-        setSelectedPlanId(list.find((p) => p.highlight)?.id ?? list[0]?.id ?? null);
-      } catch {
-        // Fall back to the legacy single-plan card.
-      }
-      if (!cancelled) setPlansLoaded(true);
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [showPayment, plansLoaded]);
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    await submitForm();
-  }
-
-  async function handleCheckout() {
-    if (!user) return;
-    setCheckoutLoading(true);
-    localStorage.setItem("pending_gallery", JSON.stringify({
-      name, driveUrl, password,
-      website: socialOn.website ? social.website : "",
-      instagram: socialOn.instagram ? social.instagram : "",
-      facebook: socialOn.facebook ? social.facebook : "",
-      description,
-      eventDate,
-      location,
-    }));
-    setError("");
-    try {
-      const token = await user.getIdToken();
-      const res = await fetch("/api/stripe/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify(selectedPlan ? { planId: selectedPlan.id } : {}),
-      });
-      const data = await res.json();
-      if (data.alreadyPaid) {
-        // A previous paid session was found — no new charge. The route just
-        // activated the subscription server-side, so skip the pre-check and
-        // create the gallery directly.
-        setShowPayment(false);
-        setCheckoutLoading(false);
-        await submitForm({ skipSubscriptionCheck: true });
-        return;
-      }
-      if (data.url) {
-        window.location.href = data.url;
-        return;
-      }
-      setError(f.error);
-      setCheckoutLoading(false);
-    } catch {
-      setError(f.error);
-      setCheckoutLoading(false);
-    }
-  }
-
-  const selectedPlan = plans.find((p) => p.id === selectedPlanId) ?? null;
-  const perInterval = PER_INTERVAL[lang] ?? PER_INTERVAL.en;
-  const features =
-    selectedPlan && selectedPlan.features.length > 0
-      ? selectedPlan.features
-      : [f.f1, f.f2, f.f3, f.f4, f.f5, f.f6];
+  const form = useNewGalleryForm({ onCreated, initialData, autoSubmit });
+  const { f, error, loading, showPayment, checkoutLoading, payment, setShowPayment, handleSubmit, handleCheckout } = form;
 
   if (showPayment) {
     return (
-      <div className="bg-[#111111] border border-white/[0.1] rounded-2xl overflow-hidden animate-scale-in">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-white/[0.06]">
-          <div>
-            <h2 className="font-semibold text-white" style={{ fontFamily: "var(--font-brand), sans-serif" }}>{f.subscriptionTitle}</h2>
-            <p className="text-xs text-white/60 mt-0.5">{f.subscriptionSubtitle}</p>
-          </div>
-          <button
-            onClick={() => setShowPayment(false)}
-            className="w-8 h-8 flex items-center justify-center rounded-full text-white/60 hover:text-white hover:bg-white/[0.08] transition-colors"
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-
-        <div className="p-6">
-          {!plansLoaded ? (
-            <div className="flex justify-center py-8">
-              <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-            </div>
-          ) : plans.length > 0 ? (
-            <div className="space-y-2 mb-5">
-              {plans.map((plan) => {
-                const selected = plan.id === selectedPlanId;
-                return (
-                  <button
-                    key={plan.id}
-                    type="button"
-                    onClick={() => setSelectedPlanId(plan.id)}
-                    aria-pressed={selected}
-                    className={`w-full text-left flex items-center gap-3 border rounded-xl px-4 py-3 transition-all ${
-                      selected
-                        ? "border-[#17509e] bg-[#17509e]/10 ring-1 ring-[#17509e]/40"
-                        : "border-white/[0.08] bg-white/[0.03] hover:border-white/20"
-                    }`}
-                  >
-                    <span
-                      className={`w-4 h-4 rounded-full border shrink-0 flex items-center justify-center ${
-                        selected ? "border-[#2dabe0]" : "border-white/30"
-                      }`}
-                    >
-                      {selected && <span className="w-2 h-2 rounded-full bg-[#2dabe0]" />}
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="block text-sm font-semibold text-white truncate">{plan.name}</span>
-                      {plan.description && (
-                        <span className="block text-xs text-stone-500 truncate">{plan.description}</span>
-                      )}
-                    </span>
-                    <span className="text-right shrink-0">
-                      <span className="text-lg font-bold text-white">{formatPlanPrice(plan.priceCents, plan.currency)}</span>
-                      <span className="text-stone-500 text-xs ml-1">{perInterval[plan.interval]}</span>
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="flex items-center justify-between mb-5">
-              <div>
-                <div className="flex items-center gap-2 mb-0.5">
-                  <span className="text-3xl font-bold text-white">$99</span>
-                  <span className="text-stone-500 text-sm">{f.perYear}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-stone-500 line-through text-sm">$199</span>
-                  <span className="bg-[#17509e]/20 text-[#2dabe0] text-xs font-bold px-2 py-0.5 rounded-full border border-[#17509e]/20">-50%</span>
-                </div>
-              </div>
-              <span className="bg-[#17509e]/20 text-[#2dabe0] text-xs font-semibold px-2.5 py-1 rounded-full border border-[#17509e]/20">
-                {f.offer}
-              </span>
-            </div>
-          )}
-
-          <ul className="space-y-2 mb-6">
-            {features.map((feat) => (
-              <li key={feat} className="flex items-center gap-2 text-sm text-stone-300">
-                <svg className="w-3.5 h-3.5 text-[#2dabe0] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-                </svg>
-                {feat}
-              </li>
-            ))}
-          </ul>
-
-          <button
-            onClick={handleCheckout}
-            disabled={checkoutLoading || !plansLoaded}
-            className="w-full bg-white text-stone-900 font-bold py-3 rounded-xl text-sm hover:bg-stone-100 transition-all disabled:opacity-60 flex items-center justify-center gap-2"
-          >
-            {checkoutLoading ? (
-              <div className="w-4 h-4 border-2 border-stone-400 border-t-stone-900 rounded-full animate-spin" />
-            ) : (
-              f.buy
-            )}
-          </button>
-
-          {error && <p className="text-xs text-red-400 text-center mt-3">{error}</p>}
-
-          <button
-            onClick={() => setShowPayment(false)}
-            className="w-full mt-2 text-stone-500 hover:text-white text-xs py-2 transition-colors"
-          >
-            {f.backToForm}
-          </button>
-        </div>
-      </div>
+      <PaymentStep payment={payment} error={error} checkoutLoading={checkoutLoading} onBack={() => setShowPayment(false)} onCheckout={handleCheckout} />
     );
   }
 
   return (
-    <div className="bg-[#111111] border border-white/[0.1] rounded-2xl overflow-hidden">
+    <div className="bg-surface border border-line rounded-card overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-6 py-4 border-b border-white/[0.06]">
+      <div className="flex items-center justify-between px-6 py-4 border-b border-line">
         <div>
-          <h2 className="font-semibold text-white" style={{ fontFamily: "var(--font-brand), sans-serif" }}>{f.title}</h2>
-          <p className="text-xs text-white/60 mt-0.5">{f.subtitle}</p>
+          <h2 className="font-semibold text-fg" style={{ fontFamily: "var(--font-brand), sans-serif" }}>{f.title}</h2>
+          <p className="text-xs text-fg-muted mt-0.5">{f.subtitle}</p>
         </div>
         {onCancel && (
           <button
             onClick={onCancel}
-            className="w-8 h-8 flex items-center justify-center rounded-full text-white/60 hover:text-white hover:bg-white/[0.08] transition-colors"
+            aria-label={f.cancel}
+            className="w-8 h-8 flex items-center justify-center rounded-full text-fg-muted hover:text-fg hover:bg-surface-2 transition-colors"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -449,173 +53,12 @@ export function NewGalleryForm({ onCreated, onCancel, initialData, autoSubmit }:
       </div>
 
       <form onSubmit={handleSubmit} className="p-6 space-y-4">
-        {/* Gallery name */}
-        <div>
-          <label className="block text-xs font-medium text-white mb-1.5">
-            {f.nameLabel}
-          </label>
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder={f.namePlaceholder}
-            required
-            className="w-full bg-[#1a1a1a] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-stone-600 outline-none focus:border-white/25 transition-all"
-          />
-        </div>
-
-        {/* Optional gallery metadata */}
-        <div>
-          <label className="block text-xs font-medium text-white mb-1.5">
-            {f.descriptionLabel}
-          </label>
-          <textarea
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder={f.descriptionPlaceholder}
-            rows={2}
-            className="w-full bg-[#1a1a1a] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-stone-600 outline-none focus:border-white/25 transition-all resize-none"
-          />
-        </div>
-        <div className="grid sm:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-xs font-medium text-white mb-1.5">
-              {f.eventDateLabel}
-            </label>
-            <input
-              type="date"
-              value={eventDate}
-              onChange={(e) => setEventDate(e.target.value)}
-              className="w-full bg-[#1a1a1a] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-stone-600 outline-none focus:border-white/25 transition-all"
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-white mb-1.5">
-              {f.locationLabel}
-            </label>
-            <input
-              type="text"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              placeholder={f.locationPlaceholder}
-              className="w-full bg-[#1a1a1a] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-stone-600 outline-none focus:border-white/25 transition-all"
-            />
-          </div>
-        </div>
-
-        {/* Drive URL */}
-        <div>
-          <label className="block text-xs font-medium text-white mb-1.5">
-            {f.driveLabel}
-          </label>
-          <div className="relative">
-            <input
-              type="url"
-              value={driveUrl}
-              onChange={(e) => setDriveUrl(e.target.value)}
-              placeholder={f.drivePlaceholder}
-              required
-              className={`w-full bg-[#1a1a1a] border rounded-xl px-4 py-2.5 pr-10 text-sm text-white placeholder-stone-600 outline-none transition-all ${
-                driveValid
-                  ? "border-emerald-500/50 focus:border-emerald-500"
-                  : driveInvalid
-                  ? "border-red-500/50 focus:border-red-500"
-                  : "border-white/10 focus:border-white/25"
-              }`}
-            />
-            {driveValid && (
-              <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                <svg className="w-4 h-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-                </svg>
-              </div>
-            )}
-            {driveInvalid && (
-              <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                <svg className="w-4 h-4 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </div>
-            )}
-          </div>
-          <div className="flex items-center gap-1.5 mt-1.5">
-            <svg className="w-3 h-3 text-amber-500 shrink-0" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
-            </svg>
-            <p className="text-xs text-white/60">{f.driveHint}</p>
-          </div>
-        </div>
-
-        {/* Password toggle */}
-        <div className="bg-[#1a1a1a] border border-white/10 rounded-xl overflow-hidden">
-          <button
-            type="button"
-            onClick={() => setShowPassword((v) => !v)}
-            className="w-full flex items-center justify-between px-4 py-3 hover:bg-white/[0.04] transition-colors"
-          >
-            <div className="flex items-center gap-2.5 text-sm text-white">
-              <svg className="w-4 h-4 text-white/60" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
-              </svg>
-              {f.passwordLabel}
-              <span className="text-xs text-white/40">{f.passwordOptional}</span>
-            </div>
-            <div className={`relative w-9 h-5 rounded-full transition-colors duration-200 ${showPassword ? "bg-white/80" : "bg-white/10"}`}>
-              <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow-sm transition-transform duration-200 ${showPassword ? "translate-x-4" : "translate-x-0.5"}`} />
-            </div>
-          </button>
-
-          {showPassword && (
-            <div className="px-4 pb-4 pt-1 border-t border-white/[0.06] animate-scale-in">
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder={f.passwordPlaceholder}
-                autoFocus
-                className="w-full bg-[#1a1a1a] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-stone-600 outline-none focus:border-white/25 transition-all"
-              />
-            </div>
-          )}
-        </div>
-
-        {/* Social links (optional) */}
-        <div className="bg-[#1a1a1a] border border-white/10 rounded-xl p-4 space-y-2.5">
-          <div className="text-xs font-medium text-white/80">
-            {f.linksLabel} <span className="text-white/40">{f.passwordOptional}</span>
-          </div>
-          {SOCIALS.map((soc) => (
-            <div key={soc.key}>
-              <button
-                type="button"
-                onClick={() => setSocialOn((s) => ({ ...s, [soc.key]: !s[soc.key] } as typeof s))}
-                className="flex items-center gap-2.5 text-sm text-white w-full"
-              >
-                <span className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 transition-colors ${socialOn[soc.key] ? "bg-[#17509e] border-[#17509e]" : "border-white/25"}`}>
-                  {socialOn[soc.key] && (
-                    <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-                    </svg>
-                  )}
-                </span>
-                <span className="text-white/70 shrink-0">{soc.icon}</span>
-                {soc.label}
-              </button>
-              {socialOn[soc.key] && (
-                <input
-                  type="url"
-                  value={social[soc.key]}
-                  onChange={(e) => setSocial((s) => ({ ...s, [soc.key]: e.target.value } as typeof s))}
-                  placeholder={soc.placeholder}
-                  className="mt-2 w-full bg-[#1a1a1a] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-stone-600 outline-none focus:border-white/25 transition-all"
-                />
-              )}
-            </div>
-          ))}
-        </div>
+        <GalleryFields form={form} />
+        <VisibilityField form={form} />
+        <SocialLinksField form={form} />
 
         {error && (
-          <div className="flex items-center gap-2 text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3">
+          <div className="flex items-center gap-2 text-sm text-danger bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3">
             <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
             </svg>
@@ -628,7 +71,7 @@ export function NewGalleryForm({ onCreated, onCancel, initialData, autoSubmit }:
             <button
               type="button"
               onClick={onCancel}
-              className="flex-1 border border-white/10 text-white rounded-xl py-2.5 text-sm font-medium hover:bg-white/[0.04] transition-colors"
+              className="flex-1 border border-line text-fg rounded-xl py-2.5 text-sm font-medium hover:bg-surface transition-colors"
             >
               {f.cancel}
             </button>
@@ -636,11 +79,11 @@ export function NewGalleryForm({ onCreated, onCancel, initialData, autoSubmit }:
           <button
             type="submit"
             disabled={loading}
-            className="flex-1 bg-white text-stone-900 rounded-xl py-2.5 text-sm font-medium hover:bg-stone-100 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+            className="flex-1 bg-accent text-canvas rounded-pill py-2.5 text-sm font-medium hover:brightness-110 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
           >
             {loading ? (
               <>
-                <div className="w-4 h-4 border-2 border-stone-400 border-t-stone-900 rounded-full animate-spin" />
+                <div className="w-4 h-4 border-2 border-canvas/30 border-t-canvas rounded-full animate-spin" />
                 {f.creating}
               </>
             ) : (

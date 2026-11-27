@@ -1,3 +1,5 @@
+import "server-only";
+import { mailFrom } from "@/lib/branding";
 // Server-only helper (import from API routes only — never from client code).
 
 /**
@@ -13,7 +15,7 @@ export async function sendEmail(opts: {
   text: string;
   replyTo?: string;
 }): Promise<boolean> {
-  const from = process.env.CONTACT_FROM_EMAIL || "PhotoDrive <no-reply@photodrive.co>";
+  const from = process.env.CONTACT_FROM_EMAIL || mailFrom();
 
   const apiKey = process.env.RESEND_API_KEY;
   if (apiKey) {
@@ -47,6 +49,11 @@ export async function sendEmail(opts: {
         port: Number(process.env.CONTACT_SMTP_PORT || 587),
         secure: process.env.CONTACT_SMTP_SECURE === "true",
         auth: { user, pass },
+        // Callers (e.g. the Stripe webhook sending an operator alert) are waiting on this:
+        // fail fast instead of nodemailer's default of about two minutes.
+        connectionTimeout: 10_000,
+        greetingTimeout: 10_000,
+        socketTimeout: 15_000,
       });
       await transporter.sendMail({
         from: process.env.CONTACT_FROM_EMAIL || `PhotoDrive <${user}>`,

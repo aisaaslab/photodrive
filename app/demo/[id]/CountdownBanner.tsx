@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
@@ -35,14 +35,14 @@ export function CountdownBanner({ expiresAt }: { expiresAt: number }) {
   const timeStr = `${minutes}:${seconds.toString().padStart(2, "0")}`;
 
   return (
-    <div className="bg-stone-900 text-white text-sm font-medium text-center py-3 px-4 flex items-center justify-center gap-3 flex-wrap">
+    <div className="bg-accent text-canvas text-sm font-medium text-center py-3 px-4 flex items-center justify-center gap-3 flex-wrap">
       <span>
         {d.bannerExpires}{" "}
-        <span className="font-bold text-[#2dabe0]">{timeStr}</span>
+        <span className="font-bold text-accent">{timeStr}</span>
       </span>
       <Link
         href="/login"
-        className="text-white/60 hover:text-white text-xs underline transition-colors"
+        className="text-fg-muted hover:text-fg text-xs underline transition-colors"
       >
         {d.bannerCta}
       </Link>

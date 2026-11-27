@@ -1,8 +1,10 @@
+import "server-only";
 // Server-only helper (import from API routes only — never from client code).
-import { getAdminDb } from "@/lib/firebase/admin";
+import { siteSettingsDoc } from "@/lib/server/repos/collections";
+import { SUPPORT_EMAIL } from "@/lib/branding";
+import { checkSupportEmail, isEmail } from "@/lib/shared/site-rules";
 
-export const DEFAULT_SUPPORT_EMAIL = "support@photodrive.co";
-export const SITE_SETTINGS_DOC = "settings/site";
+export const DEFAULT_SUPPORT_EMAIL = SUPPORT_EMAIL;
 
 export type SiteSettings = {
   supportEmail: string;
@@ -10,9 +12,7 @@ export type SiteSettings = {
   updatedBy?: string | null;
 };
 
-function isValidEmail(v: string): boolean {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v.trim());
-}
+const isValidEmail = isEmail;
 
 /**
  * Resolve the support email recipient.
@@ -27,7 +27,7 @@ function isValidEmail(v: string): boolean {
  */
 export async function getSupportEmail(): Promise<string> {
   try {
-    const snap = await getAdminDb().doc(SITE_SETTINGS_DOC).get();
+    const snap = await siteSettingsDoc().get();
     const stored = snap.exists
       ? ((snap.data()?.supportEmail as string | undefined) ?? "")
       : "";
@@ -44,7 +44,7 @@ export async function getSiteSettings(adminUid?: string | null): Promise<SiteSet
   let updatedAt: number | undefined;
   let updatedBy: string | null | undefined;
   try {
-    const snap = await getAdminDb().doc(SITE_SETTINGS_DOC).get();
+    const snap = await siteSettingsDoc().get();
     if (snap.exists) {
       updatedAt = snap.data()?.updatedAt as number | undefined;
       updatedBy = (snap.data()?.updatedBy as string | undefined) ?? null;
@@ -57,11 +57,9 @@ export async function getSiteSettings(adminUid?: string | null): Promise<SiteSet
 }
 
 export function validateSupportEmail(value: unknown): string {
-  const v = String(value ?? "").trim().toLowerCase();
-  if (!isValidEmail(v) || v.length > 254) {
-    throw new Error("Enter a valid email address.");
-  }
-  return v;
+  const r = checkSupportEmail(value);
+  if (!r.ok) throw new Error(r.error);
+  return r.value;
 }
 
 export type ContactMessageDoc = {
@@ -74,4 +72,12 @@ export type ContactMessageDoc = {
   userAgent?: string | null;
   read?: boolean;
   emailed?: boolean;
+  /** Support inbox (S8-02): `resolved` once an administrator has dealt with it; anything else is open. */
+  status?: "open" | "resolved";
+  resolvedAt?: number;
+  resolvedBy?: string;
+  /** An internal note by an administrator; never shown to the sender. */
+  note?: string;
+  noteAt?: number;
+  noteBy?: string;
 };

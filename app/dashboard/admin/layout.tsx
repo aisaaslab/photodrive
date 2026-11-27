@@ -1,13 +1,17 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/components/auth/AuthProvider";
+import { useAttention } from "@/components/admin/useAttention";
 
-const TABS = [
+const TABS: { href: string; label: string; badge?: "payments" | "support" }[] = [
   { href: "/dashboard/admin", label: "Overview" },
   { href: "/dashboard/admin/users", label: "Users" },
+  { href: "/dashboard/admin/galleries", label: "Galleries" },
+  { href: "/dashboard/admin/payments", label: "Payments", badge: "payments" },
+  { href: "/dashboard/admin/support", label: "Support", badge: "support" },
   { href: "/dashboard/admin/plans", label: "Plans" },
   { href: "/dashboard/admin/promo-codes", label: "Promo codes" },
   { href: "/dashboard/admin/settings", label: "Settings" },
@@ -25,6 +29,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const pathname = usePathname();
   const [checking, setChecking] = useState(true);
   const [allowed, setAllowed] = useState(false);
+  const attention = useAttention();
 
   useEffect(() => {
     if (loading) return;
@@ -39,10 +44,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     }).catch(() => router.replace("/dashboard"));
   }, [user, loading, router]);
 
+  // On a phone the tabs scroll sideways: bring the current one into view.
+  useEffect(() => {
+    if (!allowed) return;
+    document.querySelector('[aria-label="Back office sections"] [aria-current="page"]')?.scrollIntoView({ inline: "center", block: "nearest" });
+  }, [pathname, allowed]);
+
   if (loading || checking) {
     return (
       <div className="flex items-center justify-center py-32">
-        <div className="w-5 h-5 border-2 border-white/10 border-t-white/60 rounded-full animate-spin" />
+        <div className="w-5 h-5 border-2 border-line border-t-white/60 rounded-full animate-spin" />
       </div>
     );
   }
@@ -52,9 +63,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     <div>
       {/* Back-office sub-nav */}
-      <div className="flex items-center justify-between gap-3 mb-8">
-        <div className="flex items-center gap-1.5 flex-wrap">
-          <span className="text-[10px] font-semibold tracking-widest uppercase text-[#2dabe0] border border-[#17509e]/30 bg-[#17509e]/10 rounded-md px-2 py-1 mr-1.5">
+      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 mb-8">
+        <div className="flex min-w-0 max-w-full items-center gap-1 overflow-x-auto pb-1" aria-label="Back office sections" role="navigation">
+          <span className="text-[10px] font-semibold tracking-widest uppercase text-accent border border-accent-deep/30 bg-accent-deep/10 rounded-md px-2 py-1 mr-1 shrink-0">
             Admin
           </span>
           {TABS.map((tab) => {
@@ -63,13 +74,23 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <Link
                 key={tab.href}
                 href={tab.href}
-                className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                aria-current={active ? "page" : undefined}
+                className={`shrink-0 whitespace-nowrap px-3 py-1.5 rounded-pill text-sm font-medium transition-colors ${
                   active
-                    ? "bg-white text-stone-900"
-                    : "text-stone-400 hover:text-white hover:bg-white/[0.06]"
+                    ? "bg-accent text-canvas"
+                    : "text-fg-muted hover:text-fg hover:bg-surface-2"
                 }`}
               >
                 {tab.label}
+                {(() => {
+                  const n = tab.badge === "payments" ? attention?.payments : tab.badge === "support" ? attention?.supportUnread : 0;
+                  return n ? (
+                    <span className={`relative ml-1.5 inline-flex min-w-5 items-center justify-center rounded-full px-1.5 text-[11px] font-bold tabular-nums ${active ? "bg-canvas text-accent" : "bg-amber-500/20 text-amber-300"}`}>
+                      {n > 99 ? "99+" : n}
+                      <span className="sr-only"> {tab.badge === "payments" ? "to review" : "unread"}</span>
+                    </span>
+                  ) : null;
+                })()}
               </Link>
             );
           })}
@@ -79,7 +100,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             href="/"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-xs text-white/50 hover:text-white transition-colors"
+            className="text-xs text-fg-muted hover:text-fg transition-colors"
             title="Open the site in a new tab"
           >
             View site ↗
@@ -88,15 +109,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             href="/#pricing"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-xs text-white/50 hover:text-white transition-colors"
+            className="text-xs text-fg-muted hover:text-fg transition-colors"
             title="Open the pricing section in a new tab to check your changes"
           >
             Pricing ↗
           </a>
-          <span className="w-px h-3 bg-white/10" />
+          <span className="w-px h-3 bg-surface-2" />
           <Link
             href="/dashboard"
-            className="text-xs text-white/50 hover:text-white transition-colors shrink-0"
+            className="text-xs text-fg-muted hover:text-fg transition-colors shrink-0"
           >
             ← Dashboard
           </Link>
