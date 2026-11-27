@@ -6,6 +6,7 @@ import type { GalleryDoc } from "@/lib/firestore/types";
 import { proxyUrl } from "@/lib/drive/proxy-url";
 import { zipToBlob, type ZipEntry } from "@/lib/shared/zip";
 import { hasNewSelections, selectionSeenAt } from "@/lib/gallery/gallery-settings";
+import { formatExport } from "@/lib/gallery/selection-export";
 
 export type SelectionSubmission = { name: string; email: string | null; note: string | null; count: number; submittedAt: number };
 
@@ -24,6 +25,10 @@ export function useGallerySelections(gallery: GalleryDoc) {
   const [selSubmission, setSelSubmission] = useState<SelectionSubmission | null>(null);
   const [selCopied, setSelCopied] = useState(false);
   const [selZipping, setSelZipping] = useState(false);
+  // Export options (S10-01): file names without their extension is what Lightroom's filename search wants.
+  const [selStripExt, setSelStripExt] = useState(false);
+  const [selCsvBusy, setSelCsvBusy] = useState(false);
+  const [selCsvError, setSelCsvError] = useState(false);
 
   // "New favorites" marker: remember (per browser) when the photographer last
   // opened this gallery's selection, and badge the card if it changed since.
@@ -62,9 +67,32 @@ export function useGallerySelections(gallery: GalleryDoc) {
   }
 
   function copySelectionList() {
-    navigator.clipboard.writeText(selPhotos.map((p) => p.name).join("\n"));
+    navigator.clipboard.writeText(formatExport(selPhotos, "txt", selStripExt ? "strip" : "keep"));
     setSelCopied(true);
     setTimeout(() => setSelCopied(false), 2000);
+  }
+
+  /** The picked file names as a CSV, from the owner-only export endpoint. */
+  async function downloadSelectionCsv() {
+    if (selCsvBusy || selPhotos.length === 0) return;
+    setSelCsvBusy(true);
+    setSelCsvError(false);
+    try {
+      const token = await user?.getIdToken();
+      const res = await fetch(`/api/galleries/${gallery.id}/selection/export?format=csv&ext=${selStripExt ? "strip" : "keep"}`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      });
+      if (!res.ok) throw new Error();
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(await res.blob());
+      a.download = `${gallery.name || "selection"}.csv`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+    } catch {
+      setSelCsvError(true);
+    } finally {
+      setSelCsvBusy(false);
+    }
   }
 
   async function downloadSelectionFiles() {
@@ -104,6 +132,7 @@ export function useGallerySelections(gallery: GalleryDoc) {
 
   return {
     showSelections, close: () => setShowSelections(false), selLoading, selPhotos, selError, selSubmission, selCopied, selZipping,
+    selStripExt, setSelStripExt, selCsvBusy, selCsvError, downloadSelectionCsv,
     hasNew: hasNewSelections(gallery, selSeenAt), openSelections, copySelectionList, downloadSelectionFiles,
   };
 }

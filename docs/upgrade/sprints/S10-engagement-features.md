@@ -8,7 +8,7 @@
 
 ## Tasks
 
-- [ ] **S10-01** · M · Selection export: owner endpoint `GET /api/galleries/[id]/selection/export?format=txt|csv&ext=keep|strip` returning the picked filenames (newline/comma lists for Lightroom); UI buttons "Copy filenames" and "Download CSV" on the selection view; tests.
+- [x] **S10-01** · M · Selection export: owner endpoint `GET /api/galleries/[id]/selection/export?format=txt|csv&ext=keep|strip` returning the picked filenames (newline/comma lists for Lightroom); UI buttons "Copy filenames" and "Download CSV" on the selection view; tests.
   - Files: `app/api/galleries/[id]/selection/export/route.ts`, `components/dashboard/*`
   - Done when: copying yields exactly the selected filenames; a non-owner gets 404.
   - Refs: F2

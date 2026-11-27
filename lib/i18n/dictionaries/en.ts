@@ -282,7 +282,7 @@ export const en = {
     noSelections: "The client hasn't selected any photos yet.",
     noSelectionsHint: "Once they tap the heart on photos, they'll appear here.",
     photosSelected: "photos selected",
-    copyList: "Copy list",
+    copyList: "Copy list", stripExtLabel: "Without file extensions", downloadCsv: "Download CSV", exportError: "Could not export. Try again.",
     downloadFiles: "Download files (.zip)",
     preparing: "Preparing...",
     allowDownloadLabel: "Allow photo downloads",

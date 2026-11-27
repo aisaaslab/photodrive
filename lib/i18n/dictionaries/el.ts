@@ -295,7 +295,7 @@ export const el: Translations = {
     noSelections: "Ο πελάτης δεν έχει διαλέξει ακόμα φωτογραφίες.",
     noSelectionsHint: "Μόλις πατήσει καρδούλα σε φωτογραφίες, θα εμφανιστούν εδώ.",
     photosSelected: "φωτογραφίες επιλεγμένες",
-    copyList: "Αντιγραφή λίστας",
+    copyList: "Αντιγραφή λίστας", stripExtLabel: "Χωρίς επεκτάσεις αρχείων", downloadCsv: "Λήψη CSV", exportError: "Η εξαγωγή απέτυχε. Δοκίμασε ξανά.",
     downloadFiles: "Λήψη αρχείων (.zip)",
     preparing: "Προετοιμασία...",
     allowDownloadLabel: "Να επιτρέπεται η λήψη φωτογραφιών",

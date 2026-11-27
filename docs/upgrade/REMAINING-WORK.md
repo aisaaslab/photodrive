@@ -1,0 +1,72 @@
+# Remaining work: what is left of the PhotoDrive upgrade (2026-11-27)
+
+Companion to [`HANDOFF.md`](HANDOFF.md). It splits the **56 open tasks** (58 of 114 are done) by *who can move them*, so it is clear what
+is being built now and what is waiting for the owner. The landing-page review (S6-02/03/10/12/14) is **parked by the owner's decision**.
+
+Owner decisions of 2026-11-27 (new):
+- **Pricing section is fully dynamic** from the admin plans: monthly only → monthly cards; yearly present → annual card with the saving
+  percentage against its monthly price; both → toggle. A lone monthly + lone yearly plan pair whatever they are called. (Done.)
+- **Gallery settings**: the Drive folder link keeps showing after Save, no reload needed. (Done.)
+
+---
+
+## A · Code work, can be built now (no owner input needed)
+
+| Order | Task | What | Size |
+|---|---|---|---|
+| 1 | **S10-01** | Selection export: copy filenames / download CSV (Lightroom-style, with or without extension) | M |
+| 2 | **S10-03** | Drive folder check (`POST /api/drive/check`) used live in the create form: accessible? how many photos? friendly errors | M |
+| 3 | **S9-06** | "Switch off downloads once a selection is submitted", enforced server-side | M |
+| 4 | **S10-02** | Gallery stats: views / downloads / favourites, no personal data, shown on the dashboard card | L |
+| 5 | **S9-05** | Optional gallery expiry date, extend from the dashboard | M |
+| 6 | **S8-01** | Admin payments screen + "re-sync this session" + needs-attention queue | L |
+| 7 | **S8-02** | Admin support inbox | M |
+| 8 | **S8-03** | Plans and promo codes restyle, live preview of the landing pricing card | M |
+| 9 | **S8-04** | Admin overview and settings | M |
+| 10 | **S8-05** | Remove old admin pages; permission-matrix test | M |
+| 11 | **S5-12** | Rest of the user-area redesign (dashboard density, subscribe/thank-you, client gallery, toasts/errors, mobile pass) | L |
+| 12 | **S0-06** | Sentry wiring (inert until a DSN is set) | M |
+| 13 | **S10-04** | Polish: translations, accessibility, empty states, README feature list | S |
+
+Each ships with tests, six-language strings, evidence in `evidence/`, and its checkbox in the same commit.
+
+## B · Blocked on a decision from the owner
+
+| Task | Decision needed |
+|---|---|
+| **S9-01** then **S9-02, S9-03, S9-04, S9-07** | **D3**: what happens when a plan lapses. Recommended: 14-day grace, then a polite "temporarily unavailable" page, nothing deleted, restored on renewal. Billing page, reminder e-mails, gallery availability and the landing/FAQ/Terms wording all follow from this. |
+| S2-14 … S2-16 (finish) | **D17**: `ADMIN_ALERT_EMAIL`, SMTP credentials, wording review of customer e-mails |
+| S6-01 | Confirm D2, D4, D11, D13, D14 in the log |
+
+## C · Needs the owner to act (environment, accounts, production)
+
+| Task | What the owner does |
+|---|---|
+| S0-01 | Staging Firebase project, Stripe test keys + staging webhook, Sentry project, Vercel preview env vars (D12) |
+| S0-05 | Mark the CI `check` required on `main` |
+| S1-11, S2-10 | Stripe test-mode scenario runs (code and scripts exist; needs test keys) |
+| S2-07, S2-08 | Run the back-fill report against production (read-only), approve rows, then apply |
+| S4-01, S4-04 | Production dry-runs: `restore-created-at`, `seal-legacy-passwords` |
+| S4-05, S4-06, S4-07 | Stripe dashboard setup: customers/invoices, payment methods; verify in test mode |
+| S3-08, S3-12, S3-13 | Review CSP report-only results; review the security-model text; verify public/private in staging |
+| S3-11 | Measure Drive quota and bandwidth with real galleries (100 / 500 / 1,000 photos) |
+| S1-08 | Verify the subscribe page for active users in test mode |
+| Production config | `NEXT_PUBLIC_APP_URL`, `CRON_SECRET`, `ADMIN_ALERT_EMAIL`, `APP_ENV`, Upstash and SMTP credentials; deploy `firestore.rules` and `firestore.indexes.json`; run the `emailLower` backfill |
+
+## D · Release gates (after A, B and C)
+
+`S2-11` (R1 payments to production, flag off→on) → `S2-12` (delete the old path a week later) → `S1-12` → `S4-09` (R2) →
+`S8-06` (R3) → `S10-05` (R4) → `S11-01` … `S11-05` (regression in six languages, live-mode rehearsal with owner approval, cutover check,
+monitoring + rollback drill, runbook, handover, tag `v2.0.0`).
+
+## E · Parked by the owner
+
+Landing page: S6-02, S6-03, S6-10, S6-12, S6-14 (review of `/new-landing`, then moving it to `/`).
+Do **not** move the page to `/` until the owner signs off.
+
+## F · Known small issues
+
+- English dates use `en-GB` in `LOCALES`; D19 suggests `en-US` (owner to decide).
+- The old `TrustSection` has garbled Greek on the live landing page; it disappears with S6-14.
+- The Drive folder field in the gallery settings dialog is read-only by design (lock icon and tooltip). Changing the folder of an
+  existing gallery is not supported from the owner dialog; only the admin edit form can do it.

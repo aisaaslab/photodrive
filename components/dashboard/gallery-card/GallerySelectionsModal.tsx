@@ -15,7 +15,7 @@ export function GallerySelectionsModal({
 }) {
   const { t, lang } = useLanguage();
   const c = t.galleryCard;
-  const { selLoading, selPhotos, selError, selSubmission, selCopied, selZipping, copySelectionList, downloadSelectionFiles } = selections;
+  const { selLoading, selPhotos, selError, selSubmission, selCopied, selZipping, copySelectionList, downloadSelectionFiles, selStripExt, setSelStripExt, selCsvBusy, selCsvError, downloadSelectionCsv } = selections;
 
   return (
     <Modal
@@ -87,7 +87,17 @@ export function GallerySelectionsModal({
         </div>
 
         {!selLoading && !selError && selPhotos.length > 0 && (
-          <div className="p-4 border-t border-line flex gap-2">
+          <div className="p-4 border-t border-line flex flex-wrap gap-2">
+            <div className="w-full flex items-center justify-between gap-3 pb-1">
+              <label className="flex items-center gap-2 text-xs text-fg-soft cursor-pointer">
+                <input type="checkbox" checked={selStripExt} onChange={(e) => setSelStripExt(e.target.checked)} className="accent-[var(--color-accent)]" />
+                {c.stripExtLabel}
+              </label>
+              <button onClick={downloadSelectionCsv} disabled={selCsvBusy} className="text-xs font-medium text-accent hover:underline underline-offset-2 disabled:opacity-60">
+                {c.downloadCsv}
+              </button>
+            </div>
+            {selCsvError && <p role="alert" className="w-full text-xs text-danger">{c.exportError}</p>}
             <button
               onClick={copySelectionList}
               className={`flex-1 flex items-center justify-center gap-1.5 rounded-xl py-2.5 text-sm font-medium transition-all border ${
