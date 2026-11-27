@@ -97,6 +97,7 @@ export function GallerySelectionsModal({
                 {c.downloadCsv}
               </button>
             </div>
+            <p id="export-help" className="w-full text-xs leading-relaxed text-fg-muted">{c.exportHelp}</p>
             {selCsvError && <p role="alert" className="w-full text-xs text-danger">{c.exportError}</p>}
             <button
               onClick={copySelectionList}

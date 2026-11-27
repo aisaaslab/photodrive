@@ -23,7 +23,7 @@ export function GalleryStatsLine({ stats }: { stats?: StatsSummary }) {
     ? c.statsLastVisit.replace("{date}", new Date(stats.lastViewAt).toLocaleDateString(LOCALES[lang], { dateStyle: "medium" }))
     : c.statsNoVisits;
   return (
-    <div data-ui="gallery-stats" className="mt-2 mb-0 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-fg-muted">
+    <div data-ui="gallery-stats" title={c.statsHelp} className="mt-2 mb-0 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-fg-muted">
       <ul className="flex items-center gap-3">
         {items.map((it) => (
           <li key={it.key} className="inline-flex items-center gap-1" title={it.label}>

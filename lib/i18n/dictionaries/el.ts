@@ -338,7 +338,7 @@ export const el: Translations = {
     noSelections: "Ο πελάτης δεν έχει διαλέξει ακόμα φωτογραφίες.",
     noSelectionsHint: "Μόλις πατήσει καρδούλα σε φωτογραφίες, θα εμφανιστούν εδώ.",
     photosSelected: "φωτογραφίες επιλεγμένες",
-    copyList: "Αντιγραφή λίστας", stripExtLabel: "Χωρίς επεκτάσεις αρχείων", downloadCsv: "Λήψη CSV", exportError: "Η εξαγωγή απέτυχε. Δοκίμασε ξανά.",
+    exportHelp: "Επικόλλησε τη λίστα στο φίλτρο κειμένου του Lightroom ή άνοιξε το CSV σε υπολογιστικό φύλλο για να βρεις γρήγορα αυτές τις φωτογραφίες.", statsHelp: "Μόνο μετρήσεις: η εφαρμογή δεν καταγράφει ποτέ ποιος επισκέφτηκε τη gallery.", copyList: "Αντιγραφή λίστας", stripExtLabel: "Χωρίς επεκτάσεις αρχείων", downloadCsv: "Λήψη CSV", exportError: "Η εξαγωγή απέτυχε. Δοκίμασε ξανά.",
     downloadFiles: "Λήψη αρχείων (.zip)",
     preparing: "Προετοιμασία...",
     allowDownloadLabel: "Να επιτρέπεται η λήψη φωτογραφιών",

@@ -322,7 +322,7 @@ export const nl: Translations = {
     noSelections: "De klant heeft nog geen foto's geselecteerd.",
     noSelectionsHint: "Zodra ze op het hartje tikken, verschijnen ze hier.",
     photosSelected: "foto's geselecteerd",
-    copyList: "Lijst kopiëren", stripExtLabel: "Zonder bestandsextensies", downloadCsv: "CSV downloaden", exportError: "Exporteren mislukt. Probeer het opnieuw.",
+    exportHelp: "Plak de lijst in het tekstfilter van Lightroom of open de CSV in een spreadsheet om deze foto's snel te vinden.", statsHelp: "Alleen aantallen: de app slaat nooit op wie de galerij heeft bezocht.", copyList: "Lijst kopiëren", stripExtLabel: "Zonder bestandsextensies", downloadCsv: "CSV downloaden", exportError: "Exporteren mislukt. Probeer het opnieuw.",
     downloadFiles: "Bestanden downloaden (.zip)",
     preparing: "Voorbereiden...",
     allowDownloadLabel: "Foto's downloaden toestaan",

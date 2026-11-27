@@ -325,7 +325,7 @@ export const en = {
     noSelections: "The client hasn't selected any photos yet.",
     noSelectionsHint: "Once they tap the heart on photos, they'll appear here.",
     photosSelected: "photos selected",
-    copyList: "Copy list", stripExtLabel: "Without file extensions", downloadCsv: "Download CSV", exportError: "Could not export. Try again.",
+    exportHelp: "Paste the list into Lightroom's text filter, or open the CSV in a spreadsheet, to find these photos fast.", statsHelp: "Counts only: the app never records who visited.", copyList: "Copy list", stripExtLabel: "Without file extensions", downloadCsv: "Download CSV", exportError: "Could not export. Try again.",
     downloadFiles: "Download files (.zip)",
     preparing: "Preparing...",
     allowDownloadLabel: "Allow photo downloads",

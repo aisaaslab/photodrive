@@ -603,6 +603,19 @@ This is a **subscription-based website for photographers**. Here's how it works 
 5. They share the gallery link with their client
 6. The client views the photos in full screen, can mark favorites, and download in full resolution
 
+**What your photographers get once they are in** (all included, nothing to set up):
+
+- **Public or password-protected galleries**, with a cover photo, a title in a font and colour of their choice, event date and location, and their own name, avatar and links.
+- **Client favourites and "Send selection"**: the client taps the heart, sends the list, and the photographer sees it in the dashboard. They can **copy the list of file names** (with or without extensions, ready to paste into Lightroom's text filter) or **download it as a CSV**, and can **switch photo downloads off automatically once a selection arrives**.
+- **A quick check of the Drive folder** while creating a gallery: is it shared correctly, and how many photos and videos does it hold?
+- **Simple gallery statistics** on every card: views, downloads and favourites, and the last visit. Counts only: the app never records who visited.
+- **An optional expiry date** for any gallery, extendable from the dashboard.
+- **A billing page** with the plan, the renewal date, the payment history (with each payment's invoice), and a clear message if the plan has lapsed.
+- **Renewal reminder e-mails** before a plan ends, and a 14-day grace period after it ends (both ship switched off; you turn them on when you are ready): galleries then show a polite "unavailable" page, nothing is deleted, and renewing restores everything at once.
+- **Six languages** (English, Greek, Dutch, German, Spanish, Italian) and a layout that works from a phone to a desktop.
+
+**What you get as the owner** (the admin back office): an overview with the key numbers and a live "needs attention" count; a **Payments** screen (totals per currency, refunds and disputes, a review queue you can resolve in place); a **Support** inbox for the contact form (open, unread, resolved, with a note and a link to the sender's account); **Plans** in any of 13 currencies with a live preview of the pricing section, and promo codes; **Users** and **Galleries** lists with search, filters and every change recorded in an audit trail; **Settings** for the support e-mail and tracking IDs; and optional error monitoring with Sentry.
+
 **Your role as the owner:** you run the website, you keep all the subscription money. You also have an admin panel where you can see all users and their galleries.
 
 The app is **white-label**: your own brand name, logo, colours and legal details go on it. "PhotoDrive" is only a placeholder, but it is written into the marketing copy in roughly 165 places across 14 files, so replacing it is one global find/replace rather than a single setting. Step 14 walks through it and gives you a command to verify none were missed.
@@ -2185,5 +2198,6 @@ Then run npm run build, update nothing in .env, and redeploy.
 **That's everything.** If you've made it this far and your final checklist is green — congratulations, you're running a SaaS business. 🚀
 
 Good luck!
-#   p h o t o d r i v e  
+#   p h o t o d r i v e 
+ 
  

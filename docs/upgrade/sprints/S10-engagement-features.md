@@ -20,7 +20,7 @@
   - Files: `app/api/drive/check/route.ts`, `components/dashboard/NewGalleryForm.tsx`, `lib/drive/client.ts`
   - Done when: private, empty, invalid and valid folders each show the right message before the gallery is created; rate limited.
   - Refs: F4
-- [ ] **S10-04** · S · Polish: translations, accessibility and empty states for the three features; short user-facing help text; update the README feature list.
+- [~] **S10-04** · S · Polish: translations, accessibility and empty states for the three features; short user-facing help text; update the README feature list.
   - Done when: strings reviewed; keyboard and screen-reader pass.
 - [ ] **S10-05** · M · **Gate R4 — Phase 4 release:** feature tests green in CI, regression checklist for dashboard and gallery, reminders verified on a fake clock, D3 behaviour verified, release notes drafted.
   - Done when: R4 checklist ticked and evidence committed.
