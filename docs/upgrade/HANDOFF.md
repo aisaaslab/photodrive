@@ -90,7 +90,7 @@ native review of draft translations, copy review (S3-13), measurements that need
    4. **Client gallery** (favourites tip done): hero and header polish (photographer identity, share); the lightbox top bar is already phone-friendly (icon buttons of 40 px, one-line counter, fullscreen hidden on phones), still open: swipe hints and loading states
       (swipe, larger targets), loading and empty states, password gate with the photographer's name/cover.
    5. **Admin area** (`app/dashboard/admin/*`): re-skin and layout once S7 defines the admin design; do not redesign it twice.
-   6. **Toasts, dialogs, error and 404 pages:** consistent copy and icons; undo for destructive actions where possible.
+   6. ~~Toasts, dialogs, error and 404 pages~~ done (toast actions / dismiss / pause, undo for deleting a gallery, branded error page).
    7. A last **mobile pass** (390) with real content, and a keyboard walkthrough of the dashboard. The automated long-text part exists and passes: `scripts/verify/browser/user-area-langs.cjs` (German, Greek, Dutch, Spanish, Italian at 390 px on login, client gallery, password gate, dashboard, settings dialog, account, empty dashboard, subscribe: no overflow).
    *How to verify a UX change:* `scripts/verify/browser/dashboard-snapshot.cjs` and `gallery-snapshot.cjs` against `scripts/verify/browser/baselines/*.json` (API requests, toasts and validation must not change
    unless you mean them to; text/layout differences are expected, review them and update the baseline in the same commit). Selectors use `data-ui` hooks and roles, not CSS classes: add a hook rather than a class selector.

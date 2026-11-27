@@ -66,3 +66,5 @@ Prints one PASS/FAIL line per check. On staging, run the same page checks by han
 **Account payments** (`account-payments.cjs`, S5-12): payment rows on the Account page (what each bought, access date, free code, refund note, invoice link), 390 px, axe. Reset, start `serve-emu.sh` WITHOUT `ADMIN_UID` (an administrator has no payments), then `NODE_PATH=$(npm root -g) [AXE_PATH=...] [SHOT=<dir>] node scripts/verify/browser/account-payments.cjs`.
 
 **Client gallery hero and header** (`gallery-hero.cjs`, S5-12): the name in the sticky header after the hero scrolls away, the View photos cue, the skip link, 390 px, axe. Reset, start `serve-emu.sh`, then `NODE_PATH=$(npm root -g) [AXE_PATH=...] [SHOT=<dir>] node scripts/verify/browser/gallery-hero.cjs`.
+
+**Toasts and undoable delete** (`toasts.cjs`, S5-12): the delayed DELETE with Undo, dismiss, leaving the page, 390 px, axe. Reset, start `serve-emu.sh`, then `NODE_PATH=$(npm root -g) [AXE_PATH=...] [SHOT=<dir>] node scripts/verify/browser/toasts.cjs` (takes about a minute: it waits out the undo time twice).

@@ -99,7 +99,7 @@ export const en = {
     privacy: "Privacy Policy",
     contact: "Contact",
   },
-  notFound: { title: "Page not found", body: "This link may have expired, changed, or been typed incorrectly.", back: "Back to home", dashboard: "Go to dashboard" },
+  notFound: { errorTitle: "Something went wrong", errorBody: "This page ran into a problem. Your galleries and photos are safe. Try again, or go back to the start.", errorRetry: "Try again", errorHome: "Back to home", title: "Page not found", body: "This link may have expired, changed, or been typed incorrectly.", back: "Back to home", dashboard: "Go to dashboard" },
   login: {
     title: "Welcome",
     subtitle: "Connect your Google account to start\ncreating premium galleries.",
@@ -158,7 +158,7 @@ export const en = {
     daysLeft: "days remaining",
     newGallery: "New Gallery",
     searchPlaceholder: "Search gallery...",
-    filterNew: "New favourites", viewCards: "Cards", viewList: "List", viewLabel: "Gallery layout",
+    filterNew: "New favourites", undo: "Undo", restoredToast: "Gallery restored", toastDismiss: "Dismiss", viewCards: "Cards", viewList: "List", viewLabel: "Gallery layout",
     sortNewest: "Newest first",
     sortOldest: "Oldest first",
     sortNameAZ: "Name A→Z",

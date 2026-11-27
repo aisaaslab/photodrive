@@ -101,7 +101,7 @@ export const nl: Translations = {
     privacy: "Privacybeleid",
     contact: "Contact",
   },
-  notFound: { title: "Pagina niet gevonden", body: "Deze link is mogelijk verlopen, gewijzigd of verkeerd getypt.", back: "Terug naar home", dashboard: "Ga naar dashboard" },
+  notFound: { errorTitle: "Er ging iets mis", errorBody: "Deze pagina had een probleem. Je galerijen en foto's zijn veilig. Probeer het opnieuw of ga terug naar het begin.", errorRetry: "Opnieuw proberen", errorHome: "Terug naar home", title: "Pagina niet gevonden", body: "Deze link is mogelijk verlopen, gewijzigd of verkeerd getypt.", back: "Terug naar home", dashboard: "Ga naar dashboard" },
   login: {
     title: "Welkom",
     subtitle: "Verbind je Google-account om te beginnen\nmet het maken van premium galerijen.",
@@ -159,7 +159,7 @@ export const nl: Translations = {
     subscription: "Abonnement:",
     daysLeft: "dagen resterend",
     newGallery: "Nieuwe galerij",
-    searchPlaceholder: "Galerij zoeken...", filterNew: "Nieuwe favorieten", viewCards: "Kaarten", viewList: "Lijst", viewLabel: "Weergave van galerijen",
+    searchPlaceholder: "Galerij zoeken...", filterNew: "Nieuwe favorieten", undo: "Ongedaan maken", restoredToast: "Galerij hersteld", toastDismiss: "Sluiten", viewCards: "Kaarten", viewList: "Lijst", viewLabel: "Weergave van galerijen",
     sortNewest: "Nieuwste eerst",
     sortOldest: "Oudste eerst",
     sortNameAZ: "Naam A→Z",

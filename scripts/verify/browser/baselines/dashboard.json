@@ -369,14 +369,8 @@
     "3 galleries"
    ]
   },
-  "requests": [
-   {
-    "method": "DELETE",
-    "path": "/api/galleries/g-nodl",
-    "body": null
-   }
-  ],
-  "toast": "Gallery deleted"
+  "requests": [],
+  "toast": "Gallery deletedUndo"
  },
  "32 new gallery: form": {
   "fields": [
@@ -397,7 +391,13 @@
    "e.g. Anna & George Wedding 2026: invalid",
    "https://drive.google.com/drive/folders/...: invalid"
   ],
-  "requests": []
+  "requests": [
+   {
+    "method": "DELETE",
+    "path": "/api/galleries/g-nodl",
+    "body": null
+   }
+  ]
  },
  "34 new gallery: a bad link is blocked": {
   "invalid": [

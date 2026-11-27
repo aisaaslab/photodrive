@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { planPhase } from "@/lib/gallery/availability";
 import { renewalNudgeDays } from "@/lib/shared/billing-state";
 import Link from "next/link";
@@ -142,21 +142,57 @@ export default function DashboardPage() {
     setGalleries((prev) => prev.map((g) => (g.id === updated.id ? updated : g)));
   }
 
+  // Deleting a gallery can be undone for a few seconds: the card goes at once, the real DELETE is sent when the time is up (or when
+  // the photographer leaves the page), and Undo just puts the card back and cancels it.
+  const pendingDeletes = useRef(new Map<string, { gallery: GalleryDoc; token: string; timer: ReturnType<typeof setTimeout> }>());
+  const UNDO_MS = 7000;
+
+  async function sendDelete(id: string, token: string, keepalive = false) {
+    const res = await fetch(`/api/galleries/${id}`, { method: "DELETE", headers: { Authorization: `Bearer ${token}` }, keepalive });
+    return res.ok;
+  }
+
   async function handleDelete(id: string): Promise<boolean> {
     if (!user) return false;
+    const gallery = galleries.find((g) => g.id === id);
+    if (!gallery) return false;
     const token = await user.getIdToken();
-    const res = await fetch(`/api/galleries/${id}`, {
-      method: "DELETE",
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    if (!res.ok) {
-      // Don't drop the card from the list if the server refused.
-      toast(t.dashboard.loadError, "error");
-      return false;
-    }
     setGalleries((prev) => prev.filter((g) => g.id !== id));
+    const timer = setTimeout(async () => {
+      pendingDeletes.current.delete(id);
+      let ok = false;
+      try { ok = await sendDelete(id, token); } catch { /* treated as refused */ }
+      if (!ok) {
+        // The server refused: the gallery is still there, so bring the card back.
+        setGalleries((prev) => (prev.some((g) => g.id === id) ? prev : [gallery, ...prev]));
+        toast(t.dashboard.loadError, "error");
+      }
+    }, UNDO_MS);
+    pendingDeletes.current.set(id, { gallery, token, timer });
+    toast(t.galleryCard.deletedToast, "success", {
+      duration: UNDO_MS,
+      action: {
+        label: t.dashboard.undo,
+        onClick: () => {
+          const p = pendingDeletes.current.get(id);
+          if (!p) return;
+          clearTimeout(p.timer);
+          pendingDeletes.current.delete(id);
+          setGalleries((prev) => (prev.some((g) => g.id === id) ? prev : [p.gallery, ...prev]));
+          toast(t.dashboard.restoredToast);
+        },
+      },
+    });
     return true;
   }
+
+  // Leaving the page (or closing the tab) while a delete is waiting: send it now, it was confirmed.
+  useEffect(() => {
+    const pending = pendingDeletes.current;
+    const flush = () => { for (const [id, p] of pending) { clearTimeout(p.timer); void sendDelete(id, p.token, true).catch(() => {}); } pending.clear(); };
+    window.addEventListener("pagehide", flush);
+    return () => { window.removeEventListener("pagehide", flush); flush(); };
+  }, []);
 
   // "New favourites" uses the same per-browser "last seen" marker as the card badge.
   const seenAt = (id: string) => { try { return Number(localStorage.getItem(`pd_sel_seen_${id}`)) || 0; } catch { return 0; } };

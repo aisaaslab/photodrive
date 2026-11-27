@@ -46,10 +46,10 @@ export function GalleryCard({ gallery, compact = false, onDelete, onUpdate }: Pr
 
   async function confirmDelete() {
     setDeleting(true);
-    const ok = await onDelete(gallery.id);
+    await onDelete(gallery.id);
     setDeleting(false);
     setShowDeleteConfirm(false);
-    if (ok !== false) toast(c.deletedToast);
+    // The "Gallery deleted · Undo" toast belongs to the page, which owns the delayed delete.
   }
 
   return (

@@ -109,7 +109,7 @@ export const el: Translations = {
     privacy: "Πολιτική Απορρήτου",
     contact: "Επικοινωνία",
   },
-  notFound: { title: "Η σελίδα δεν βρέθηκε", body: "Ο σύνδεσμος μπορεί να έχει λήξει, να άλλαξε ή να γράφτηκε λάθος.", back: "Επιστροφή στην αρχική", dashboard: "Πήγαινε στο dashboard" },
+  notFound: { errorTitle: "Κάτι πήγε στραβά", errorBody: "Αυτή η σελίδα αντιμετώπισε πρόβλημα. Οι γκαλερί και οι φωτογραφίες σου είναι ασφαλείς. Δοκίμασε ξανά ή επέστρεψε στην αρχική.", errorRetry: "Δοκίμασε ξανά", errorHome: "Επιστροφή στην αρχική", title: "Η σελίδα δεν βρέθηκε", body: "Ο σύνδεσμος μπορεί να έχει λήξει, να άλλαξε ή να γράφτηκε λάθος.", back: "Επιστροφή στην αρχική", dashboard: "Πήγαινε στο dashboard" },
   // Login
   login: {
     title: "Καλώς ήρθες",
@@ -171,7 +171,7 @@ export const el: Translations = {
     subscription: "Συνδρομή:",
     daysLeft: "ημέρες απομένουν",
     newGallery: "Νέα Gallery",
-    searchPlaceholder: "Αναζήτηση gallery...", filterNew: "Νέα αγαπημένα", viewCards: "Κάρτες", viewList: "Λίστα", viewLabel: "Προβολή γκαλερί",
+    searchPlaceholder: "Αναζήτηση gallery...", filterNew: "Νέα αγαπημένα", undo: "Αναίρεση", restoredToast: "Η gallery επαναφέρθηκε", toastDismiss: "Κλείσιμο", viewCards: "Κάρτες", viewList: "Λίστα", viewLabel: "Προβολή γκαλερί",
     sortNewest: "Νεότερα πρώτα",
     sortOldest: "Παλαιότερα πρώτα",
     sortNameAZ: "Όνομα Α→Ω",
