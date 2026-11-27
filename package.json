@@ -24,8 +24,8 @@
     "bcryptjs": "^3.0.3",
     "client-zip": "^2.5.0",
     "clsx": "^2.1.1",
-    "firebase": "^12.11.0",
-    "firebase-admin": "^13.7.0",
+    "firebase": "^13.4.0",
+    "firebase-admin": "^14.5.1",
     "jose": "^6.2.2",
     "lucide-react": "^1.48.0",
     "nanoid": "^5.1.7",
@@ -39,21 +39,24 @@
     "zod": "4.6.7"
   },
   "devDependencies": {
-    "@firebase/rules-unit-testing": "5.0.2",
+    "@firebase/rules-unit-testing": "6.0.0",
     "@tailwindcss/postcss": "^4",
     "@types/bcryptjs": "^2.4.6",
-    "@types/node": "^20",
+    "@types/node": "^22.20.7",
     "@types/nodemailer": "^8.0.2",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "@vitest/coverage-v8": "^3.2.7",
+    "@vitest/coverage-v8": "^5.1.2",
     "eslint": "^9",
     "eslint-config-next": "16.2.1",
     "eslint-plugin-react-hooks": "7.0.1",
-    "firebase-tools": "^14.27.0",
+    "firebase-tools": "^15.37.0",
     "tailwindcss": "^4",
     "tsx": "^4.23.15",
     "typescript": "^5",
-    "vitest": "^3.2.7"
+    "vitest": "^5.1.2"
+  },
+  "overrides": {
+    "@grpc/grpc-js": "^1.14.7"
   }
 }

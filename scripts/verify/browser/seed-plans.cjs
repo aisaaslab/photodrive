@@ -2,8 +2,7 @@
  * Adds two public plans to the emulator for the landing page pricing check: "Pro" monthly $12 and "Pro" yearly $99 (a 31% saving,
  * highlighted). seed.cjs already adds "Yearly" at 99 EUR. Run after seed.cjs, before the server's first request.
  */
-const admin = require("firebase-admin");
-admin.initializeApp({ projectId: "demo-photodrive" });
+const admin = require("./admin-compat.cjs");
 const db = admin.firestore();
 (async () => {
   const now = Date.now();
