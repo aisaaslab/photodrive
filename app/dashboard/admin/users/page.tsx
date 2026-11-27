@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { Search } from "lucide-react";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { Button } from "@/components/ui/Button";
@@ -21,7 +22,13 @@ type Page = { users: AdminUserRow[]; nextCursor: string | null; total: number; n
 
 /** Users (S7-05): a searchable, filterable, paged list. Search is by e-mail prefix; everything heavy happens on the server, a page at a time. */
 export default function AdminUsersPage() {
+  // useSearchParams needs a Suspense boundary (the page is prerendered); the screen itself only runs in the browser.
+  return <Suspense fallback={null}><UsersScreen /></Suspense>;
+}
+
+function UsersScreen() {
   const { user } = useAuth();
+  const initialQuery = useSearchParams().get("q") ?? "";
   const [rows, setRows] = useState<AdminUserRow[]>([]);
   const [cursor, setCursor] = useState<string | null>(null);
   const [total, setTotal] = useState<number | null>(null);
@@ -29,8 +36,8 @@ export default function AdminUsersPage() {
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState("");
-  const [input, setInput] = useState("");
-  const [q, setQ] = useState("");
+  const [input, setInput] = useState(initialQuery); // e.g. coming from a gallery's owner link
+  const [q, setQ] = useState(initialQuery);
   const [filter, setFilter] = useState<UserFilter>("all");
   const [open, setOpen] = useState<string | null>(null);
   const [plans, setPlans] = useState<PlanLite[]>([]);

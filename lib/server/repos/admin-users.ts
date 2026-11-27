@@ -135,7 +135,7 @@ export type AdminUserDetail = {
   row: AdminUserRow;
   disabled: boolean; providers: string[];
   payments: { id: string; amountTotal: number | null; currency: string | null; status: string; needsReview: boolean; promoCode: string | null; refundedAmount: number | null; activatedAt: number }[];
-  galleries: { id: string; name: string; slug: string; folderId: string; createdAt: number | null; visibility: "public" | "private"; hasPassword: boolean; website: string | null; instagram: string | null; facebook: string | null }[];
+  galleries: { id: string; name: string; slug: string; folderId: string; createdAt: number | null; visibility: "public" | "private"; hasPassword: boolean; disabled: boolean; website: string | null; instagram: string | null; facebook: string | null }[];
   activity: { id: string; at: number; action: string; actorUid: string; note: string | null }[];
 };
 
@@ -164,7 +164,7 @@ export async function getUserDetail(uid: string, db: Firestore = getAdminDb(), n
       const str = (k: string) => (typeof d.get(k) === "string" && d.get(k) ? (d.get(k) as string) : null);
       return {
         id: d.id, name: String(d.get("name") ?? ""), slug: String(d.get("slug") ?? ""), folderId: String(d.get("folderId") ?? ""), createdAt: toMs(d.get("createdAt")),
-        visibility: galleryVisibility(d.data()), hasPassword: typeof d.get("passwordHash") === "string" && d.get("passwordHash").length > 0,
+        visibility: galleryVisibility(d.data()), hasPassword: typeof d.get("passwordHash") === "string" && d.get("passwordHash").length > 0, disabled: d.get("disabled") === true,
         website: str("website"), instagram: str("instagram"), facebook: str("facebook"),
       };
     }),

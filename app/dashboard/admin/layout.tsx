@@ -8,6 +8,7 @@ import { useAuth } from "@/components/auth/AuthProvider";
 const TABS = [
   { href: "/dashboard/admin", label: "Overview" },
   { href: "/dashboard/admin/users", label: "Users" },
+  { href: "/dashboard/admin/galleries", label: "Galleries" },
   { href: "/dashboard/admin/plans", label: "Plans" },
   { href: "/dashboard/admin/promo-codes", label: "Promo codes" },
   { href: "/dashboard/admin/settings", label: "Settings" },

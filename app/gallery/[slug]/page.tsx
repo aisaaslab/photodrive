@@ -1,3 +1,5 @@
+import { cache } from "react";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { cookies } from "next/headers";
@@ -27,17 +29,24 @@ interface Props {
   params: Promise<{ slug: string }>;
 }
 
+/** One lookup per request, shared by the page and its metadata. */
+const loadGalleryDoc = cache(async (slug: string) => {
+  const snap = await galleriesCol().where("slug", "==", slug).limit(1).get();
+  return snap.empty ? null : snap.docs[0];
+});
+
+/** A gallery an administrator has turned off is not indexed (S7-06); every other gallery keeps the site's default metadata. */
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = await params;
+  const doc = await loadGalleryDoc(slug);
+  return doc?.get("disabled") === true ? { robots: { index: false, follow: false } } : {};
+}
+
 export default async function GalleryPage({ params }: Props) {
   const { slug } = await params;
 
-  const snap = await galleriesCol()
-    .where("slug", "==", slug)
-    .limit(1)
-    .get();
-
-  if (snap.empty) notFound();
-
-  const doc = snap.docs[0];
+  const doc = await loadGalleryDoc(slug);
+  if (!doc) notFound();
   const gallery = { id: doc.id, ...doc.data() } as {
     id: string;
     photographerId: string;

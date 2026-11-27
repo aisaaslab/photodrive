@@ -34,6 +34,8 @@ const DAY = 86400000;
   const g = (id, owner, name, slug, extra = {}) => db.collection("galleries").doc(id).set({ photographerId: owner, name, slug, folderId: "1DriveFolderIdDDDDDDDDDDDDDDDDDDDDDD", createdAt: now - 3 * DAY, ...extra });
   await g("ga1", "anna", "Keller wedding", "keller-wedding"); await g("ga2", "anna", "Studio portraits", "studio-portraits", { visibility: "private", passwordHash: "x" });
   await g("gb1", "ben", "Okafor family", "okafor-family");
+  // 60 more galleries owned by bulk users, newer than the named ones, so the Galleries list pages
+  for (let i = 0; i < 60; i++) await g(`bg${i}`, `bulk${String(i % 5).padStart(4, "0")}`, `Bulk gallery ${i}`, `bulkgal-${String(i).padStart(2, "0")}`, { createdAt: now - i * 60000, ...(i === 3 ? { allowDownload: false } : {}) });
   await db.collection("payments").doc("cs_anna").set({ uid: "anna", amountTotal: 9900, currency: "usd", status: "fulfilled", activatedAt: now - 160 * DAY });
   await db.collection("payments").doc("cs_ben").set({ uid: "ben", amountTotal: 1500, currency: "usd", status: "refunded", needsReview: true, reviewNote: "Refunded in Stripe; check the expiry", refundedAmount: 1500, activatedAt: now - 24 * DAY });
   console.log(`seeded ${N} bulk users and ${people.length} named people`);

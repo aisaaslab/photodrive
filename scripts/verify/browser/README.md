@@ -44,3 +44,5 @@ It needs the browser pointed at the emulators: build with `NEXT_PUBLIC_FIREBASE_
 Prints one PASS/FAIL line per check. On staging, run the same page checks by hand against a real private gallery (S3-11).
 
 **Admin Users screen** (`admin-users.cjs`, S7-05): 30 checks of the paged, searchable, filterable Users list and its detail drawer (paging to the end of 1,200+ profiles, search, the four filters, drawer actions, delete confirmation, focus, no overflow at 1440 and 390, axe with `AXE_PATH`). Setup: `emu-reset.sh`, `seed-users.cjs [N]` (bulk profiles plus five named people), then `ADMIN_UID=photographer1 serve-emu.sh` (the seeded photographer becomes the administrator), then `NODE_PATH=$(npm root -g) node scripts/verify/browser/admin-users.cjs` (`SHOT=<dir>` saves screenshots).
+
+**Admin Galleries screen and the "not available" page** (`admin-galleries.cjs`, S7-06): 25 checks (list, paging, search, switch off with a reason, what a visitor and a crawler get, German at 390, switch on, owner link into Users, axe). Same setup as the Users check (`seed-users.cjs` also seeds 60 bulk galleries).

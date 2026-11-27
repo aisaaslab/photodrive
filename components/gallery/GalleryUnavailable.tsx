@@ -7,13 +7,12 @@ import { Logo } from "@/components/ui/Logo";
 
 /**
  * What a visitor sees for a gallery that an administrator has turned off (S7-06). Neutral and polite: it does not say why, does not
- * promise the gallery will return, and is not indexed. The same words are used wherever the gallery is requested.
+ * promise the gallery will return, and is not indexed (see generateMetadata on the gallery page). The same words are used wherever the gallery is requested.
  */
 export function GalleryUnavailable() {
   const { t } = useLanguage();
   return (
     <main className="min-h-screen bg-canvas flex flex-col">
-      <meta name="robots" content="noindex, nofollow" />
       <div className="px-4 sm:px-8 py-4 sm:py-6 flex items-center justify-between">
         <Link href="/" aria-label="PhotoDrive"><Logo /></Link>
         <LanguageSwitcher variant="light" />

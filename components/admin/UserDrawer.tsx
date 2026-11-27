@@ -186,7 +186,7 @@ export function UserDrawer({ uid, plans, onClose, onChanged, onDeleted }: { uid:
                       ) : (
                         <div className="flex items-center gap-3">
                           <div className="min-w-0 flex-1">
-                            <div className="flex items-center gap-2 flex-wrap"><span className="text-sm font-medium text-fg truncate">{g.name}</span><span className="text-xs border border-line rounded-full px-2 py-0.5 text-fg-muted">{g.visibility === "private" ? "Private" : "Public"}</span></div>
+                            <div className="flex items-center gap-2 flex-wrap"><span className="text-sm font-medium text-fg truncate">{g.name}</span><span className="text-xs border border-line rounded-full px-2 py-0.5 text-fg-muted">{g.visibility === "private" ? "Private" : "Public"}</span>{g.disabled && <span className="text-xs border border-red-500/30 bg-red-500/10 text-danger rounded-full px-2 py-0.5 font-semibold">Disabled</span>}</div>
                             <div className="text-xs text-fg-muted font-mono truncate">/gallery/{g.slug} · {formatDate(g.createdAt)}</div>
                           </div>
                           <div className="flex items-center gap-1.5 shrink-0">
