@@ -568,7 +568,7 @@ export const el: Translations = {
     favorite: "Αγαπημένο",
     addFavorite: "Προσθήκη στα αγαπημένα",
     removeFavorite: "Αφαίρεση από αγαπημένα",
-    passwordProtected: "Αυτή η gallery είναι προστατευμένη.",
+    sharedBy: "Κοινοποιήθηκε από {name}", showPassword: "Εμφάνιση κωδικού", hidePassword: "Απόκρυψη κωδικού", passwordProtected: "Αυτή η gallery είναι προστατευμένη.",
     passwordInstruction: "Εισάγετε τον κωδικό εισόδου που σας έχει σταλεί.",
     passwordPlaceholder: "Κωδικός πρόσβασης",
     enter: "Είσοδος",

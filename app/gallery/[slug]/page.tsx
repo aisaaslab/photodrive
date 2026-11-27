@@ -90,7 +90,12 @@ export default async function GalleryPage({ params }: Props) {
     const valid = token ? await verifyGalleryToken(token) : null;
 
     if (!valid || valid.galleryId !== gallery.id || valid.v !== (gallery.pwChangedAt ?? 0)) {
-      return <PasswordGate slug={slug} galleryName={gallery.name} />;
+      let owner = { name: "", photoURL: "" };
+      try {
+        const ud = (await usersCol().doc(gallery.photographerId).get()).data();
+        owner = { name: typeof ud?.name === "string" ? ud.name : "", photoURL: typeof ud?.photoURL === "string" ? ud.photoURL : "" };
+      } catch { /* the gate works without it */ }
+      return <PasswordGate slug={slug} galleryName={gallery.name} photographerName={owner.name} photographerPhotoURL={owner.photoURL} />;
     }
   }
 
