@@ -7,6 +7,7 @@ import { isPrivate } from "@/lib/gallery/visibility";
 import { driveImageUrl } from "@/lib/drive/public-url";
 import { MasonryGrid } from "@/components/gallery/MasonryGrid";
 import { PasswordGate } from "@/components/gallery/PasswordGate";
+import { GalleryUnavailable } from "@/components/gallery/GalleryUnavailable";
 import { GalleryStatus } from "@/components/gallery/GalleryStatus";
 import { GalleryActions } from "@/components/gallery/GalleryActions";
 import { FooterCredit, PoweredBy } from "@/components/gallery/FooterCredit";
@@ -44,6 +45,8 @@ export default async function GalleryPage({ params }: Props) {
     slug: string;
     folderId: string;
     passwordHash?: string;
+    /** Turned off by an administrator (S7-06). */
+    disabled?: boolean;
     visibility?: "public" | "private";
     pwChangedAt?: number;
     website?: string;
@@ -63,6 +66,8 @@ export default async function GalleryPage({ params }: Props) {
     titleSize?: string | null;
     headerBranding?: "photographer" | null;
   };
+
+  if (gallery.disabled === true) return <GalleryUnavailable />;
 
   if (isPrivate(gallery)) {
     const cookieStore = await cookies();

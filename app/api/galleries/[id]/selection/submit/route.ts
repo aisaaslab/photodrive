@@ -56,7 +56,7 @@ export async function POST(
 
   const db = getAdminDb();
   const galSnap = await galleriesCol(db).doc(id).get();
-  if (!galSnap.exists) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  if (!galSnap.exists || galSnap.data()?.disabled === true) return NextResponse.json({ error: "Not found" }, { status: 404 });
   const gallery = galSnap.data()!;
 
   // Password-protected galleries: the visitor must have unlocked this gallery.

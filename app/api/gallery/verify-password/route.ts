@@ -50,6 +50,8 @@ export async function POST(req: NextRequest) {
   const snap = await galleriesCol().where("slug", "==", slug).limit(1).get();
   const gallery = snap.empty ? null : snap.docs[0];
   const data = gallery?.data();
+  // A gallery an administrator has turned off cannot be unlocked either (S7-06).
+  if (data?.disabled === true) return NextResponse.json({ error: "Not available" }, { status: 404 });
   const hash = typeof data?.passwordHash === "string" ? data.passwordHash : null;
 
   const valid = await verifyPassword(password, hash ?? (await getDummyHash()));

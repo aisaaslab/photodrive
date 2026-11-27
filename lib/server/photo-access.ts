@@ -22,6 +22,8 @@ export type ProxyGallery = {
   allowDownload: boolean;
   private: boolean;
   pwChangedAt: number;
+  /** Turned off by an administrator (S7-06): nothing of it is served to anyone. */
+  disabled: boolean;
 };
 
 /** Looks the id up as a gallery, then as a live demo. Null when neither exists (or the demo has expired). */
@@ -38,6 +40,7 @@ export async function loadProxyGallery(id: string, now = Date.now()): Promise<Pr
       allowDownload: g.allowDownload !== false,
       private: isPrivate(g),
       pwChangedAt: typeof g.pwChangedAt === "number" ? g.pwChangedAt : 0,
+      disabled: g.disabled === true,
     };
   }
   const demo = await demoGalleriesCol(db).doc(id).get();
@@ -45,7 +48,7 @@ export async function loadProxyGallery(id: string, now = Date.now()): Promise<Pr
   const d = demo.data()!;
   if (typeof d.folderId !== "string" || !d.folderId) return null;
   if (typeof d.expiresAt === "number" && d.expiresAt < now) return null;
-  return { id, folderId: d.folderId, photographerId: null, allowDownload: true, private: false, pwChangedAt: 0 };
+  return { id, folderId: d.folderId, photographerId: null, allowDownload: true, private: false, pwChangedAt: 0, disabled: false };
 }
 
 /**

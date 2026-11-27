@@ -54,7 +54,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ gall
   let file;
   try {
     gallery = await loadProxyGallery(galleryId);
-    if (!gallery) return deny(404, "Not found");
+    if (!gallery || gallery.disabled) return deny(404, "Not found");
     file = resolvePhotoToken(galleryId, token, await galleryFiles(gallery.folderId));
   } catch (err) {
     log.error("media access check failed", { galleryId, err: String(err) });

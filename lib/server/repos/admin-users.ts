@@ -4,6 +4,7 @@ import { getAdminAuth, getAdminDb } from "@/lib/firebase/admin";
 import { accessSourceOf, latestPaymentByUid, paymentFlagsByUid, type AccessSource, type PaymentFlag } from "@/lib/access-source";
 import { toMs } from "@/lib/server/migrations/restore-created-at";
 import { galleryVisibility } from "@/lib/gallery/visibility";
+import { decodeCursor, pageThrough } from "./paging";
 import { auditLogCol, galleriesCol, paymentsCol, usersCol } from "./collections";
 
 /**
@@ -23,8 +24,6 @@ export const MAX_PAGE = 50;
 const DAY = 24 * 60 * 60 * 1000;
 /** Far-future sentinel used for "lifetime / comp" access (Jan 1, 3000). */
 const LIFETIME = 32503680000000;
-const SCAN_BATCH = 100;
-const MAX_BATCHES = 5;
 
 export type AdminUserRow = {
   uid: string; email: string; displayName: string; photoURL: string | null;
@@ -38,16 +37,7 @@ export type AdminUserRow = {
 };
 export type UsersPage = { users: AdminUserRow[]; nextCursor: string | null; total: number; needsBackfill: number };
 
-type Cursor = { k: string | number; id: string };
-const encodeCursor = (c: Cursor) => Buffer.from(JSON.stringify(c)).toString("base64url");
-export function decodeCursor(raw: string | null | undefined): Cursor | null {
-  if (!raw) return null;
-  try {
-    const c = JSON.parse(Buffer.from(raw, "base64url").toString("utf8"));
-    if ((typeof c?.k === "string" || typeof c?.k === "number") && typeof c?.id === "string") return { k: c.k, id: c.id };
-  } catch { /* fall through */ }
-  return null;
-}
+export { decodeCursor };
 
 /** Same rule everywhere: active means status "active" and not yet expired. */
 export function matchesFilter(filter: UserFilter, d: DocumentData, now: number): boolean {
@@ -131,27 +121,7 @@ export async function listUsersPage(opts: { q?: string; filter?: UserFilter; cur
   // With a search the filter is applied to the matches; otherwise the query itself is the filter.
   const inMemory = q ? filter : "all";
 
-  let cursor = decodeCursor(opts.cursor);
-  const picked: QueryDocumentSnapshot[] = [];
-  let resumeFrom: Cursor | null = null; // where the next page starts, when there is one
-  scan: for (let b = 0; b < MAX_BATCHES; b++) {
-    const size = inMemory === "all" ? limit + 1 : SCAN_BATCH;
-    const snap = await (cursor ? query.startAfter(cursor.k, cursor.id) : query).limit(size).get();
-    for (const doc of snap.docs) {
-      if (!matchesFilter(inMemory, doc.data(), now)) continue;
-      if (picked.length === limit) { // one more match exists beyond this page
-        const last = picked[picked.length - 1];
-        resumeFrom = { k: last.get(field), id: last.id };
-        break scan;
-      }
-      picked.push(doc);
-    }
-    if (snap.docs.length < size) break; // nothing left
-    const last = snap.docs[snap.docs.length - 1];
-    cursor = { k: last.get(field), id: last.id };
-    if (b === MAX_BATCHES - 1) resumeFrom = cursor; // scanned a lot without filling the page: continue from here next time
-  }
-  const nextCursor = resumeFrom ? encodeCursor(resumeFrom) : null;
+  const { docs: picked, nextCursor } = await pageThrough({ query, field, limit, cursor: decodeCursor(opts.cursor), keep: inMemory === "all" ? undefined : (d) => matchesFilter(inMemory, d, now) });
 
   // How many people exist, and how many are not searchable yet because their `emailLower` is missing (S7-05 backfill).
   const [total, indexed] = await Promise.all([

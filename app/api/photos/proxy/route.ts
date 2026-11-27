@@ -49,7 +49,7 @@ export async function GET(req: NextRequest) {
   let gallery;
   try {
     gallery = await loadProxyGallery(galleryId);
-    if (!gallery) return deny(404, "Not found");
+    if (!gallery || gallery.disabled) return deny(404, "Not found");
     if (!(await fileInGallery(gallery.folderId, fileId))) {
       log.warn("photo outside gallery refused", { galleryId, size });
       return deny(403, "Forbidden");

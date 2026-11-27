@@ -24,7 +24,7 @@ export async function GET(
   const { id } = await params;
 
   const snap = await galleriesCol().doc(id).get();
-  if (!snap.exists) return new Response("Not found", { status: 404 });
+  if (!snap.exists || snap.data()?.disabled === true) return new Response("Not found", { status: 404 });
   const gallery = snap.data()!;
 
   // Respect the per-gallery download switch.

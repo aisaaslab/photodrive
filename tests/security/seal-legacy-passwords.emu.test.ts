@@ -102,7 +102,7 @@ describe("apply", () => {
 });
 
 describe("reading never writes (the lazy migration is gone)", () => {
-  it("the owner's list, the admin gallery list and the admin users list leave legacy documents untouched but still show the password to its owner", async () => {
+  it("the owner's list, the admin gallery list and the admin users list leave legacy documents untouched; only the owner sees the password (the admin lists never return one, S7-05/06)", async () => {
     await seedGalleries();
     await seedUser("owner", {});
     await seedUser("boss", {});
@@ -114,7 +114,8 @@ describe("reading never writes (the lazy migration is gone)", () => {
     expect(mine.galleries.find((g: { id: string }) => g.id === "legacy").password).toBe("secret-one");
     vi.spyOn(testAuth(), "verifyIdToken").mockImplementation((async () => ({ uid: "boss" })) as never);
     const admin = await (await adminGalleries(req())).json();
-    expect(JSON.stringify(admin)).toContain("secret-one");
+    expect(admin.galleries.length).toBeGreaterThan(0);
+    expect(JSON.stringify(admin)).not.toContain("secret-one");
     expect((await adminUsers(req())).status).toBe(200);
 
     const after = Object.fromEntries((await col().get()).docs.map((d) => [d.id, d.data()]));

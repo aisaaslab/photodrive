@@ -509,7 +509,7 @@ export const en = {
     passwordInstruction: "Enter the access code sent to you.",
     passwordPlaceholder: "Password",
     enter: "Enter",
-    wrongPassword: "Wrong password. Try again.",
+    wrongPassword: "Wrong password. Try again.", unavailableTitle: "This gallery is not available", unavailableBody: "This gallery is temporarily unavailable. If you were sent this link, please get in touch with the photographer.",
     tooManyAttempts: "Too many wrong attempts. Please wait a few minutes and try again.",
     connectionError: "Connection error. Try again in a moment.",
     noInternet: "No connection. Check your internet.",

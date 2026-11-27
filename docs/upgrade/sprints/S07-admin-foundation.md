@@ -27,7 +27,7 @@
   - Files: `app/api/admin/users/*`, `app/dashboard/admin/users/*`, `components/admin/*`
   - Done when: smooth with 10k seeded users; no 1,000-user cap; actions audited.
   - Refs: SEC-5
-- [ ] **S7-06** · M · Galleries: server-paginated list with owner, status (password, downloads, disabled), last activity; open public link; **disable/enable** (`disabled` flag honoured by the public page and media route).
+- [~] **S7-06** · M · Galleries: server-paginated list with owner, status (password, downloads, disabled), last activity; open public link; **disable/enable** (`disabled` flag honoured by the public page and media route).
   - Depends: S7-03
   - Files: `app/api/admin/galleries/*`, `app/dashboard/admin/galleries/*`, `app/gallery/[slug]/page.tsx`
   - Done when: a disabled gallery shows a polite unavailable page everywhere; audit entry written.

@@ -504,7 +504,7 @@ export const nl: Translations = {
     passwordInstruction: "Voer de toegangscode in die naar u is gestuurd.",
     passwordPlaceholder: "Wachtwoord",
     enter: "Invoeren",
-    wrongPassword: "Verkeerd wachtwoord. Probeer opnieuw.",
+    wrongPassword: "Verkeerd wachtwoord. Probeer opnieuw.", unavailableTitle: "Deze galerij is niet beschikbaar", unavailableBody: "Deze galerij is tijdelijk niet beschikbaar. Heb je deze link gekregen, neem dan contact op met de fotograaf.",
     tooManyAttempts: "Te veel foute pogingen. Wacht een paar minuten en probeer het opnieuw.",
     connectionError: "Verbindingsfout. Probeer over een moment opnieuw.",
     noInternet: "Geen verbinding. Controleer je internet.",
