@@ -425,6 +425,9 @@ export const en = {
       { q: "Are my photos safe?", a: "PhotoDrive has exclusively read-only access to the Drive folder you choose. We don't store your photos anywhere. We don't modify or delete anything in your Drive. Data transfer always happens over HTTPS." },
       { q: "What if the Drive folder is not public?", a: 'For the gallery to work, the Drive folder must be set so that "Anyone with the link" can view it. This doesn\'t mean your folder appears on Google, it simply means PhotoDrive can read the files.' },
       { q: "What devices does PhotoDrive work on?", a: "PhotoDrive works on every modern browser, Chrome, Safari, Firefox, Edge, on desktop, tablet, and mobile. No app installation needed." },
+      { q: "What happens to my galleries when my plan ends?", a: "Your galleries stay available to your clients for at least 14 days after your plan ends, and you see a notice in your dashboard. After that, visitors may see a page saying the gallery is temporarily unavailable. Nothing is deleted, and when you renew everything is back right away. Your photos always stay in your own Google Drive." },
+      { q: "Can I make a gallery expire on a certain date?", a: "Yes. Set an optional expiry date when you create a gallery or in its settings. After that day, visitors see a page saying the gallery is unavailable. Nothing is deleted: change or clear the date at any time to bring it back." },
+      { q: "Does my plan renew automatically?", a: "No. Each payment is one-time and buys access for the period you choose, for example 30 days or 365 days. Nothing renews automatically, and you can pay again whenever you need another period." },
     ],
   },
   contact: {
@@ -455,7 +458,7 @@ export const en = {
   terms: {
     back: "← Back",
     title: "Terms of Service",
-    lastUpdated: "Last updated: March 2026",
+    lastUpdated: "Last updated: November 2026",
     s1Title: "1. Provider Information",
     s1Body: "The PhotoDrive service is provided by the sole trader:",
     s1Name: "Name:",
@@ -484,8 +487,9 @@ export const en = {
     s6Title: "6. Content Ownership",
     s6Body: "You remain the exclusive owner of your photos and content. PhotoDrive claims no intellectual property rights over your content. You grant us only the technical license to display your photos to your clients through the service.",
     s7Title: "7. Payments and Subscription",
-    s7p1: "Use of PhotoDrive requires an annual subscription. Prices are listed on the pricing page and include applicable taxes where stated.",
-    s7p2: "This is a one-time annual payment. Access does NOT renew automatically and no recurring charge is made to your card. Your access stays active for 12 months from the date of payment; after it expires you can pay again if you wish to continue.",
+    s7p1: "Use of PhotoDrive requires a paid access plan. Prices and access periods (for example 30 days or 365 days) are listed on the pricing page and include applicable taxes where stated.",
+    s7p2: "Each payment is one-time and buys access for the period of the plan you choose. Access does NOT renew automatically and no recurring charge is made to your card. After the period ends you can pay again if you wish to continue.",
+    s7p3: "When your access period ends, your galleries stay available to your clients for at least 14 days. After that, we may show clients a page saying the gallery is temporarily unavailable. We do not delete your galleries or settings because your access has ended, and when you renew they are available again right away. Your photos always stay in your own Google Drive. The end of an access period is not a termination under section 10.",
 
     s8Title: "8. Service Availability",
     s8Body: "We make every effort to keep the service running continuously. However, we do not guarantee uninterrupted access and are not liable for interruptions due to maintenance, technical issues, or events beyond our control.",

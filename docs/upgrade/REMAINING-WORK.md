@@ -17,7 +17,14 @@ Owner decisions of 2026-11-27 (new):
   Lapse enforcement ships **off** (`GALLERY_LAPSE_ENFORCE=0`) until the owner switches it on.
 - 2026-11-27: **S9-03 renewal reminder e-mails** done, shipped off (`REMINDERS_MODE=off`) with a dry-run mode for the owner to review (see `evidence/S9.md`).
 - 2026-11-27: **S9-02 billing page** done (all plan states, truthful lapse wording, shared payment list) and **English dates are US** everywhere (owner decision).
-- Next, in order: S9-07 copy; then S8-01 … S8-05.
+- 2026-11-27: **S9-07 public copy** written (Terms section 7, three FAQ answers, six languages); waiting for the owner's review of the wording (checkbox stays `[~]` until then). The old landing's `TrustSection` card is left for S6-14.
+- Next, in order: S8-01 … S8-05.
+
+### Before turning on lapse enforcement (`GALLERY_LAPSE_ENFORCE=1`)
+1. S6-14 shipped (old landing and its "link stays live" card gone) or that card reworded.
+2. Owner (and native speakers) reviewed the Terms and FAQ wording; legal read of the Terms.
+3. `BILLING_FULFIL_V2=1` and `REMINDERS_MODE` on, so customers can renew early and are warned.
+4. Existing customers told about the updated Terms if the owner's policy requires it.
 
 ## A · Code work, can be built now (no owner input needed)
 

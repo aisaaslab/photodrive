@@ -81,7 +81,8 @@ export default function TermsPage() {
           <section>
             <h2 className="text-fg font-semibold text-base mb-3">{s.s7Title}</h2>
             <p className="mb-2">{s.s7p1}</p>
-            <p>{s.s7p2}</p>
+            <p className="mb-2">{s.s7p2}</p>
+            <p>{s.s7p3}</p>
           </section>
 
           <section>

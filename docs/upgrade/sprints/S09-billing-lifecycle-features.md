@@ -28,7 +28,7 @@
 - [x] **S9-06** · M · Download control: option "switch off downloads once a selection is submitted" (`disableDownloadAfterSubmit`); enforced server-side in the media route and download-all; UI hides buttons accordingly.
   - Files: `app/api/galleries/[id]/selection/submit/route.ts`, media route, `components/gallery/*`
   - Done when: after submission, original downloads are refused by the server, not just hidden.
-- [ ] **S9-07** · S · Align public copy with D3 in six languages: landing "Why PhotoDrive" card ("The link stays live… doesn't expire"), pricing notes, FAQ, Terms, so nothing promises what the product no longer does (or vice versa).
+- [~] **S9-07** · S · Align public copy with D3 in six languages: landing "Why PhotoDrive" card ("The link stays live… doesn't expire"), pricing notes, FAQ, Terms, so nothing promises what the product no longer does (or vice versa).
   - Files: `components/TrustSection.tsx`, `lib/i18n/*`, `app/terms/page.tsx`, `app/faq/page.tsx`
   - Done when: owner reviews the changed strings.
 

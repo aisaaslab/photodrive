@@ -420,6 +420,9 @@ export const nl: Translations = {
       { q: "Zijn mijn foto's veilig?", a: "PhotoDrive heeft uitsluitend alleen-lezen toegang tot de Drive-map die je kiest. We slaan je foto's nergens op. We wijzigen of verwijderen niets in je Drive. Gegevensoverdracht vindt altijd plaats via HTTPS." },
       { q: "Wat als de Drive-map niet openbaar is?", a: 'Voor een werkende galerij moet de Drive-map zijn ingesteld zodat "Iedereen met de link" deze kan bekijken. Dit betekent niet dat je map op Google verschijnt, het betekent alleen dat PhotoDrive de bestanden kan lezen.' },
       { q: "Op welke apparaten werkt PhotoDrive?", a: "PhotoDrive werkt op elke moderne browser, Chrome, Safari, Firefox, Edge, op desktop, tablet en mobiel. Geen app-installatie nodig." },
+      { q: "Wat gebeurt er met mijn galerijen als mijn abonnement afloopt?", a: "Je galerijen blijven minimaal 14 dagen na afloop van je abonnement beschikbaar voor je klanten, en je ziet een melding in je dashboard. Daarna kunnen bezoekers een pagina zien dat de galerie tijdelijk niet beschikbaar is. Er wordt niets verwijderd en zodra je verlengt is alles meteen terug. Je foto's blijven altijd in je eigen Google Drive." },
+      { q: "Kan ik een galerie op een bepaalde datum laten verlopen?", a: "Ja. Stel een optionele vervaldatum in wanneer je een galerie maakt of in de instellingen ervan. Na die dag zien bezoekers een pagina dat de galerie niet beschikbaar is. Er wordt niets verwijderd: wijzig of wis de datum op elk moment om de galerie terug te brengen." },
+      { q: "Wordt mijn abonnement automatisch verlengd?", a: "Nee. Elke betaling is eenmalig en geeft toegang voor de periode die je kiest, bijvoorbeeld 30 dagen of 365 dagen. Er wordt niets automatisch verlengd en je kunt opnieuw betalen wanneer je een nieuwe periode nodig hebt." },
     ],
   },
   contact: {
@@ -450,7 +453,7 @@ export const nl: Translations = {
   terms: {
     back: "← Terug",
     title: "Gebruiksvoorwaarden",
-    lastUpdated: "Laatste update: maart 2026",
+    lastUpdated: "Laatst bijgewerkt: november 2026",
     s1Title: "1. Aanbiedersinformatie",
     s1Body: "De PhotoDrive-dienst wordt aangeboden door de eenmanszaak:",
     s1Name: "Naam:",
@@ -479,8 +482,9 @@ export const nl: Translations = {
     s6Title: "6. Eigendom van inhoud",
     s6Body: "U blijft de exclusieve eigenaar van uw foto's en inhoud. PhotoDrive claimt geen intellectuele eigendomsrechten op uw inhoud. U verleent ons alleen de technische licentie om uw foto's via de dienst aan uw klanten te tonen.",
     s7Title: "7. Betalingen en abonnement",
-    s7p1: "Het gebruik van PhotoDrive vereist een jaarlijks abonnement. Prijzen staan vermeld op de prijspagina en zijn inclusief btw waar aangegeven.",
-    s7p2: "Dit is een eenmalige jaarlijkse betaling. De toegang wordt NIET automatisch verlengd en er wordt geen terugkerende betaling van je kaart afgeschreven. Je toegang blijft 12 maanden actief vanaf de betaaldatum; na afloop kun je opnieuw betalen als je wilt doorgaan.",
+    s7p1: "Het gebruik van PhotoDrive vereist een betaald toegangsplan. Prijzen en toegangsperiodes (bijvoorbeeld 30 dagen of 365 dagen) staan op de prijzenpagina en zijn inclusief toepasselijke belastingen waar vermeld.",
+    s7p2: "Elke betaling is eenmalig en geeft toegang voor de periode van het plan dat je kiest. De toegang wordt NIET automatisch verlengd en er wordt geen terugkerende afschrijving van je kaart gedaan. Na afloop van de periode kun je opnieuw betalen als je wilt doorgaan.",
+    s7p3: "Wanneer je toegangsperiode afloopt, blijven je galerijen minimaal 14 dagen beschikbaar voor je klanten. Daarna kunnen wij klanten een pagina tonen dat de galerie tijdelijk niet beschikbaar is. Wij verwijderen je galerijen of instellingen niet omdat je toegang is afgelopen, en zodra je verlengt zijn ze meteen weer beschikbaar. Je foto's blijven altijd in je eigen Google Drive. Het aflopen van een toegangsperiode is geen beëindiging in de zin van artikel 10.",
 
     s8Title: "8. Beschikbaarheid van de dienst",
     s8Body: "We doen er alles aan om de dienst continu in bedrijf te houden. We garanderen echter geen ononderbroken toegang en zijn niet aansprakelijk voor onderbrekingen door onderhoud, technische problemen of omstandigheden buiten onze controle.",
