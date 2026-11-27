@@ -51,51 +51,6 @@ export async function getPlanById(id: string): Promise<PlanDoc | null> {
 }
 
 /**
- * Validates and normalizes plan input coming from the admin back office.
- * Returns null-shaped errors as thrown Error messages the caller can return
- * as a 400.
- */
-export function normalizePlanInput(body: Record<string, unknown>): {
-  name: string;
-  description: string;
-  interval: PlanInterval;
-  priceCents: number;
-  features: string[];
-  isPublic: boolean;
-  active: boolean;
-  highlight: boolean;
-  sortOrder: number;
-} {
-  const name = String(body.name ?? "").trim();
-  if (!name) throw new Error("Plan name is required");
-
-  const interval: PlanInterval = body.interval === "monthly" ? "monthly" : "yearly";
-
-  const price = Number(body.price);
-  if (!Number.isFinite(price) || price <= 0) throw new Error("Price must be a positive number");
-  const priceCents = Math.round(price * 100);
-  if (priceCents > 99_999_999) throw new Error("Price is too large");
-
-  const features = Array.isArray(body.features)
-    ? (body.features as unknown[]).map((f) => String(f).trim()).filter(Boolean)
-    : [];
-
-  const sortOrder = Number(body.sortOrder ?? 0);
-
-  return {
-    name,
-    description: String(body.description ?? "").trim(),
-    interval,
-    priceCents,
-    features,
-    isPublic: body.isPublic === true,
-    active: body.active !== false,
-    highlight: body.highlight === true,
-    sortOrder: Number.isFinite(sortOrder) ? Math.trunc(sortOrder) : 0,
-  };
-}
-
-/**
  * Writes a plan assignment to the user's document so it takes effect
  * immediately: subscription becomes active and expiry is extended by the
  * plan's period from whichever is later — now or the current expiry.

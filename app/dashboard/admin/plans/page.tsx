@@ -1,274 +1,146 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "@/components/auth/AuthProvider";
+import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
+import { Modal } from "@/components/ui/Modal";
+import { useToast } from "@/components/ui/Toast";
 import { PlanEditorModal, emptyDraft, type PlanDraft } from "@/components/admin/PlanEditorModal";
 import type { PlanDoc } from "@/lib/firestore/types";
 import { formatMoney } from "@/lib/shared/money";
+import { isPlanCurrency, toMajorString } from "@/lib/shared/plan-input";
 
-const formatPrice = (p: Pick<PlanDoc, "priceCents" | "currency">) =>
-  formatMoney(p.priceCents, p.currency, "en-US", { trimWholeNumbers: true });
+const price = (p: Pick<PlanDoc, "priceCents" | "currency">) => formatMoney(p.priceCents, p.currency, "en-US", { trimWholeNumbers: true });
+const smallBtn = "h-8 px-3 text-xs";
 
+/** Plans (S8-03): what customers can buy, grouped by whether the landing page shows it, each in its own currency. Every change expires the cached pricing, so the landing page updates on its next view, and is recorded under your name. */
 export default function AdminPlansPage() {
   const { user } = useAuth();
+  const toast = useToast();
   const [plans, setPlans] = useState<PlanDoc[]>([]);
   const [loading, setLoading] = useState(true);
-  const [editorDraft, setEditorDraft] = useState<PlanDraft | null>(null);
+  const [loadError, setLoadError] = useState(false);
+  const [draft, setDraft] = useState<PlanDraft | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
-  const [copiedId, setCopiedId] = useState<string | null>(null);
-  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<PlanDoc | null>(null);
 
-  const loadPlans = useCallback(async () => {
+  const auth = useCallback(async () => ({ "Content-Type": "application/json", Authorization: `Bearer ${await user!.getIdToken()}` }), [user]);
+
+  const load = useCallback(async () => {
     if (!user) return;
-    const token = await user.getIdToken();
-    const res = await fetch("/api/admin/plans", { headers: { Authorization: `Bearer ${token}` } });
-    if (res.ok) setPlans((await res.json()).plans);
-    setLoading(false);
-  }, [user]);
+    try {
+      const res = await fetch("/api/admin/plans", { headers: await auth() });
+      if (!res.ok) throw new Error(String(res.status));
+      setPlans((await res.json()).plans); setLoadError(false);
+    } catch { setLoadError(true); } finally { setLoading(false); }
+  }, [user, auth]);
+  useEffect(() => { void load(); }, [load]);
 
-  useEffect(() => { loadPlans(); }, [loadPlans]);
-
-  async function togglePlanField(id: string, field: "isPublic" | "active" | "highlight", value: boolean) {
-    if (!user) return;
-    setBusyId(id);
-    const token = await user.getIdToken();
-    const res = await fetch(`/api/admin/plans/${id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ [field]: value }),
-    });
-    if (res.ok) {
-      setPlans((prev) => prev.map((p) => (p.id === id ? { ...p, [field]: value } : p)));
-    }
-    setBusyId(null);
+  async function toggle(p: PlanDoc, field: "isPublic" | "active", value: boolean) {
+    setBusyId(p.id);
+    try {
+      const res = await fetch(`/api/admin/plans/${p.id}`, { method: "PATCH", headers: await auth(), body: JSON.stringify({ [field]: value }) });
+      if (!res.ok) { toast((await res.json().catch(() => ({}))).error || "That did not work. Nothing was changed.", "error"); return; }
+      setPlans((prev) => prev.map((x) => (x.id === p.id ? { ...x, [field]: value } : x)));
+      toast(field === "isPublic" ? (value ? `“${p.name}” is now shown on the landing page.` : `“${p.name}” is now hidden from the landing page.`) : value ? `“${p.name}” is active again.` : `“${p.name}” is deactivated.`);
+    } catch { toast("That did not work. Nothing was changed.", "error"); } finally { setBusyId(null); }
   }
 
-  async function deletePlan(id: string) {
-    if (!user) return;
-    setBusyId(id);
-    const token = await user.getIdToken();
-    const res = await fetch(`/api/admin/plans/${id}`, {
-      method: "DELETE",
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    if (res.ok) {
-      setPlans((prev) => prev.filter((p) => p.id !== id));
-      setDeleteConfirm(null);
-    }
-    setBusyId(null);
+  async function remove(p: PlanDoc) {
+    setBusyId(p.id);
+    try {
+      const res = await fetch(`/api/admin/plans/${p.id}`, { method: "DELETE", headers: await auth() });
+      if (!res.ok) { toast((await res.json().catch(() => ({}))).error || "That did not work. Nothing was changed.", "error"); return; }
+      setPlans((prev) => prev.filter((x) => x.id !== p.id));
+      setConfirmDelete(null);
+      toast(`“${p.name}” was deleted.`);
+    } catch { toast("That did not work. Nothing was changed.", "error"); } finally { setBusyId(null); }
   }
 
-  function copyPlanLink(plan: PlanDoc) {
-    const url = `${window.location.origin}/subscribe?plan=${plan.id}`;
-    navigator.clipboard.writeText(url).then(() => {
-      setCopiedId(plan.id);
-      setTimeout(() => setCopiedId(null), 2000);
-    });
+  function copyLink(p: PlanDoc) {
+    navigator.clipboard.writeText(`${window.location.origin}/subscribe?plan=${p.id}`).then(() => toast("Direct link copied."), () => toast("Could not copy the link.", "error"));
   }
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center py-32">
-        <div className="w-5 h-5 border-2 border-fg-muted/30 border-t-white rounded-full animate-spin" />
+  function edit(p: PlanDoc) {
+    if (!isPlanCurrency(p.currency)) { toast(`This plan is priced in ${p.currency.toUpperCase()}, which this screen cannot edit. Create a new plan instead.`, "error"); return; }
+    setDraft({ id: p.id, name: p.name, description: p.description ?? "", interval: p.interval, currency: p.currency, price: toMajorString(p.priceCents, p.currency), features: p.features, isPublic: p.isPublic, active: p.active, highlight: p.highlight === true, sortOrder: String(p.sortOrder ?? 0) });
+  }
+
+  if (loading) return <div className="flex items-center justify-center py-32"><div className="w-5 h-5 border-2 border-fg-muted/30 border-t-fg rounded-full animate-spin" /></div>;
+
+  const onPage = plans.filter((p) => p.active && p.isPublic);
+  const hidden = plans.filter((p) => !(p.active && p.isPublic));
+
+  const card = (p: PlanDoc) => (
+    <li key={p.id} data-ui="plan-card" data-plan={p.name} className="flex flex-col rounded-card border border-line bg-surface p-5">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <h3 className="font-semibold text-fg truncate">{p.name}</h3>
+          <p className="text-xs text-fg-muted mt-0.5">{p.interval === "monthly" ? "Monthly · 30 days of access" : "Yearly · 365 days of access"}</p>
+        </div>
+        {p.highlight && <Badge>Most popular</Badge>}
       </div>
-    );
-  }
+      <p className="mt-4 flex items-baseline gap-1.5"><span data-ui="plan-price" className="text-3xl font-extrabold tracking-tight text-fg tabular-nums">{price(p)}</span><span className="text-sm text-fg-muted">/ {p.interval === "monthly" ? "month" : "year"} · {p.currency.toUpperCase()}</span></p>
+      {p.description && <p className="mt-2 text-sm text-fg-muted">{p.description}</p>}
+      <div className="mt-3 flex flex-wrap gap-1.5">
+        <Badge tone={p.isPublic ? "success" : "neutral"}>{p.isPublic ? "Public" : "Private"}</Badge>
+        <Badge tone={p.active ? "success" : "danger"}>{p.active ? "Active" : "Inactive"}</Badge>
+      </div>
+      {p.features.length > 0 && (
+        <ul className="mt-4 space-y-1.5 flex-1">
+          {p.features.slice(0, 4).map((f) => <li key={f} className="text-xs text-fg-muted flex gap-2"><span aria-hidden className="text-accent">✓</span><span className="line-clamp-1">{f}</span></li>)}
+          {p.features.length > 4 && <li className="text-xs text-fg-muted pl-5">+{p.features.length - 4} more</li>}
+        </ul>
+      )}
+      <div className="mt-5 pt-4 border-t border-line flex flex-wrap gap-1.5">
+        <Button variant="outline" className={smallBtn} onClick={() => edit(p)} data-ui="plan-edit">Edit</Button>
+        <Button variant="outline" className={smallBtn} disabled={busyId === p.id} onClick={() => toggle(p, "isPublic", !p.isPublic)} data-ui="plan-visibility">{p.isPublic ? "Hide from landing page" : "Show on landing page"}</Button>
+        <Button variant="outline" className={smallBtn} disabled={busyId === p.id} onClick={() => toggle(p, "active", !p.active)} data-ui="plan-active">{p.active ? "Deactivate" : "Activate"}</Button>
+        <Button variant="ghost" className={smallBtn} onClick={() => copyLink(p)}>Copy direct link</Button>
+        <Button variant="ghost" className={`${smallBtn} text-danger`} onClick={() => setConfirmDelete(p)} data-ui="plan-delete">Delete</Button>
+      </div>
+    </li>
+  );
 
   return (
     <div>
-      <div className="flex items-end justify-between gap-4 mb-8">
+      <div className="flex items-end justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-fg" style={{ fontFamily: "var(--font-brand), sans-serif" }}>
-            Plans
-          </h1>
-          <p className="text-sm text-fg-muted mt-1">
-            Monthly &amp; yearly payment plans. Public plans appear on the landing-page pricing section; private plans are assign-only or reachable by direct link.
-          </p>
+          <h1 className="text-2xl font-bold text-fg" style={{ fontFamily: "var(--font-brand), sans-serif" }}>Plans</h1>
+          <p className="text-sm text-fg-muted mt-1" data-ui="plans-summary">{onPage.length === 0 ? "Customers see no plan on the landing page." : `Customers see ${onPage.length} plan${onPage.length === 1 ? "" : "s"} on the landing page.`} Each plan is a one-time payment, priced in its own currency.</p>
         </div>
-        <button
-          onClick={() => setEditorDraft({ ...emptyDraft })}
-          className="shrink-0 flex items-center gap-2 bg-accent-deep text-fg text-sm font-semibold px-4 py-2.5 rounded-xl hover:bg-accent-deep transition-colors"
-        >
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-          </svg>
-          New plan
-        </button>
+        <Button size="sm" onClick={() => setDraft({ ...emptyDraft })} data-ui="plan-new">New plan</Button>
       </div>
 
-      {plans.length === 0 ? (
-        <div className="border border-dashed border-line rounded-card py-20 text-center">
-          <div className="w-12 h-12 rounded-card bg-accent-deep/10 border border-accent-deep/20 flex items-center justify-center mx-auto mb-4">
-            <svg className="w-6 h-6 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.36-1.352c1.163.204 2.293.368 3.372.52m-1.02-4.917c1.04-.166 2.09-.3 3.138-.411M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-          </div>
-          <p className="text-sm text-fg font-semibold mb-1" style={{ fontFamily: "var(--font-brand), sans-serif" }}>
-            No payment plans yet
-          </p>
-          <p className="text-sm text-fg-muted max-w-sm mx-auto">
-            Create your first plan to show pricing on the landing page and to assign subscriptions to users.
-            Until then, the pricing section keeps showing the default annual card.
-          </p>
-        </div>
-      ) : (
-        <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-4">
-          {plans.map((p) => (
-            <div
-              key={p.id}
-              className={`border rounded-card p-5 flex flex-col transition-colors ${
-                p.highlight ? "border-accent-deep/40 bg-accent-deep/[0.06]" : "border-line bg-surface"
-              }`}
-            >
-              {/* Header */}
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-semibold text-fg text-sm truncate" style={{ fontFamily: "var(--font-brand), sans-serif" }}>
-                      {p.name}
-                    </span>
-                    {p.highlight && (
-                      <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-accent-deep/20 text-accent border border-accent-deep/30">
-                        Popular
-                      </span>
-                    )}
-                  </div>
-                  {p.description && <p className="text-xs text-fg-muted mt-0.5 line-clamp-1">{p.description}</p>}
-                </div>
-                <div className="text-right shrink-0">
-                  <div className="text-lg font-bold text-fg" style={{ fontFamily: "var(--font-brand), sans-serif" }}>
-                    {formatPrice(p)}
-                  </div>
-                  <div className="text-[10px] text-fg-muted uppercase tracking-wide">{p.interval}</div>
-                </div>
-              </div>
+      {loadError && <p role="alert" className="mb-4 text-sm text-danger">Could not load the plans. <button type="button" className="underline" onClick={() => void load()}>Retry</button></p>}
 
-              {/* Status badges */}
-              <div className="flex items-center gap-1.5 mt-3 flex-wrap">
-                <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${p.isPublic ? "bg-emerald-500/10 text-success-bright border-emerald-500/20" : "bg-surface text-fg-muted border-line"}`}>
-                  {p.isPublic ? "Public · on pricing page" : "Private"}
-                </span>
-                <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${p.active ? "bg-accent-deep/10 text-accent border-accent-deep/20" : "bg-amber-500/10 text-amber-400 border-amber-500/20"}`}>
-                  {p.active ? "Active" : "Inactive"}
-                </span>
-              </div>
+      <section aria-labelledby="plans-live" className="mb-8">
+        <h2 id="plans-live" className="text-xs font-semibold tracking-wide uppercase text-fg-muted mb-3">On the landing page</h2>
+        {onPage.length === 0 ? <p className="rounded-card border border-dashed border-line px-4 py-8 text-center text-sm text-fg-muted">No public, active plan. The pricing section shows a generic card with no price until you add one.</p>
+          : <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">{onPage.map(card)}</ul>}
+      </section>
 
-              {/* Features */}
-              {p.features.length > 0 && (
-                <ul className="mt-4 space-y-1.5 flex-1">
-                  {p.features.slice(0, 4).map((f, i) => (
-                    <li key={i} className="flex items-start gap-2 text-xs text-fg-muted">
-                      <svg className="w-3 h-3 text-accent shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-                      </svg>
-                      <span className="line-clamp-1">{f}</span>
-                    </li>
-                  ))}
-                  {p.features.length > 4 && (
-                    <li className="text-xs text-fg-muted pl-5">+{p.features.length - 4} more</li>
-                  )}
-                </ul>
-              )}
-
-              {/* Actions */}
-              <div className="flex items-center gap-1.5 mt-5 pt-4 border-t border-line">
-                <button
-                  onClick={() => setEditorDraft({
-                    id: p.id,
-                    name: p.name,
-                    description: p.description ?? "",
-                    interval: p.interval,
-                    price: String(p.priceCents / 100),
-                    features: p.features,
-                    isPublic: p.isPublic,
-                    active: p.active,
-                    highlight: p.highlight === true,
-                    sortOrder: String(p.sortOrder ?? 0),
-                  })}
-                  className="flex-1 px-2.5 py-1.5 text-xs font-semibold rounded-lg bg-surface-2 border border-line text-fg-soft hover:text-fg hover:border-fg-muted/30 transition-colors"
-                >
-                  Edit
-                </button>
-                <button
-                  onClick={() => togglePlanField(p.id, "isPublic", !p.isPublic)}
-                  disabled={busyId === p.id}
-                  className="flex-1 px-2.5 py-1.5 text-xs font-semibold rounded-lg bg-surface-2 border border-line text-fg-soft hover:text-fg hover:border-fg-muted/30 disabled:opacity-50 transition-colors"
-                >
-                  {p.isPublic ? "Make private" : "Make public"}
-                </button>
-                <button
-                  onClick={() => copyPlanLink(p)}
-                  className="p-1.5 border border-line rounded-lg text-fg-muted hover:text-fg hover:border-fg-muted/30 transition-colors"
-                  title="Copy direct subscribe link"
-                >
-                  {copiedId === p.id ? (
-                    <svg className="w-3.5 h-3.5 text-success-bright" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-                    </svg>
-                  ) : (
-                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.678l1.586-1.586a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" />
-                    </svg>
-                  )}
-                </button>
-                <button
-                  onClick={() => togglePlanField(p.id, "active", !p.active)}
-                  disabled={busyId === p.id}
-                  className="p-1.5 border border-line rounded-lg text-fg-muted hover:text-fg hover:border-fg-muted/30 disabled:opacity-50 transition-colors"
-                  title={p.active ? "Deactivate plan" : "Activate plan"}
-                >
-                  {p.active ? (
-                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 5.25v13.5m-7.5-13.5v13.5" />
-                    </svg>
-                  ) : (
-                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z" />
-                    </svg>
-                  )}
-                </button>
-                {deleteConfirm === p.id ? (
-                  <div className="flex items-center gap-1">
-                    <button
-                      onClick={() => deletePlan(p.id)}
-                      disabled={busyId === p.id}
-                      className="px-2 py-1 bg-red-500/10 border border-red-500/30 text-danger text-[11px] rounded-lg hover:bg-red-500/20 disabled:opacity-50"
-                    >
-                      {busyId === p.id ? "..." : "Delete"}
-                    </button>
-                    <button
-                      onClick={() => setDeleteConfirm(null)}
-                      className="px-2 py-1 border border-line text-fg-muted text-[11px] rounded-lg"
-                    >
-                      No
-                    </button>
-                  </div>
-                ) : (
-                  <button
-                    onClick={() => setDeleteConfirm(p.id)}
-                    className="p-1.5 border border-line rounded-lg text-fg-muted hover:text-danger hover:border-red-500/30 transition-colors"
-                    title="Delete plan"
-                  >
-                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
-                    </svg>
-                  </button>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
+      {hidden.length > 0 && (
+        <section aria-labelledby="plans-hidden">
+          <h2 id="plans-hidden" className="text-xs font-semibold tracking-wide uppercase text-fg-muted mb-3">Not on the landing page</h2>
+          <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">{hidden.map(card)}</ul>
+        </section>
       )}
 
-      {editorDraft && (
-        <PlanEditorModal
-          draft={editorDraft}
-          onClose={() => setEditorDraft(null)}
-          onSaved={() => {
-            setEditorDraft(null);
-            loadPlans();
-          }}
-        />
+      {draft && <PlanEditorModal draft={draft} plans={plans} onClose={() => setDraft(null)} onSaved={(m) => { setDraft(null); toast(m); void load(); }} />}
+
+      {confirmDelete && (
+        <Modal onClose={() => setConfirmDelete(null)} ariaLabel="Delete plan" className="bg-canvas border border-line rounded-card shadow-2xl w-full max-w-md p-6">
+          <div data-ui="plan-delete-confirm">
+            <h2 className="font-bold text-fg">Delete “{confirmDelete.name}”?</h2>
+            <p className="mt-2 text-sm text-fg-muted">It disappears from the landing page and checkout at once. People who already have it keep their access and its name on their account. This cannot be undone; to just hide it, deactivate it instead.</p>
+            <div className="mt-5 flex gap-2">
+              <Button variant="danger" size="sm" loading={busyId === confirmDelete.id} onClick={() => remove(confirmDelete)} data-ui="plan-delete-yes">Yes, delete</Button>
+              <Button variant="ghost" size="sm" onClick={() => setConfirmDelete(null)}>Cancel</Button>
+            </div>
+          </div>
+        </Modal>
       )}
     </div>
   );

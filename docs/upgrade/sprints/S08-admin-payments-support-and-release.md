@@ -15,7 +15,7 @@
 - [x] **S8-02** · M · Support inbox: list `contactMessages` with read/unread/resolved, search, link to the matching user (account + payments one click away), reply link, optional note.
   - Files: `app/api/admin/messages/*`, `app/dashboard/admin/support/*`
   - Done when: a message can be opened, matched to an account, and marked resolved with an audit entry.
-- [ ] **S8-03** · M · Plans and promo codes screens: restyle, zod validation, money per currency, live preview of how a plan appears on the landing page, cache revalidation on save.
+- [x] **S8-03** · M · Plans and promo codes screens: restyle, zod validation, money per currency, live preview of how a plan appears on the landing page, cache revalidation on save.
   - Files: `app/dashboard/admin/plans/*`, `app/dashboard/admin/promo-codes/*`, `components/admin/PlanEditorModal.tsx`
   - Done when: saving a plan updates the landing page (S6-02 tag) and is audited.
 - [ ] **S8-04** · M · Overview and Settings: key numbers from `stats/overview`, expiring soon, needs-attention counts; settings (support email, tracking IDs) restyled.

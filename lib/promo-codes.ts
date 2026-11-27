@@ -1,6 +1,7 @@
 import "server-only";
 // Server-only helper (import from API routes only — never from client code).
 import { promoCodesCol } from "@/lib/server/repos/collections";
+import { normalizeCode, validAccessDays } from "@/lib/shared/promo";
 
 /**
  * Free-code access rules, managed in the back office (Admin → Promo codes).
@@ -16,20 +17,8 @@ import { promoCodesCol } from "@/lib/server/repos/collections";
  *   3. the length of the plan that was chosen (previous behavior)
  */
 
-export const MIN_ACCESS_DAYS = 1;
-export const MAX_ACCESS_DAYS = 3650; // 10 years
-
-export function normalizeCode(code: unknown): string {
-  return typeof code === "string" ? code.trim().toUpperCase().replace(/\s+/g, "") : "";
-}
-
-/** A whole number of days within bounds, or null. */
-export function validAccessDays(value: unknown): number | null {
-  const n = typeof value === "string" ? Number(value) : value;
-  if (typeof n !== "number" || !Number.isFinite(n)) return null;
-  const d = Math.trunc(n);
-  return d >= MIN_ACCESS_DAYS && d <= MAX_ACCESS_DAYS ? d : null;
-}
+// The pure rules (bounds, code tidying, day validation) live in lib/shared/promo.ts so the screen can use them too.
+export { MIN_ACCESS_DAYS, MAX_ACCESS_DAYS, normalizeCode, validAccessDays } from "@/lib/shared/promo";
 
 export type AccessGrant = { days: number; source: "back_office" | "stripe" };
 

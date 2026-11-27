@@ -20,7 +20,8 @@ Owner decisions of 2026-11-27 (new):
 - 2026-11-27: **S9-07 public copy** written (Terms section 7, three FAQ answers, six languages); waiting for the owner's review of the wording (checkbox stays `[~]` until then). The old landing's `TrustSection` card is left for S6-14.
 - 2026-11-27: **S8-01 admin Payments screen** done: totals per currency, needs-attention queue resolved in place (credit a customer, mark reviewed, re-sync), filters/search/drawer, every action audited (see `evidence/S8.md`).
 - 2026-11-27: **S8-02 support inbox** done: open/unread/resolved with counts, search, account matched to the sender with links to the account and payments, reply link, internal note, every change audited (see `evidence/S8.md`). The back-office tab bar no longer wraps.
-- Next, in order: S8-03 plans and promo codes, S8-04 overview and settings, S8-05 remove the old admin pages + permission matrix.
+- 2026-11-27: **S8-03 plans and promo codes** done: plans in any of 13 currencies with exact minor-unit prices, live preview using the real landing pricing section, validation, cache expiry and audit on every save; promo codes restyled and validated (see `evidence/S8.md`). Lint cap lowered from 13 to 11.
+- Next, in order: S8-04 overview and settings, S8-05 remove the old admin pages + permission matrix.
 
 ### Before turning on lapse enforcement (`GALLERY_LAPSE_ENFORCE=1`)
 1. S6-14 shipped (old landing and its "link stays live" card gone) or that card reworded.

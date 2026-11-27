@@ -125,7 +125,7 @@ Full log: [`00-proposal-traceability-and-decisions.md`](00-proposal-traceability
 ```bash
 git fetch origin claude/beautiful-archimedes-vsqbhq && git checkout claude/beautiful-archimedes-vsqbhq
 npm ci
-npm run lint -- --max-warnings 13   # CI cap: do not add warnings (13 existing)
+npm run lint -- --max-warnings 11   # CI cap: do not add warnings (11 existing)
 npm run typecheck && npm test       # 334 unit tests
 npm run i18n:check                  # key/placeholder parity of the six dictionaries (CI)
 npm run test:emu                    # Firestore/Auth emulator suite (needs Java 21 for the emulators)
@@ -202,7 +202,7 @@ visitor can see; update the baseline deliberately when the UI is meant to change
 - After saving the gallery settings dialog, the "Drive folder" field is empty until reload (`settingsAfterSave` clears `driveUrl`); kept as is, worth a ticket.
 - Performance levers if the preview LCP stays above 2.5 s: the dictionary carried in the page for client components (~25 KB), Firebase auth code loaded on every page for the nav (~135 KB script), the 108 KB favicon PNG.
 - The pricing section shows one interval's plans at a time (toggle), while the Figma draws a Monthly and a Yearly card together: confirm with the owner.
-- Lint baseline is 13 warnings (CI `--max-warnings 13`); lower it as warnings are fixed, never raise it.
+- Lint baseline is 11 warnings (CI `--max-warnings 11`); lower it as warnings are fixed, never raise it.
 
 ## 11 · Kickoff prompt for a new session or platform (copy-paste)
 
