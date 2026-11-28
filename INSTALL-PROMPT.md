@@ -18,7 +18,7 @@ HOW TO WORK WITH ME
   machine, say so and ask me rather than improvising a different one.
 
 STAGE 0 — LOCAL INSTALL
-1. Check `node --version`. It must be 20.9 or higher. If it is lower, stop and
+1. Check `node --version`. It must be 22.12 or higher. If it is lower, stop and
    tell me to install Node 22 LTS from nodejs.org.
 2. Run `cp .env.example .env.local`.
 3. Run `npm install`. It will print something like

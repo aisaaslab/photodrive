@@ -53,7 +53,7 @@ PhotoDrive is a subscription web app for photographers, studios and event shoote
 
 ## Quick start (developers)
 
-Requires Node.js 20.9 or newer (22 recommended).
+Requires Node.js 22.12 or newer (the Firebase Admin SDK 14 and Vitest 5 need 22+). On Vercel, the `engines` field in `package.json` selects it.
 
 ```bash
 cp .env.example .env.local   # then fill in your keys
