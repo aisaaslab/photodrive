@@ -144,7 +144,7 @@ HOW TO WORK WITH ME
   machine, say so and ask me rather than improvising a different one.
 
 STAGE 0 — LOCAL INSTALL
-1. Check `node --version`. It must be 20.9 or higher. If it is lower, stop and
+1. Check `node --version`. It must be 22.12 or higher. If it is lower, stop and
    tell me to install Node 22 LTS from nodejs.org.
 2. Run `cp .env.example .env.local`.
 3. Run `npm install`. It will print something like
@@ -783,7 +783,7 @@ In the terminal, type **exactly** this and press Enter:
 node --version
 ```
 
-**✅ What you should see:** something like `v22.11.0`. It must be **20.9 or higher** — Next.js 16 refuses to start below that. Node 22 LTS is the safe choice. If you see v16.x.x or v18.x.x, install a newer Node from the link above and run the command again.
+**✅ What you should see:** something like `v22.12.0`. It must be **22.12 or higher** — some of the libraries this app uses (Firebase Admin, the test runner) refuse to run below that. Node 22 LTS is the safe choice. If you see v16.x.x or v18.x.x, install a newer Node from the link above and run the command again.
 
 **❌ Common mistakes:**
 - You see "command not found" or "is not recognized" → Node.js didn't install correctly. **Solution:** restart your computer and try the install again.
